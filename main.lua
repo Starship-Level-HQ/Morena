@@ -15,6 +15,8 @@ function love.load(arg)
     player.x = 300 -- x,y coordinates of the hero
     player.y = 450
     player.speed = 150
+    
+    player.shots = {} -- holds our fired shots
 
     player.spriteSheet = love.graphics.newImage('sprites/player-sheet.png')
     player.grid = anim8.newGrid(12, 18, player.spriteSheet:getWidth(), player.spriteSheet:getHeight())
@@ -58,6 +60,29 @@ function love.update(dt)
     end
 
     player.anim:update(dt)
+    local remShot = {}
+    
+    -- update the shots
+    for i,v in ipairs(player.shots) do
+      if v.dir == "r" then
+        v.x = v.x + dt * 100
+      elseif v.dir == "l" then
+        v.x = v.x - dt * 100
+      elseif v.dir == "u" then
+        v.y = v.y - dt * 100
+      else
+        v.y = v.y + dt * 100
+      end
+      
+    -- mark shots that are not visible for removal
+      if v.y < 0 or v.x < 0 or v.y > 700 or v.x > 700 then
+        table.insert(remShot, i)
+      end
+    end
+    
+    for i,v in ipairs(remShot) do
+      table.remove(player.shots, v)
+    end
 
     -- Update camera position
     cam:lookAt(player.x, player.y)
@@ -97,8 +122,39 @@ function love.draw()
     gameMap:drawLayer(gameMap.layers["grass"])
     gameMap:drawLayer(gameMap.layers["road"])
     gameMap:drawLayer(gameMap.layers["trees"])
+    
+    love.graphics.setColor(255,255,255,255)
+    for i,v in ipairs(player.shots) do
+      love.graphics.rectangle("fill", v.x, v.y, 2, 5)
+    end
 
     -- let's draw our hero
     player.anim:draw(player.spriteSheet, player.x, player.y, nil, 4, nil, 6, 9)
     cam:detach()
+end
+
+function shoot()
+  if #player.shots >= 5 then return end
+  local shot = {}
+  shot.x = player.x
+  shot.y = player.y
+  if player.anim == player.animations.right then
+    shot.dir = "r"
+  elseif player.anim == player.animations.left then 
+    shot.dir = "l"
+  elseif player.anim == player.animations.up then 
+    shot.dir = "u"
+  else
+    shot.dir = "d"
+  end
+  
+  table.insert(player.shots, shot)
+  love.audio.play(shotSound)
+end
+
+function love.keypressed(key)
+  -- in v0.9.2 and earlier space is represented by the actual space character ' ', so check for both
+  if (key == " " or key == "space") then
+    shoot()
+  end
 end
