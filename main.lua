@@ -19,6 +19,7 @@ function love.load(arg)
     player.shots = {} -- holds our fired shots
 
     player.spriteSheet = love.graphics.newImage('sprites/player-sheet.png')
+    player.spriteSheetDash = love.graphics.newImage('sprites/player-sheet-dash.png')
     player.grid = anim8.newGrid(12, 18, player.spriteSheet:getWidth(), player.spriteSheet:getHeight())
 
     player.animations = {}
@@ -28,29 +29,46 @@ function love.load(arg)
     player.animations.left = anim8.newAnimation(player.grid('1-4', 2), 0.2)
 
     player.anim = player.animations.left
-
+    
     shotSound = love.audio.newSource("sounds/shot.wav", "static")
+    
+    player.isDashing = false
+    player.dashSpeed = 450
+    player.dashDuration = 0.2
+    player.dashCooldown = 0.4
+    player.dashTimeLeft = 0
+    player.dashCooldownLeft = 0
+    
+    player.trail = {}      -- таблица для хранения следов
+    player.trailDuration = 0.1 -- как долго следы остаются на экране (в секундах)
+    player.trailFrequency = 0.05 -- как часто добавляются следы (в секундах)
+    player.trailTimer = 0    -- таймер для добавления следов
 end
 
 function love.update(dt)
     local isMoving = false
 
+    local moveSpeed = player.speed
+    if player.isDashing then
+        moveSpeed = player.dashSpeed
+    end
+
     if love.keyboard.isDown("left") then
-        player.x = player.x - player.speed * dt
+        player.x = player.x - moveSpeed * dt
         player.anim = player.animations.left
         isMoving = true
     elseif love.keyboard.isDown("right") then
-        player.x = player.x + player.speed * dt
+        player.x = player.x + moveSpeed * dt
         player.anim = player.animations.right
         isMoving = true
     end
 
     if love.keyboard.isDown("up") then
-        player.y = player.y - player.speed * dt
+        player.y = player.y - moveSpeed * dt
         player.anim = player.animations.up
         isMoving = true
     elseif love.keyboard.isDown("down") then
-        player.y = player.y + player.speed * dt
+        player.y = player.y + moveSpeed * dt
         player.anim = player.animations.down
         isMoving = true
     end
@@ -114,6 +132,34 @@ function love.update(dt)
     if cam.y > (mapH - h / 2) then
         cam.y = (mapH - h / 2)
     end
+    
+    
+        -- Добавляем следы, если персонаж двигается
+    if player.dashTimeLeft > 0 then
+      player.trailTimer = player.trailTimer - dt
+      if player.trailTimer <= 0 then
+          -- Добавляем новую позицию в таблицу следов
+          table.insert(player.trail, {x = player.x, y = player.y, anim = player.anim, alpha = 1, lifetime = player.trailDuration})
+          player.trailTimer = player.trailFrequency
+      end
+    end
+    if player.isDashing then
+      player.dashTimeLeft = player.dashTimeLeft - dt
+      if player.dashTimeLeft <= 0 then
+        player.isDashing = false
+        player.dashCooldownLeft = player.dashCooldown
+      end
+    elseif player.dashCooldownLeft > 0 then
+      player.dashCooldownLeft = player.dashCooldownLeft - dt
+    end
+    -- Обновляем следы (уменьшаем прозрачность и время жизни)
+    for i, t in ipairs(player.trail) do
+      t.lifetime = t.lifetime - dt
+      t.alpha = t.lifetime / player.trailDuration -- уменьшаем прозрачность пропорционально оставшемуся времени
+      if t.lifetime <= 0 then
+          table.remove(player.trail, i) -- удаляем след, когда его время жизни истекло
+      end
+    end
 end
 
 function love.draw()
@@ -128,7 +174,23 @@ function love.draw()
       love.graphics.rectangle("fill", v.x, v.y, 2, 5)
     end
 
-    -- let's draw our hero
+    for i, t in ipairs(player.trail) do
+      local fade = t.lifetime / player.trailDuration -- 1 для новых следов, 0 для исчезающих
+
+      -- Значительное изменение цвета: от темного к светлому
+      local red = 255 * fade  -- начинаем с белого и уменьшаем до прозрачного
+      local green = 255 * fade -- аналогично с зелёным
+      local blue = 255 * fade -- аналогично с синим
+      local alpha = 255 * fade  -- прозрачность уменьшается с временем жизни
+
+      -- Устанавливаем цвет с рассчитанным эффектом
+      love.graphics.setColor(red, green, blue, alpha) 
+      t.anim:draw(player.spriteSheetDash, t.x, t.y, nil, 4, nil, 6, 9)
+    end
+
+    -- Сбрасываем цвет обратно к стандартному белому и непрозрачному для персонажа
+    love.graphics.setColor(255, 255, 255, 255)
+    -- Рисуем персонажа
     player.anim:draw(player.spriteSheet, player.x, player.y, nil, 4, nil, 6, 9)
     cam:detach()
 end
@@ -157,4 +219,10 @@ function love.keypressed(key)
   if (key == " " or key == "space") then
     shoot()
   end
+  
+  if key == "lshift" and not player.isDashing and player.dashCooldownLeft <= 0 then
+    player.isDashing = true
+    player.dashTimeLeft = player.dashDuration
+  end
+    
 end
