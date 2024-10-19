@@ -79,6 +79,14 @@ function love.draw()
       love.graphics.rectangle("fill", v.x, v.y, 2, 5)
     end
 
+    --След
+    love.graphics.setColor(0.7,0.7,0.9,0.2)
+    for i = #player.trail, 1, -1 do
+      local t = player.trail[i]
+      t.anim:draw(player.spriteSheet, t.x, t.y, nil, 4, nil, 6, 9)
+    end
+    love.graphics.setColor(255,255,255,255)
+    
     -- let's draw our hero
     player.anim:draw(player.spriteSheet, player.body:getX(), player.body:getY(), nil, 4, nil, 6, 9)
     love.graphics.setColor(0.23, 0.25, 0.59, 1)
