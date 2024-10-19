@@ -19,12 +19,9 @@ function love.load(arg)
     
     day = true
 
-    player.init(300, 450)    -- new table for the hero
+    player.init(world, 300, 450) -- new table for the hero
     
-    lake = {}
-    lake.body = love.physics.newBody(world, 400, 550, "static")
-    lake.shape = love.physics.newRectangleShape(80, 80)
-    lake.fixture = love.physics.newFixture(lake.body, lake.shape)   
+    lake = physics.makeBody(world, 400, 550, 80, 80, "static")  
 
     shotSound = love.audio.newSource("sounds/shot.wav", "static")
 end

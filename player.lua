@@ -1,7 +1,8 @@
 local player = {}
 
-function player.init(x, y)
-  player.defaultSpeed = 150
+function player.init(world, x, y)
+  player.speed = 150
+
   player.body = love.physics.newBody(world, x, y, "dynamic") --тело для движения и отрисовки
   player.shape = love.physics.newRectangleShape(20, 28) --размер коллайдера
   player.fixture = love.physics.newFixture(player.body, player.shape, 1) --коллайдер
