@@ -1,5 +1,6 @@
 local physics = require("physics")
 local player = require("player")
+local enemy = require("enemy")
 
 function love.load(arg)
   
@@ -20,6 +21,7 @@ function love.load(arg)
     day = true
 
     player.init(300, 450)    -- new table for the hero
+    enemy.init(500, 400)    -- new table for the hero
     
     lake = {}
     lake.body = love.physics.newBody(world, 400, 550, "static")
@@ -32,6 +34,7 @@ end
 function love.update(dt)
   
     player.update(dt)
+    enemy.update(dt, player.body:getX(), player.body:getY())
     
     world:update(dt)
 
@@ -89,6 +92,7 @@ function love.draw()
     
     -- let's draw our hero
     player.anim:draw(player.spriteSheet, player.body:getX(), player.body:getY(), nil, 4, nil, 6, 9)
+    enemy.anim:draw(enemy.spriteSheet, enemy.body:getX(), enemy.body:getY(), nil, 4, nil, 6, 9)
     love.graphics.setColor(0.23, 0.25, 0.59, 1)
     love.graphics.polygon("fill", lake.body:getWorldPoints(lake.shape:getPoints()))
     if day then

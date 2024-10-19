@@ -3,6 +3,7 @@ local player = {}
 function player.init(x, y)
   player.defaultSpeed = 150
   player.body = love.physics.newBody(world, x, y, "dynamic") --тело для движения и отрисовки
+  player.body:setMass(50)
   player.shape = love.physics.newRectangleShape(20, 28) --размер коллайдера
   player.fixture = love.physics.newFixture(player.body, player.shape, 1) --коллайдер
   player.shots = {} -- holds our fired shots
@@ -84,6 +85,7 @@ function player.update(dt)
   player.anim:update(dt)
   player.updateShots(dt)
 end
+
 function player.updateShots(dt)
   local remShot = {}
 
