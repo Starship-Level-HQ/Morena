@@ -20,4 +20,12 @@ function physics.collisionOnEnter(fixture_a, fixture_b, contact) --выводи�
     -- do not use contact after this function returns
 end
 
+function physics.makeBody(world, x, y, height, width, bodyType)
+  local object = {}
+  object.body = love.physics.newBody(world, x, y, bodyType)
+  object.shape = love.physics.newRectangleShape(height, width)
+  object.fixture = love.physics.newFixture(object.body, object.shape)
+  return object
+end
+
 return physics
