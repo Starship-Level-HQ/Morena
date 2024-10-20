@@ -4,9 +4,11 @@ function player.init(x, y)
   player.defaultSpeed = 150
   player.body = love.physics.newBody(world, x, y, "dynamic") --тело для движения и отрисовки
   player.body:setMass(50)
-  player.shape = love.physics.newRectangleShape(20, 28) --размер коллайдера
-  player.fixture = love.physics.newFixture(player.body, player.shape, 1) --коллайдер
+  player.shape = love.physics.newRectangleShape(22, 29) --размер коллайдера
+  player.fixture = love.physics.newFixture(player.body, player.shape, 3) --коллайдер
+  
   player.shots = {} -- holds our fired shots
+  player.health = 100
 
   player.spriteSheet = love.graphics.newImage('sprites/player-sheet.png')
   player.grid = anim8.newGrid(12, 18, player.spriteSheet:getWidth(), player.spriteSheet:getHeight())
