@@ -3,32 +3,30 @@ local player = require("player")
 local enemy = require("enemy")
 
 function love.load(arg)
+  
+    if arg and arg[#arg] == "-debug" then require("mobdebug").start() end
+    love.window.setTitle("Morena")
 
-  if arg and arg[#arg] == "-debug" then require("mobdebug").start() end
-  love.window.setTitle("Morena")
+    camera = require 'libraries/camera' -- движение камеры
+    cam = camera()
 
-  camera = require 'libraries/camera' -- движение камеры
-  cam = camera()
+    anim8 = require 'libraries/anim8'                    -- анимация движения
+    love.graphics.setDefaultFilter('nearest', 'nearest') -- увеличение резкости отображения персонажа
 
-  anim8 = require 'libraries/anim8'                    -- анимация движения
-  love.graphics.setDefaultFilter('nearest', 'nearest') -- увеличение резкости отображения персонажа
+    sti = require 'libraries/sti'                        -- отрисовка карты из Tiled
+    gameMap = sti('maps/testMap.lua')
+    world = love.physics.newWorld(0, 0, true)
+    world:setCallbacks(collisionOnEnter, physics.collisionOnEnter)
+    
+    day = true
 
-  sti = require 'libraries/sti'                        -- отрисовка карты из Tiled
-  gameMap = sti('maps/testMap.lua')
-  world = love.physics.newWorld(0, 0, true)
-  world:setCallbacks(collisionOnEnter, physics.collisionOnEnter)
+    player.init(world, 300, 450) -- new table for the hero
+    enemy.init(500, 400)
+    
+    lake = physics.makeBody(world, 400, 550, 80, 80, "static")  
 
-  day = true
+    shotSound = love.audio.newSource("sounds/shot.wav", "static")
 
-  player.init(300, 450)    -- new table for the hero
-  enemy.init(500, 400)    -- new table for the hero
-
-  lake = {}
-  lake.body = love.physics.newBody(world, 400, 550, "static")
-  lake.shape = love.physics.newRectangleShape(80, 80)
-  lake.fixture = love.physics.newFixture(lake.body, lake.shape)   
-
-  shotSound = love.audio.newSource("sounds/shot.wav", "static")
 end
 
 function love.update(dt)
