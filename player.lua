@@ -1,4 +1,6 @@
 local player = {}
+local cat = require("objectsCategories")
+local physics = require("physics")
 
 function player.init(world, x, y)
     player.speed = 150
@@ -6,6 +8,8 @@ function player.init(world, x, y)
     player.body = love.physics.newBody(world, x, y, "dynamic")             --тело для движения и отрисовки
     player.shape = love.physics.newRectangleShape(20, 28)                  --размер коллайдера
     player.fixture = love.physics.newFixture(player.body, player.shape, 1) --коллайдер
+    player.fixture:setCategory(cat.PLAYER) -- Категория объектов, к которой относится игрок
+    player.fixture:setMask(cat.P_SHOT, cat.VOID) -- Категории, которые игрок игнорирует (свои выстрелы и пустоту)
     player.shots = {}                                                      -- holds our fired shots
     player.health = 100
 
@@ -88,41 +92,33 @@ function player.updateShots(dt)
     local remShot = {}
 
     -- update the shots
-    for i, v in ipairs(player.shots) do
-        if v.dir == "r" then
-            v.x = v.x + dt * 100
-        elseif v.dir == "l" then
-            v.x = v.x - dt * 100
-        elseif v.dir == "u" then
-            v.y = v.y - dt * 100
-        else
-            v.y = v.y + dt * 100
-        end
-
+    for i, s in ipairs(player.shots) do
+        
         -- mark shots that are not visible for removal
-        if v.y < 0 or v.x < 0 or v.y > 700 or v.x > 700 then
+        if s.body.body:isDestroyed() or s.body.body:getX() < 0 or s.body.body:getY() < 0 or s.body.body:getX() > 700 or s.body.body:getY() > 700 then
             table.insert(remShot, i)
         end
     end
 
-    for i, v in ipairs(remShot) do
-        table.remove(player.shots, v)
+    for i, s in ipairs(remShot) do
+        table.remove(player.shots, i)
     end
 end
 
 function player.shoot(shotSound)
     if #player.shots >= 5 then return end
     local shot = {}
-    shot.x = player.body:getX()
-    shot.y = player.body:getY()
+    shot.body = physics.makeBody(player.body:getWorld(), player.body:getX(), player.body:getY(), 2, 5, "dynamic")
+    shot.body.fixture:setCategory(cat.P_SHOT)
+    shot.body.fixture:setMask(cat.LAKE)
     if player.anim == player.animations.right then
-        shot.dir = "r"
+        shot.body.body:setLinearVelocity(100, 0)
     elseif player.anim == player.animations.left then
-        shot.dir = "l"
+        shot.body.body:setLinearVelocity(-100, 0)
     elseif player.anim == player.animations.up then
-        shot.dir = "u"
+        shot.body.body:setLinearVelocity(0, -100)
     else
-        shot.dir = "d"
+        shot.body.body:setLinearVelocity(0, 100)
     end
 
     table.insert(player.shots, shot)
@@ -162,6 +158,29 @@ function player.updateDash(dt)
     elseif player.dashCooldownLeft > 0 then
         player.dashCooldownLeft = player.dashCooldownLeft - dt
     end
+end
+
+function player.draw(t, d1, d2, d3, d4)
+  
+  for i, s in ipairs(player.shots) do
+    if not s.body.body:isDestroyed() then
+      love.graphics.rectangle("fill", s.body.body:getX(), s.body.body:getY(), 2, 5)
+    end
+  end
+  
+  player.anim:draw(player.spriteSheet, player.body:getX(), player.body:getY(), nil, 4, nil, 6, 9)
+  
+  --След
+  love.graphics.setColor(0.7,0.7,0.9,0.2)
+  for i = #player.trail, 1, -1 do
+    local t = player.trail[i]
+    t.anim:draw(player.spriteSheet, t.x, t.y, nil, 4, nil, 6, 9)
+  end
+  
+  love.graphics.setColor(0, 1, 0, 1)
+  love.graphics.print(player.health, player.body:getX()-23, player.body:getY()-65, 0, 2, 2)
+  
+  love.graphics.setColor(d1, d2, d3, d4)
 end
 
 return player
