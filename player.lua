@@ -82,6 +82,7 @@ function player.update(dt)
     if love.keyboard.isDown("lshift") and not player.isDashing and player.dashCooldownLeft <= 0 then
         player.isDashing = true
         player.dashTimeLeft = player.dashDuration
+        player.fixture:setCategory(cat.VOID)
     end
     player.updateDash(dt)
     player.anim:update(dt)
@@ -158,6 +159,9 @@ function player.updateDash(dt)
     elseif player.dashCooldownLeft > 0 then
         player.dashCooldownLeft = player.dashCooldownLeft - dt
     end
+    if not player.isDashing then
+      player.fixture:setCategory(cat.PLAYER)
+    end
 end
 
 function player.draw(t, d1, d2, d3, d4)
@@ -181,6 +185,19 @@ function player.draw(t, d1, d2, d3, d4)
   love.graphics.print(player.health, player.body:getX()-23, player.body:getY()-65, 0, 2, 2)
   
   love.graphics.setColor(d1, d2, d3, d4)
+end
+
+function player.collisionWithEnemy(fixture_a, fixture_b)
+  if fixture_a == player.fixture and fixture_b:getCategory() == cat.ENEMY then
+    player.health = player.health - 10
+    xi, yi = fixture_b:getBody():getLinearVelocity()
+    player.body:applyLinearImpulse(xi*55, yi*55) --отскок игрока при получении урона, пока слишком резкий, если получится сделать плавным - оставим
+  elseif fixture_b == player.fixture and fixture_a:getCategory() == cat.ENEMY then
+    player.health = player.health - 10
+    xi, yi = fixture_a:getBody():getLinearVelocity()
+    player.body:applyLinearImpulse(xi*60, yi*60)
+  end
+  
 end
 
 return player
