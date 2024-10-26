@@ -7,9 +7,11 @@ function enemy.init(x, y)
   enemy.body:setMass(49)
   enemy.shape = love.physics.newRectangleShape(22, 29) --размер коллайдера
   enemy.fixture = love.physics.newFixture(enemy.body, enemy.shape, 1) --коллайдер
+
   enemy.fixture:setCategory(cat.ENEMY) 
   enemy.fixture:setMask(cat.E_SHOT, cat.VOID) 
   enemy.health = 100
+  
   enemy.shots = {} -- holds our fired shots
 
   enemy.spriteSheet = love.graphics.newImage('sprites/enemy-sheet.png')
@@ -21,7 +23,9 @@ function enemy.init(x, y)
   enemy.animations.left = anim8.newAnimation(enemy.grid('1-4', 2), 0.2)
 
   enemy.anim = enemy.animations.left
+
   enemy.isAlive = true
+
   enemy.tick = 0
 
 end
@@ -92,15 +96,6 @@ function enemy.update(dt, playerX, playerY)
     
   end
   
-end
-
-function enemy.draw(t, d1, d2, d3, d4)
-  enemy.anim:draw(enemy.spriteSheet, enemy.body:getX(), enemy.body:getY(), nil, 4, nil, 6, 9)
-  if enemy.health > 0 then
-    love.graphics.setColor(1, 0, 0, 1)
-    love.graphics.print(enemy.health, enemy.body:getX()-23, enemy.body:getY()-65, 0, 2, 2)
-  end
-  love.graphics.setColor(d1, d2, d3, d4)
 end
 
 return enemy
