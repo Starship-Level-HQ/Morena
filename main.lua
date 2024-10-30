@@ -121,7 +121,19 @@ end
 --Понадобится для боёв, взаимодействия с предметами и тд
 function collisionOnEnter(fixture_a, fixture_b, contact)
   
-  player.collisionWithEnemy(fixture_a, fixture_b)
+  if fixture_a:getCategory() == cat.PLAYER and fixture_b:getCategory() == cat.ENEMY then
+    player.collisionWithEnemy(fixture_b)
+  end
+  
+  if fixture_a:getCategory() == cat.PLAYER and fixture_b:getCategory() == cat.E_SHOT then
+    if player.isDashing then
+      fixture_b:setCategory(cat.P_SHOT)
+    else
+      player.collisionWithShot()
+      fixture_b:getBody():destroy()
+      fixture_b:destroy()
+    end
+  end
 
   if fixture_b:getCategory() == cat.P_SHOT and fixture_a:getCategory() == cat.ENEMY then
     for i, e in ipairs(enemies) do

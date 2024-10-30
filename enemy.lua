@@ -1,8 +1,9 @@
 local enemyFabric = {}
 local cat = require("objectsCategories")
+local physics = require("physics")
 
 function enemyFabric.new()
-  
+
   local enemy = {}
 
   function enemy.init(world, x, y)
@@ -69,6 +70,10 @@ function enemyFabric.new()
           isMoving = false
         end
 
+        if enemy.tick % 5 == 0 then
+          enemy.shoot()
+        end
+
         enemy.tick = enemy.tick + 1
 
         if enemy.tick > 150 then
@@ -95,10 +100,56 @@ function enemyFabric.new()
       end
 
     end
+    enemy.updateShots(dt)
+  end
 
+  function enemy.updateShots(dt)
+    local remShot = {}
+
+    -- update the shots
+    for i, s in ipairs(enemy.shots) do
+
+      -- mark shots that are not visible for removal
+      if s.body.body:isDestroyed() or s.body.body:getX() < 0 or s.body.body:getY() < 0 or s.body.body:getX() > 700 or s.body.body:getY() > 700 then
+        table.insert(remShot, i)
+        if not s.body.body:isDestroyed() then
+          s.body.fixture:destroy()
+          s.body.body:destroy()
+        end
+      end
+    end
+
+    for i, s in ipairs(remShot) do
+      table.remove(enemy.shots, i)
+    end
+  end
+
+  function enemy.shoot()
+    local shot = {}
+    shot.body = physics.makeBody(enemy.body:getWorld(), enemy.body:getX(), enemy.body:getY(), 2, 5, "dynamic")
+    shot.body.fixture:setCategory(cat.E_SHOT)
+    shot.body.fixture:setMask(cat.TEXTURE, cat.P_SHOT, cat.E_SHOT)
+    if enemy.anim == enemy.animations.right then
+      shot.body.body:setLinearVelocity(100, 0)
+    elseif enemy.anim == enemy.animations.left then
+      shot.body.body:setLinearVelocity(-100, 0)
+    elseif enemy.anim == enemy.animations.up then
+      shot.body.body:setLinearVelocity(0, -100)
+    else
+      shot.body.body:setLinearVelocity(0, 100)
+    end
+
+    table.insert(enemy.shots, shot)
   end
 
   function enemy.draw(t, d1, d2, d3, d4)
+
+    for i, s in ipairs(enemy.shots) do
+      if not s.body.body:isDestroyed() then
+        love.graphics.rectangle("fill", s.body.body:getX(), s.body.body:getY(), 2, 5)
+      end
+    end
+
     enemy.anim:draw(enemy.spriteSheet, enemy.body:getX(), enemy.body:getY(), nil, 4, nil, 6, 9)
     if enemy.health > 0 then
       love.graphics.setColor(1, 0, 0, 1)
@@ -106,15 +157,15 @@ function enemyFabric.new()
     end
     love.graphics.setColor(d1, d2, d3, d4)
   end
-  
+
   function enemy.colisionWithShot(f)
     if f == enemy.fixture then
       enemy.health = enemy.health - 10
     end
   end
-  
+
   return enemy
-  
+
 end
 
 return enemyFabric
