@@ -111,7 +111,7 @@ function player.shoot(shotSound)
     local shot = {}
     shot.body = physics.makeBody(player.body:getWorld(), player.body:getX(), player.body:getY(), 2, 5, "dynamic")
     shot.body.fixture:setCategory(cat.P_SHOT)
-    shot.body.fixture:setMask(cat.LAKE)
+    shot.body.fixture:setMask(cat.TEXTURE)
     if player.anim == player.animations.right then
         shot.body.body:setLinearVelocity(100, 0)
     elseif player.anim == player.animations.left then

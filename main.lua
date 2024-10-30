@@ -123,21 +123,9 @@ function collisionOnEnter(fixture_a, fixture_b, contact)
   
   player.collisionWithEnemy(fixture_a, fixture_b)
 
-  if fixture_a:getCategory() == cat.P_SHOT and fixture_b:getCategory() == cat.ENEMY then
-    for i, e in ipairs(enemies) do
-      if e.fixture == fixture_b then
-        e.health = e.health - 10
-      end
-    end
-    fixture_a:getBody():destroy()
-    fixture_a:destroy()
-  end
-
   if fixture_b:getCategory() == cat.P_SHOT and fixture_a:getCategory() == cat.ENEMY then
     for i, e in ipairs(enemies) do
-      if e.fixture == fixture_a then
-        e.health = e.health - 10
-      end
+      e.colisionWithShot(fixture_a)
     end
     fixture_b:getBody():destroy()
     fixture_b:destroy()

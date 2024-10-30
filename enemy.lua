@@ -8,7 +8,7 @@ function enemyFabric.new()
   function enemy.init(world, x, y)
     enemy.defaultSpeed = 40
     enemy.body = love.physics.newBody(world, x, y, "dynamic") --тело для движения и отрисовки
-    enemy.body:setMass(49)
+    --enemy.body:setMass(49)
     enemy.shape = love.physics.newRectangleShape(22, 29) --размер коллайдера
     enemy.fixture = love.physics.newFixture(enemy.body, enemy.shape, 1) --коллайдер
     enemy.fixture:setCategory(cat.ENEMY) 
@@ -26,7 +26,7 @@ function enemyFabric.new()
 
     enemy.anim = enemy.animations.left
     enemy.isAlive = true
-    enemy.tick = 0
+    enemy.tick = x+y % 150
 
   end
 
@@ -105,6 +105,12 @@ function enemyFabric.new()
       love.graphics.print(enemy.health, enemy.body:getX()-23, enemy.body:getY()-65, 0, 2, 2)
     end
     love.graphics.setColor(d1, d2, d3, d4)
+  end
+  
+  function enemy.colisionWithShot(f)
+    if f == enemy.fixture then
+      enemy.health = enemy.health - 10
+    end
   end
   
   return enemy
