@@ -31,7 +31,7 @@ function love.load(arg)
   end
 
   lake = physics.makeBody(world, 400, 550, 80, 80, "static")  
-  lake.fixture:setCategory(cat.LAKE)
+  lake.fixture:setCategory(cat.TEXTURE)
 
   shotSound = love.audio.newSource("sounds/shot.wav", "static")
 

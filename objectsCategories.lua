@@ -4,7 +4,7 @@ local categories = {
   ENEMY = 3,
   E_SHOT = 4,
   NPC = 5,
-  LAKE = 6,
+  TEXTURE = 6,
   
   TRIGGER = 15,
   VOID = 16 
