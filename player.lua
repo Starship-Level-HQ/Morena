@@ -46,7 +46,7 @@ function player.update(dt)
   end
 
   if love.keyboard.isDown("left") then
-    xv, yv = player.body:getLinearVelocity() -- повторяется в 6 местах, но если просто вынести перед ифами, то наискосок идёт только при отпускании первой нажатой клавиши (значения xv, xy не обновляются). Наверное можно сделать красиво, но надо думать.
+    xv, yv = player.body:getLinearVelocity()
     player.body:setLinearVelocity(-speed, yv)
     player.anim = player.animations.left
     isMoving = true
@@ -82,7 +82,7 @@ function player.update(dt)
   if love.keyboard.isDown("lshift") and not player.isDashing and player.dashCooldownLeft <= 0 then
     player.isDashing = true
     player.dashTimeLeft = player.dashDuration
-    player.fixture:setCategory(cat.VOID)
+    player.fixture:setCategory(cat.DASHING_PLAYER)
   end
   player.updateDash(dt)
   player.anim:update(dt)

@@ -13,7 +13,7 @@ function enemyFabric.new()
     enemy.shape = love.physics.newRectangleShape(22, 29) --размер коллайдера
     enemy.fixture = love.physics.newFixture(enemy.body, enemy.shape, 1) --коллайдер
     enemy.fixture:setCategory(cat.ENEMY) 
-    enemy.fixture:setMask(cat.E_SHOT, cat.VOID) 
+    enemy.fixture:setMask(cat.E_SHOT, cat.VOID, cat.DASHING_PLAYER) 
     enemy.health = 100
     enemy.shots = {} -- holds our fired shots
 
@@ -128,7 +128,7 @@ function enemyFabric.new()
     local shot = {}
     shot.body = physics.makeBody(enemy.body:getWorld(), enemy.body:getX(), enemy.body:getY(), 2, 5, "dynamic")
     shot.body.fixture:setCategory(cat.E_SHOT)
-    shot.body.fixture:setMask(cat.TEXTURE, cat.P_SHOT, cat.E_SHOT)
+    shot.body.fixture:setMask(cat.TEXTURE, cat.P_SHOT, cat.E_SHOT, cat.VOID)
     if enemy.anim == enemy.animations.right then
       shot.body.body:setLinearVelocity(100, 0)
     elseif enemy.anim == enemy.animations.left then

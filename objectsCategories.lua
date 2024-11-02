@@ -5,6 +5,7 @@ local categories = {
   E_SHOT = 4,
   NPC = 5,
   TEXTURE = 6,
+  DASHING_PLAYER = 7,
   
   TRIGGER = 15,
   VOID = 16 

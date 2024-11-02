@@ -115,14 +115,15 @@ function level.collisionOnEnter(fixture_a, fixture_b, contact)
   end
   
   if fixture_a:getCategory() == cat.PLAYER and fixture_b:getCategory() == cat.E_SHOT then
-    if player.isDashing then
-      fixture_b:setCategory(cat.P_SHOT)
-    else
-      player.collisionWithShot()
-      fixture_b:getBody():destroy()
-      fixture_b:destroy()
-    end
+    player.collisionWithShot()
+    fixture_b:getBody():destroy()
+    fixture_b:destroy()
   end
+  
+  if fixture_a:getCategory() == cat.DASHING_PLAYER and fixture_b:getCategory() == cat.E_SHOT then
+    fixture_b:setCategory(cat.P_SHOT)
+  end
+  
   if fixture_b:getCategory() == cat.P_SHOT and fixture_a:getCategory() == cat.ENEMY then
     for i, e in ipairs(enemies) do
       e.colisionWithShot(fixture_a)
