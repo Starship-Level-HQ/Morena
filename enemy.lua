@@ -1,6 +1,4 @@
 local enemyFabric = {}
-local cat = require("objectsCategories")
-local physics = require("physics")
 
 function enemyFabric.new()
 
@@ -26,6 +24,7 @@ function enemyFabric.new()
     enemy.animations.left = anim8.newAnimation(enemy.grid('1-4', 2), 0.2)
 
     enemy.anim = enemy.animations.left
+    enemy.direction = "l"
     enemy.isAlive = true
     enemy.tick = x+y % 150
 
@@ -45,20 +44,24 @@ function enemyFabric.new()
           if enemy.body:getX() > playerX then
             speedX = -enemy.defaultSpeed
             enemy.anim = enemy.animations.left
+            enemy.direction = "l"
             isMoving = true
           elseif enemy.body:getX() < playerX then
             speedX = enemy.defaultSpeed
             enemy.anim = enemy.animations.right
+            enemy.direction = "r"
             isMoving = true
           end
 
           if enemy.body:getY() > playerY and math.abs(enemy.body:getY() - playerY) > 5 then
             speedY = -enemy.defaultSpeed
             enemy.anim = enemy.animations.up
+            enemy.direction = "u"
             isMoving = true
           elseif enemy.body:getY() < playerY and math.abs(enemy.body:getY() - playerY) > 5 then
             speedY = enemy.defaultSpeed
             enemy.anim = enemy.animations.down
+            enemy.direction = "d"
             isMoving = true
           end
 
@@ -108,15 +111,7 @@ function enemyFabric.new()
 
     -- update the shots
     for i, s in ipairs(enemy.shots) do
-
-      -- mark shots that are not visible for removal
-      if s.body.body:isDestroyed() or s.body.body:getX() < 0 or s.body.body:getY() < 0 or s.body.body:getX() > 700 or s.body.body:getY() > 700 then
-        table.insert(remShot, i)
-        if not s.body.body:isDestroyed() then
-          s.body.fixture:destroy()
-          s.body.body:destroy()
-        end
-      end
+      s.update(remShot, i)
     end
 
     for i, s in ipairs(remShot) do
@@ -125,28 +120,15 @@ function enemyFabric.new()
   end
 
   function enemy.shoot()
-    local shot = {}
-    shot.body = physics.makeBody(enemy.body:getWorld(), enemy.body:getX(), enemy.body:getY(), 2, 5, "dynamic")
-    shot.body.fixture:setCategory(cat.E_SHOT)
-    shot.body.fixture:setMask(cat.TEXTURE, cat.P_SHOT, cat.E_SHOT, cat.VOID)
-    if enemy.anim == enemy.animations.right then
-      shot.body.body:setLinearVelocity(100, 0)
-    elseif enemy.anim == enemy.animations.left then
-      shot.body.body:setLinearVelocity(-100, 0)
-    elseif enemy.anim == enemy.animations.up then
-      shot.body.body:setLinearVelocity(0, -100)
-    else
-      shot.body.body:setLinearVelocity(0, 100)
-    end
-
-    table.insert(enemy.shots, shot)
+    local shot = shots.new(cat.E_SHOT, enemy.body:getWorld(), enemy.body:getX(), enemy.body:getY(), 2, 5, 150, enemy.direction)
+  table.insert(enemy.shots, shot)
   end
 
   function enemy.draw(t, d1, d2, d3, d4)
 
     for i, s in ipairs(enemy.shots) do
-      if not s.body.body:isDestroyed() then
-        love.graphics.rectangle("fill", s.body.body:getX(), s.body.body:getY(), 2, 5)
+      if not s.body:isDestroyed() then
+        love.graphics.rectangle("fill", s.body:getX(), s.body:getY(), s.h, s.w)
       end
     end
 

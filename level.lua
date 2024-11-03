@@ -1,6 +1,6 @@
 local level = {}
 
-local cat = require("objectsCategories")
+cat = require("objectsCategories")
 
 local physics = require("physics")
 local player = require("player")
