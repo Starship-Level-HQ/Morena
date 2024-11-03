@@ -1,5 +1,5 @@
 local shotFabric = {}
-local physics = require("physics")
+physics = require("physics")
 
 function shotFabric.new(category, world, x, y, h, w, lifeTime, dir)
   local shot = physics.makeBody(world, x, y, h, w, "dynamic")

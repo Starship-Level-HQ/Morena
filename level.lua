@@ -39,6 +39,7 @@ function level.startLevel(levelNumber)
     love.graphics.setDefaultFilter('nearest', 'nearest')
     gameMap = sti(levelData.map)
     world = love.physics.newWorld(0, 0, true)
+    world:setGravity(0, 40)
     world:setCallbacks(level.collisionOnEnter)
 
     player.init(world, levelData.playerPosition[1], levelData.playerPosition[2])

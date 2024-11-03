@@ -11,6 +11,7 @@ function player.init(world, x, y)
   player.fixture:setMask(cat.P_SHOT, cat.VOID) -- Категории, которые игрок игнорирует (свои выстрелы и пустоту)
   player.shots = {}                                                      -- holds our fired shots
   player.health = 100
+  player.body:setGravityScale(0)
 
   player.spriteSheet = love.graphics.newImage('sprites/player-sheet.png')
   player.grid = anim8.newGrid(12, 18, player.spriteSheet:getWidth(), player.spriteSheet:getHeight())

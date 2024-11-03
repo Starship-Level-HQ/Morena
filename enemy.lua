@@ -12,8 +12,10 @@ function enemyFabric.new()
     enemy.fixture = love.physics.newFixture(enemy.body, enemy.shape, 1) --коллайдер
     enemy.fixture:setCategory(cat.ENEMY) 
     enemy.fixture:setMask(cat.E_SHOT, cat.VOID, cat.DASHING_PLAYER) 
+    enemy.body:setGravityScale(0)
     enemy.health = 100
     enemy.shots = {} -- holds our fired shots
+    enemy.bloodDrops = {}
 
     enemy.spriteSheet = love.graphics.newImage('sprites/enemy-sheet.png')
     enemy.grid = anim8.newGrid(12, 18, enemy.spriteSheet:getWidth(), enemy.spriteSheet:getHeight())
@@ -100,10 +102,14 @@ function enemyFabric.new()
         enemy.anim:update(dt)
         enemy.fixture:destroy()
         enemy.isAlive = false
+        enemy.bloodDrops = physics.bloodDrops(enemy.body:getWorld(), enemy.body:getX(), enemy.body:getY())
       end
 
-    end
+  end
+  
     enemy.updateShots(dt)
+    enemy.updateBloodDrops(dt)
+
   end
 
   function enemy.updateShots(dt)
@@ -116,6 +122,28 @@ function enemyFabric.new()
 
     for i, s in ipairs(remShot) do
       table.remove(enemy.shots, i)
+    end
+  end
+  
+  function enemy.updateBloodDrops(dt)
+    local remShot = {}
+
+    for i, d in ipairs(enemy.bloodDrops) do
+      d.time = d.time + 1
+      if not d.body:isDestroyed() then
+        d.body:setGravityScale(d.time)
+      end
+      if d.time > 100 then
+        table.insert(remShot, i)
+        if not d.body:isDestroyed() then
+          d.fixture:destroy()
+          d.body:destroy()
+        end
+      end
+    end
+
+    for i, d in ipairs(remShot) do
+      table.remove(enemy.bloodDrops, d)
     end
   end
 
@@ -131,7 +159,14 @@ function enemyFabric.new()
         love.graphics.rectangle("fill", s.body:getX(), s.body:getY(), s.h, s.w)
       end
     end
-
+    
+    love.graphics.setColor(1, 0, 0, 1)
+    for i, d in ipairs(enemy.bloodDrops) do
+      if not d.body:isDestroyed() then
+        love.graphics.rectangle("fill", d.body:getX(), d.body:getY(), 4, 5)
+      end
+    end
+    love.graphics.setColor(d1, d2, d3, d4)
     enemy.anim:draw(enemy.spriteSheet, enemy.body:getX(), enemy.body:getY(), nil, 4, nil, 6, 9)
     if enemy.health > 0 then
       love.graphics.setColor(1, 0, 0, 1)
@@ -142,7 +177,7 @@ function enemyFabric.new()
 
   function enemy.colisionWithShot(f)
     if f == enemy.fixture then
-      enemy.health = enemy.health - 10
+      enemy.health = enemy.health - 100
     end
   end
 
