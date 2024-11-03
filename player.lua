@@ -79,6 +79,9 @@ function player.update(dt)
     xv, yv = player.body:getLinearVelocity()
     player.body:setLinearVelocity(xv, 0)
   end
+  
+  xv, yv = player.body:getLinearVelocity()
+  player.direction = physics.calculateDirection(xv, yv, player.direction) -- 45'
 
   if isMoving == false then
     player.anim:gotoFrame(2)

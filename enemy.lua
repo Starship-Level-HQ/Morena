@@ -43,12 +43,12 @@ function enemyFabric.new()
         local speedY = 0
 
         if enemy.tick < 100 then
-          if enemy.body:getX() > playerX then
+          if enemy.body:getX() > playerX and math.abs(enemy.body:getX() - playerX) > 5 then
             speedX = -enemy.defaultSpeed
             enemy.anim = enemy.animations.left
             enemy.direction = "l"
             isMoving = true
-          elseif enemy.body:getX() < playerX then
+          elseif enemy.body:getX() < playerX and math.abs(enemy.body:getX() - playerX) > 5 then
             speedX = enemy.defaultSpeed
             enemy.anim = enemy.animations.right
             enemy.direction = "r"
@@ -74,6 +74,9 @@ function enemyFabric.new()
           enemy.anim = enemy.animations.down
           isMoving = false
         end
+
+        xv, yv = enemy.body:getLinearVelocity()
+        enemy.direction = physics.calculateDirection(xv, yv, enemy.direction) -- 45'
 
         if enemy.tick % 5 == 0 then
           enemy.shoot()
@@ -105,8 +108,8 @@ function enemyFabric.new()
         enemy.bloodDrops = physics.bloodDrops(enemy.body:getWorld(), enemy.body:getX(), enemy.body:getY())
       end
 
-  end
-  
+    end
+
     enemy.updateShots(dt)
     enemy.updateBloodDrops(dt)
 
@@ -124,7 +127,7 @@ function enemyFabric.new()
       table.remove(enemy.shots, i)
     end
   end
-  
+
   function enemy.updateBloodDrops(dt)
     local remShot = {}
 
@@ -149,7 +152,7 @@ function enemyFabric.new()
 
   function enemy.shoot()
     local shot = shots.new(cat.E_SHOT, enemy.body:getWorld(), enemy.body:getX(), enemy.body:getY(), 2, 5, 150, enemy.direction)
-  table.insert(enemy.shots, shot)
+    table.insert(enemy.shots, shot)
   end
 
   function enemy.draw(t, d1, d2, d3, d4)
@@ -159,7 +162,7 @@ function enemyFabric.new()
         love.graphics.rectangle("fill", s.body:getX(), s.body:getY(), s.h, s.w)
       end
     end
-    
+
     love.graphics.setColor(1, 0, 0, 1)
     for i, d in ipairs(enemy.bloodDrops) do
       if not d.body:isDestroyed() then
@@ -177,7 +180,7 @@ function enemyFabric.new()
 
   function enemy.colisionWithShot(f)
     if f == enemy.fixture then
-      enemy.health = enemy.health - 100
+      enemy.health = enemy.health - 10
     end
   end
 

@@ -20,8 +20,16 @@ function shotFabric.new(category, world, x, y, h, w, lifeTime, dir)
     shot.body:setLinearVelocity(-100, 0)
   elseif dir == "u" then
     shot.body:setLinearVelocity(0, -100)
-  else
+  elseif dir == "d" then
     shot.body:setLinearVelocity(0, 100)
+  elseif dir == "ld" then
+    shot.body:setLinearVelocity(-100, 100)
+  elseif dir == "lu" then
+    shot.body:setLinearVelocity(-100, -100)
+  elseif dir == "ru" then
+    shot.body:setLinearVelocity(100, -100)
+  elseif dir == "rd" then
+    shot.body:setLinearVelocity(100, 100)
   end
   
   function shot.update(remShot, i)
