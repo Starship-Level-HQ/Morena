@@ -104,9 +104,15 @@ end
 
 function level.keypressed(key)
     if key == " " or key == "space" then
+      if player.attackType then
+        player.slash(shotSound)
+      else
         player.shoot(shotSound)
+      end
     elseif key == "q" then
-        day = not day
+      day = not day
+    elseif key == "1" then
+      player.attackType = not player.attackType
     end
 end
 
@@ -127,7 +133,7 @@ function level.collisionOnEnter(fixture_a, fixture_b, contact)
   
   if fixture_b:getCategory() == cat.P_SHOT and fixture_a:getCategory() == cat.ENEMY then
     for i, e in ipairs(enemies) do
-      e.colisionWithShot(fixture_a)
+      e.colisionWithShot(fixture_a, player.damage)
       fixture_b:getBody():destroy()
       fixture_b:destroy()
       end

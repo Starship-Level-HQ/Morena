@@ -43,6 +43,9 @@ function physics.bloodDrops(world, x, y)
 end
 
 function physics.calculateDirection(xv, yv, d)
+ if xv == 0 and yv == 0 then
+   return d
+end
  if d == "l" then
     if yv > 0 then
       return "ld"

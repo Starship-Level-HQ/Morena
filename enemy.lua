@@ -38,7 +38,7 @@ function enemyFabric.new()
 
       local isMoving = false
 
-      if math.sqrt((enemy.body:getX() - playerX)^2 + (enemy.body:getY() - playerY)^2) < 200 then
+      if math.sqrt((enemy.body:getX() - playerX)^2 + (enemy.body:getY() - playerY)^2) < 210 then
         local speedX = 0
         local speedY = 0
 
@@ -120,7 +120,7 @@ function enemyFabric.new()
 
     -- update the shots
     for i, s in ipairs(enemy.shots) do
-      s.update(remShot, i)
+      s.update(remShot, i, dt)
     end
 
     for i, s in ipairs(remShot) do
@@ -178,9 +178,9 @@ function enemyFabric.new()
     love.graphics.setColor(d1, d2, d3, d4)
   end
 
-  function enemy.colisionWithShot(f)
+  function enemy.colisionWithShot(f, damage)
     if f == enemy.fixture then
-      enemy.health = enemy.health - 10
+      enemy.health = enemy.health - damage
     end
   end
 
