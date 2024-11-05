@@ -1,6 +1,4 @@
 local enemyFabric = {}
-local cat = require("objectsCategories")
-local physics = require("physics")
 
 function enemyFabric.new()
 
@@ -13,9 +11,11 @@ function enemyFabric.new()
     enemy.shape = love.physics.newRectangleShape(22, 29) --размер коллайдера
     enemy.fixture = love.physics.newFixture(enemy.body, enemy.shape, 1) --коллайдер
     enemy.fixture:setCategory(cat.ENEMY) 
-    enemy.fixture:setMask(cat.E_SHOT, cat.VOID) 
+    enemy.fixture:setMask(cat.E_SHOT, cat.VOID, cat.DASHING_PLAYER) 
+    enemy.body:setGravityScale(0)
     enemy.health = 100
     enemy.shots = {} -- holds our fired shots
+    enemy.bloodDrops = {}
 
     enemy.spriteSheet = love.graphics.newImage('sprites/enemy-sheet.png')
     enemy.grid = anim8.newGrid(12, 18, enemy.spriteSheet:getWidth(), enemy.spriteSheet:getHeight())
@@ -26,6 +26,7 @@ function enemyFabric.new()
     enemy.animations.left = anim8.newAnimation(enemy.grid('1-4', 2), 0.2)
 
     enemy.anim = enemy.animations.left
+    enemy.direction = "l"
     enemy.isAlive = true
     enemy.tick = x+y % 150
 
@@ -37,28 +38,32 @@ function enemyFabric.new()
 
       local isMoving = false
 
-      if math.sqrt((enemy.body:getX() - playerX)^2 + (enemy.body:getY() - playerY)^2) < 200 then
+      if math.sqrt((enemy.body:getX() - playerX)^2 + (enemy.body:getY() - playerY)^2) < 210 then
         local speedX = 0
         local speedY = 0
 
         if enemy.tick < 100 then
-          if enemy.body:getX() > playerX then
+          if enemy.body:getX() > playerX and math.abs(enemy.body:getX() - playerX) > 5 then
             speedX = -enemy.defaultSpeed
             enemy.anim = enemy.animations.left
+            enemy.direction = "l"
             isMoving = true
-          elseif enemy.body:getX() < playerX then
+          elseif enemy.body:getX() < playerX and math.abs(enemy.body:getX() - playerX) > 5 then
             speedX = enemy.defaultSpeed
             enemy.anim = enemy.animations.right
+            enemy.direction = "r"
             isMoving = true
           end
 
           if enemy.body:getY() > playerY and math.abs(enemy.body:getY() - playerY) > 5 then
             speedY = -enemy.defaultSpeed
             enemy.anim = enemy.animations.up
+            enemy.direction = "u"
             isMoving = true
           elseif enemy.body:getY() < playerY and math.abs(enemy.body:getY() - playerY) > 5 then
             speedY = enemy.defaultSpeed
             enemy.anim = enemy.animations.down
+            enemy.direction = "d"
             isMoving = true
           end
 
@@ -69,6 +74,9 @@ function enemyFabric.new()
           enemy.anim = enemy.animations.down
           isMoving = false
         end
+
+        xv, yv = enemy.body:getLinearVelocity()
+        enemy.direction = physics.calculateDirection(xv, yv, enemy.direction) -- 45'
 
         if enemy.tick % 5 == 0 then
           enemy.shoot()
@@ -97,10 +105,14 @@ function enemyFabric.new()
         enemy.anim:update(dt)
         enemy.fixture:destroy()
         enemy.isAlive = false
+        enemy.bloodDrops = physics.bloodDrops(enemy.body:getWorld(), enemy.body:getX(), enemy.body:getY())
       end
 
     end
+
     enemy.updateShots(dt)
+    enemy.updateBloodDrops(dt)
+
   end
 
   function enemy.updateShots(dt)
@@ -108,15 +120,7 @@ function enemyFabric.new()
 
     -- update the shots
     for i, s in ipairs(enemy.shots) do
-
-      -- mark shots that are not visible for removal
-      if s.body.body:isDestroyed() or s.body.body:getX() < 0 or s.body.body:getY() < 0 or s.body.body:getX() > 700 or s.body.body:getY() > 700 then
-        table.insert(remShot, i)
-        if not s.body.body:isDestroyed() then
-          s.body.fixture:destroy()
-          s.body.body:destroy()
-        end
-      end
+      s.update(remShot, i, dt)
     end
 
     for i, s in ipairs(remShot) do
@@ -124,32 +128,48 @@ function enemyFabric.new()
     end
   end
 
-  function enemy.shoot()
-    local shot = {}
-    shot.body = physics.makeBody(enemy.body:getWorld(), enemy.body:getX(), enemy.body:getY(), 2, 5, "dynamic")
-    shot.body.fixture:setCategory(cat.E_SHOT)
-    shot.body.fixture:setMask(cat.TEXTURE, cat.P_SHOT, cat.E_SHOT)
-    if enemy.anim == enemy.animations.right then
-      shot.body.body:setLinearVelocity(100, 0)
-    elseif enemy.anim == enemy.animations.left then
-      shot.body.body:setLinearVelocity(-100, 0)
-    elseif enemy.anim == enemy.animations.up then
-      shot.body.body:setLinearVelocity(0, -100)
-    else
-      shot.body.body:setLinearVelocity(0, 100)
+  function enemy.updateBloodDrops(dt)
+    local remShot = {}
+
+    for i, d in ipairs(enemy.bloodDrops) do
+      d.time = d.time + 1
+      if not d.body:isDestroyed() then
+        d.body:setGravityScale(d.time)
+      end
+      if d.time > 100 then
+        table.insert(remShot, i)
+        if not d.body:isDestroyed() then
+          d.fixture:destroy()
+          d.body:destroy()
+        end
+      end
     end
 
+    for i, d in ipairs(remShot) do
+      table.remove(enemy.bloodDrops, d)
+    end
+  end
+
+  function enemy.shoot()
+    local shot = shots.new(cat.E_SHOT, enemy.body:getWorld(), enemy.body:getX(), enemy.body:getY(), 2, 5, 150, enemy.direction)
     table.insert(enemy.shots, shot)
   end
 
   function enemy.draw(t, d1, d2, d3, d4)
 
     for i, s in ipairs(enemy.shots) do
-      if not s.body.body:isDestroyed() then
-        love.graphics.rectangle("fill", s.body.body:getX(), s.body.body:getY(), 2, 5)
+      if not s.body:isDestroyed() then
+        love.graphics.rectangle("fill", s.body:getX(), s.body:getY(), s.h, s.w)
       end
     end
 
+    love.graphics.setColor(1, 0, 0, 1)
+    for i, d in ipairs(enemy.bloodDrops) do
+      if not d.body:isDestroyed() then
+        love.graphics.rectangle("fill", d.body:getX(), d.body:getY(), 4, 5)
+      end
+    end
+    love.graphics.setColor(d1, d2, d3, d4)
     enemy.anim:draw(enemy.spriteSheet, enemy.body:getX(), enemy.body:getY(), nil, 4, nil, 6, 9)
     if enemy.health > 0 then
       love.graphics.setColor(1, 0, 0, 1)
@@ -158,9 +178,9 @@ function enemyFabric.new()
     love.graphics.setColor(d1, d2, d3, d4)
   end
 
-  function enemy.colisionWithShot(f)
+  function enemy.colisionWithShot(f, damage)
     if f == enemy.fixture then
-      enemy.health = enemy.health - 10
+      enemy.health = enemy.health - damage
     end
   end
 

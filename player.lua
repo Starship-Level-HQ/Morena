@@ -1,6 +1,5 @@
 local player = {}
-local cat = require("objectsCategories")
-local physics = require("physics")
+shots = require("shot")
 
 function player.init(world, x, y)
   player.speed = 150
@@ -11,7 +10,11 @@ function player.init(world, x, y)
   player.fixture:setCategory(cat.PLAYER) -- Категория объектов, к которой относится игрок
   player.fixture:setMask(cat.P_SHOT, cat.VOID) -- Категории, которые игрок игнорирует (свои выстрелы и пустоту)
   player.shots = {}                                                      -- holds our fired shots
+  player.slashes = {}
   player.health = 100
+  player.body:setGravityScale(0)
+  player.attackType = true
+  player.damage = 10
 
   player.spriteSheet = love.graphics.newImage('sprites/player-sheet.png')
   player.grid = anim8.newGrid(12, 18, player.spriteSheet:getWidth(), player.spriteSheet:getHeight())
@@ -22,6 +25,7 @@ function player.init(world, x, y)
   player.animations.left = anim8.newAnimation(player.grid('1-4', 2), 0.2)
 
   player.anim = player.animations.left
+  player.direction = "l"
 
   --Рывок
   player.isDashing = false
@@ -46,14 +50,16 @@ function player.update(dt)
   end
 
   if love.keyboard.isDown("left") then
-    xv, yv = player.body:getLinearVelocity() -- повторяется в 6 местах, но если просто вынести перед ифами, то наискосок идёт только при отпускании первой нажатой клавиши (значения xv, xy не обновляются). Наверное можно сделать красиво, но надо думать.
+    xv, yv = player.body:getLinearVelocity()
     player.body:setLinearVelocity(-speed, yv)
     player.anim = player.animations.left
+    player.direction = "l"
     isMoving = true
   elseif love.keyboard.isDown("right") then
     xv, yv = player.body:getLinearVelocity()
     player.body:setLinearVelocity(speed, yv)
     player.anim = player.animations.right
+    player.direction = "r"
     isMoving = true
   else
     xv, yv = player.body:getLinearVelocity()
@@ -64,16 +70,21 @@ function player.update(dt)
     xv, yv = player.body:getLinearVelocity()
     player.body:setLinearVelocity(xv, -speed)
     player.anim = player.animations.up
+    player.direction = "u"
     isMoving = true
   elseif love.keyboard.isDown("down") then
     xv, yv = player.body:getLinearVelocity()
     player.body:setLinearVelocity(xv, speed)
     player.anim = player.animations.down
+    player.direction = "d"
     isMoving = true
   else
     xv, yv = player.body:getLinearVelocity()
     player.body:setLinearVelocity(xv, 0)
   end
+  
+  xv, yv = player.body:getLinearVelocity()
+  player.direction = physics.calculateDirection(xv, yv, player.direction) -- 45'
 
   if isMoving == false then
     player.anim:gotoFrame(2)
@@ -82,11 +93,12 @@ function player.update(dt)
   if love.keyboard.isDown("lshift") and not player.isDashing and player.dashCooldownLeft <= 0 then
     player.isDashing = true
     player.dashTimeLeft = player.dashDuration
-    player.fixture:setCategory(cat.VOID)
+    player.fixture:setCategory(cat.DASHING_PLAYER)
   end
   player.updateDash(dt)
   player.anim:update(dt)
   player.updateShots(dt)
+  player.updateSlash(dt)
 end
 
 function player.updateShots(dt)
@@ -94,15 +106,7 @@ function player.updateShots(dt)
 
   -- update the shots
   for i, s in ipairs(player.shots) do
-
-    -- mark shots that are not visible for removal
-    if s.body.body:isDestroyed() or s.body.body:getX() < 0 or s.body.body:getY() < 0 or s.body.body:getX() > 700 or s.body.body:getY() > 700 then
-      table.insert(remShot, i)
-      if not s.body.body:isDestroyed() then
-        s.body.fixture:destroy()
-        s.body.body:destroy()
-      end
-    end
+    s.update(remShot, i, dt)
   end
 
   for i, s in ipairs(remShot) do
@@ -111,23 +115,30 @@ function player.updateShots(dt)
 end
 
 function player.shoot(shotSound)
-  if #player.shots >= 5 then return end
-  local shot = {}
-  shot.body = physics.makeBody(player.body:getWorld(), player.body:getX(), player.body:getY(), 2, 5, "dynamic")
-  shot.body.fixture:setCategory(cat.P_SHOT)
-  shot.body.fixture:setMask(cat.TEXTURE, cat.E_SHOT)
-  if player.anim == player.animations.right then
-    shot.body.body:setLinearVelocity(100, 0)
-  elseif player.anim == player.animations.left then
-    shot.body.body:setLinearVelocity(-100, 0)
-  elseif player.anim == player.animations.up then
-    shot.body.body:setLinearVelocity(0, -100)
-  else
-    shot.body.body:setLinearVelocity(0, 100)
-  end
-
+  --if #player.shots >= 5 then return end
+  local shot = shots.new(cat.P_SHOT, player.body:getWorld(), player.body:getX(), player.body:getY(), 2, 5, 200, player.direction)
   table.insert(player.shots, shot)
   love.audio.play(shotSound)
+end
+
+function player.slash(slashSound)
+  if #player.slashes >= 1 then return end
+  local shot = shots.new(cat.P_SHOT, player.body:getWorld(), player.body:getX(), player.body:getY(), 15, 15, 13, player.direction, 3)
+  table.insert(player.slashes, shot)
+  love.audio.play(slashSound)
+end
+
+function player.updateSlash(dt)
+  local remShot = {}
+
+  -- update the shots
+  for i, s in ipairs(player.slashes) do
+    s.update(remShot, i, dt)
+  end
+
+  for i, s in ipairs(remShot) do
+    table.remove(player.slashes, i)
+  end
 end
 
 function player.updateDash(dt)
@@ -169,10 +180,15 @@ function player.updateDash(dt)
 end
 
 function player.draw(t, d1, d2, d3, d4)
-
   for i, s in ipairs(player.shots) do
-    if not s.body.body:isDestroyed() then
-      love.graphics.rectangle("fill", s.body.body:getX(), s.body.body:getY(), 2, 5)
+    if not s.body:isDestroyed() then
+      love.graphics.rectangle("fill", s.body:getX(), s.body:getY(), s.h, s.w)
+    end
+  end
+  
+  for i, s in ipairs(player.slashes) do
+    if not s.body:isDestroyed() then
+      s:draw()
     end
   end
 
