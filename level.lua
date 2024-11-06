@@ -48,7 +48,7 @@ function level.startLevel(levelNumber)
     
     for i = 1, 3 do
         local e = enemy.new()
-        e.init(world,levelData.enemyPositions[i][1], levelData.enemyPositions[i][2])
+        e.init(world,levelData.enemyPositions[i][1], levelData.enemyPositions[i][2], i%2 == 0)
         table.insert(enemies, e)
     end
 
@@ -118,11 +118,11 @@ end
 
 function level.collisionOnEnter(fixture_a, fixture_b, contact)
   if fixture_a:getCategory() == cat.PLAYER and fixture_b:getCategory() == cat.ENEMY then
-    player.collisionWithEnemy(fixture_b)
+    player.collisionWithEnemy(fixture_b, 10)
   end
   
   if fixture_a:getCategory() == cat.PLAYER and fixture_b:getCategory() == cat.E_SHOT then
-    player.collisionWithShot()
+    player.collisionWithShot(5)
     fixture_b:getBody():destroy()
     fixture_b:destroy()
   end

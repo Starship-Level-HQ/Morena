@@ -63,7 +63,7 @@ function shotFabric.new(category, world, x, y, h, w, lifeTime, dir, speed)
   end
   
   function shot.draw()
-    shot.anim:draw(shotFabric.slashSprite, shot.body:getX(), shot.body:getY(), nil, 4, nil, 6, 9)
+    shot.anim:draw(shotFabric.slashSprite, shot.body:getX(), shot.body:getY(), nil, 4, nil, 5, 5)
   end
 
   return shot

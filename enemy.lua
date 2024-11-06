@@ -4,12 +4,12 @@ function enemyFabric.new()
 
   local enemy = {}
 
-  function enemy.init(world, x, y)
+  function enemy.init(world, x, y, canShoot)
     enemy.defaultSpeed = 40
     enemy.body = love.physics.newBody(world, x, y, "dynamic") --тело для движения и отрисовки
     --enemy.body:setMass(49)
-    enemy.shape = love.physics.newRectangleShape(22, 29) --размер коллайдера
-    enemy.fixture = love.physics.newFixture(enemy.body, enemy.shape, 1) --коллайдер
+    enemy.shape = love.physics.newRectangleShape(23, 59) --размер коллайдера
+    enemy.fixture = love.physics.newFixture(enemy.body, enemy.shape, 0) --коллайдер
     enemy.fixture:setCategory(cat.ENEMY) 
     enemy.fixture:setMask(cat.E_SHOT, cat.VOID, cat.DASHING_PLAYER) 
     enemy.body:setGravityScale(0)
@@ -29,6 +29,7 @@ function enemyFabric.new()
     enemy.direction = "l"
     enemy.isAlive = true
     enemy.tick = x+y % 150
+    enemy.canShoot = canShoot
 
   end
 
@@ -78,8 +79,10 @@ function enemyFabric.new()
         xv, yv = enemy.body:getLinearVelocity()
         enemy.direction = physics.calculateDirection(xv, yv, enemy.direction) -- 45'
 
-        if enemy.tick % 5 == 0 then
-          enemy.shoot()
+        if enemy.canShoot then
+          if enemy.tick % 5 == 0 then
+            enemy.shoot()
+          end
         end
 
         enemy.tick = enemy.tick + 1
@@ -170,6 +173,7 @@ function enemyFabric.new()
       end
     end
     love.graphics.setColor(d1, d2, d3, d4)
+    --love.graphics.polygon("fill", enemy.body:getWorldPoints(enemy.shape:getPoints()))
     enemy.anim:draw(enemy.spriteSheet, enemy.body:getX(), enemy.body:getY(), nil, 4, nil, 6, 9)
     if enemy.health > 0 then
       love.graphics.setColor(1, 0, 0, 1)
