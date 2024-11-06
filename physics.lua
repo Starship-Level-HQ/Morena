@@ -31,13 +31,15 @@ end
 
 function physics.bloodDrops(world, x, y)
   drops = {}
-  for i = 1, 8 do
-    local drop = physics.makeBody(world, x, y, 2, 5, "dynamic")
-    drop.body:setLinearVelocity(50*(5-i), -150 * (i%3))
-    drop.time = 0
-    drop.fixture:setCategory(cat.VOID)
-    drop.fixture:setMask(cat.VOID)
-    table.insert(drops, drop)
+  if userConfig.blood then
+    for i = 1, 8 do
+      local drop = physics.makeBody(world, x, y, 2, 5, "dynamic")
+      drop.body:setLinearVelocity(50*(5-i), -150 * (i%3))
+      drop.time = 0
+      drop.fixture:setCategory(cat.VOID)
+      drop.fixture:setMask(cat.VOID)
+      table.insert(drops, drop)
+    end
   end
   return drops
 end

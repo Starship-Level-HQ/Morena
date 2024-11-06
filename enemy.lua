@@ -101,14 +101,7 @@ function enemyFabric.new()
       enemy.anim:update(dt)
 
       if enemy.health <= 0 then
-        enemy.body:setLinearVelocity(0, 0)
-        enemy.spriteSheet = love.graphics.newImage('sprites/enemy-dead.png')
-        enemy.grid = anim8.newGrid(12, 18, enemy.spriteSheet:getWidth(), enemy.spriteSheet:getHeight())
-        enemy.anim = anim8.newAnimation(enemy.grid('1-1', 1), 0.2)
-        enemy.anim:update(dt)
-        enemy.fixture:destroy()
-        enemy.isAlive = false
-        enemy.bloodDrops = physics.bloodDrops(enemy.body:getWorld(), enemy.body:getX(), enemy.body:getY())
+        enemy.die(dt)
       end
 
     end
@@ -116,6 +109,21 @@ function enemyFabric.new()
     enemy.updateShots(dt)
     enemy.updateBloodDrops(dt)
 
+  end
+
+  function enemy.die(dt)
+    enemy.body:setLinearVelocity(0, 0)
+    enemy.spriteSheet = love.graphics.newImage('sprites/enemy-dead.png')
+    enemy.grid = anim8.newGrid(12, 18, enemy.spriteSheet:getWidth(), enemy.spriteSheet:getHeight())
+    if userConfig.blood then
+      enemy.anim = anim8.newAnimation(enemy.grid('1-1', 1), 0.2)
+    else
+      enemy.anim = anim8.newAnimation(enemy.grid('2-2', 1), 0.2)
+    end
+    enemy.anim:update(dt)
+    enemy.fixture:destroy()
+    enemy.isAlive = false
+    enemy.bloodDrops = physics.bloodDrops(enemy.body:getWorld(), enemy.body:getX(), enemy.body:getY())
   end
 
   function enemy.updateShots(dt)
