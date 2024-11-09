@@ -1,8 +1,9 @@
+require("logger")
 local menu = require("menu")
 local level = require("level")
 
 -- Глобальная переменная для состояния игры
-gameState = "menu"  -- Начальное состояние — меню
+gameState = "menu" -- Начальное состояние — меню
 userConfig = require("userConfig")
 
 function love.load()
