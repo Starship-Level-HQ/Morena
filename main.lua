@@ -1,12 +1,11 @@
 require("logger")
-require("libraries/anim8")
-sti = require("libraries/sti")
-camera = require("libraries/camera")
-cat = require("objectsCategories")
-
 local menu = require("menu")
 local level = require("level")
 local multiplayer = require("multiplayer")
+sti = require("libraries/sti")
+camera = require("libraries/camera")
+cat = require("objectsCategories")
+require("libraries/anim8")
 
 -- Глобальная переменная для состояния игры
 gameState = "menu"  -- Начальное состояние — меню

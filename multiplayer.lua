@@ -1,8 +1,8 @@
 require("client")
 require("player")
-
+require("enemy")
 local physics = require("physics")
-local enemyFabric = require("enemy")
+
 
 local multiplayer = {}
 local cam
@@ -10,7 +10,6 @@ local gameMap
 local world
 local lake
 local day
-local enemy
 
 local multiplayerInit = {
     map = "maps/testMap.lua",
@@ -28,9 +27,8 @@ function multiplayer.startMultiplayer()
     world:setGravity(0, 40)
     world:setCallbacks(multiplayerInit.collisionOnEnter)
 
-    player = player.new(world, multiplayerInit.playerPosition[1], multiplayerInit.playerPosition[2])
-    enemy = enemyFabric.new()
-    enemy.init(world, multiplayerInit.enemyPosition[1], multiplayerInit.enemyPosition[2])
+    player = Player.new(world, multiplayerInit.playerPosition[1], multiplayerInit.playerPosition[2])
+    enemy = Enemy.new(world, multiplayerInit.enemyPosition[1], multiplayerInit.enemyPosition[2])
     day = true
 
     lake = physics.makeBody(world, multiplayerInit.lakePosition[1], multiplayerInit.lakePosition[2], 80, 80, "static")
@@ -45,7 +43,7 @@ end
 function multiplayer.update(dt)
     player:update(dt)
     world:update(dt)
-    enemy.update(dt, player.body:getX(), player.body:getY())
+    enemy:update(dt, player.body:getX(), player.body:getY())
 
     hub:getMessage()
     hub:sendMessage({
@@ -93,9 +91,7 @@ function multiplayer.draw()
     -- Отрисовка других игроков
     for _, client in pairs(otherPlayers) do
         local clientAnim = player.animations[client.anim] or player.animations.left
-        clientAnim:draw(player.spriteSheet, client.x, client.y, nil, 4, nil, 6, 9)
-        love.graphics.setColor(0, 1, 0, 1)
-        love.graphics.print(player.health, player.body:getX() - 23, player.body:getY() - 65, 0, 2, 2)
+        clientAnim:draw(player.spriteSheet, client.x, client.y, nil, 2.1, nil, 12, 19)
     end
 
     cam:detach()

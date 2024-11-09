@@ -1,6 +1,6 @@
 shots = require("shot")
 
-player = {
+Player = {
     new = function(world, x, y)
         if not (world and x and y) then
             _log("Player requires parameters 'world', 'x', and 'y' to be specified")
@@ -11,8 +11,8 @@ player = {
         self.speed = 150
         self.defaultSpeed = 150
         self.body = love.physics.newBody(world, x, y, "dynamic")         -- тело для движения и отрисовки
-        self.shape = love.physics.newRectangleShape(20, 28)              -- размер коллайдера
-        self.fixture = love.physics.newFixture(self.body, self.shape, 1) -- коллайдер
+        self.shape = love.physics.newRectangleShape(33, 58)              -- размер коллайдера
+        self.fixture = love.physics.newFixture(self.body, self.shape, 0) -- коллайдер
         self.fixture:setCategory(cat.PLAYER)                             -- Категория объектов, к которой относится игрок
         self.fixture:setMask(cat.P_SHOT, cat.VOID)                       -- Категории, которые игрок игнорирует (свои выстрелы и пустоту)
         self.shots = {}                                                  -- holds our fired shots
@@ -22,13 +22,13 @@ player = {
         self.attackType = true
         self.damage = 10
 
-        self.spriteSheet = love.graphics.newImage('sprites/player-sheet.png')
-        self.grid = anim8.newGrid(12, 18, self.spriteSheet:getWidth(), self.spriteSheet:getHeight())
+        self.spriteSheet = love.graphics.newImage('sprites/MC.png')
+        self.grid = anim8.newGrid(24, 36, self.spriteSheet:getWidth(), self.spriteSheet:getHeight())
         self.animations = {}
-        self.animations.down = anim8.newAnimation(self.grid('1-4', 1), 0.2)
-        self.animations.up = anim8.newAnimation(self.grid('1-4', 4), 0.2)
-        self.animations.right = anim8.newAnimation(self.grid('1-4', 3), 0.2)
-        self.animations.left = anim8.newAnimation(self.grid('1-4', 2), 0.2)
+        self.animations.down = anim8.newAnimation(self.grid('1-4', 1), 0.17)
+        self.animations.up = anim8.newAnimation(self.grid('1-4', 4), 0.17)
+        self.animations.right = anim8.newAnimation(self.grid('1-4', 3), 0.17)
+        self.animations.left = anim8.newAnimation(self.grid('1-4', 2), 0.17)
 
         self.anim = self.animations.left
         self.direction = "l"
@@ -114,7 +114,7 @@ player = {
                 s.update(remShot, i, dt)
             end
 
-            for i, s in ipairs(remShot) do
+            for i, _ in ipairs(remShot) do
                 table.remove(self.shots, i)
             end
         end
@@ -122,15 +122,15 @@ player = {
         function self:shoot(shotSound)
             --if #self.shots >= 5 then return end
             local shot = shots.new(cat.P_SHOT, self.body:getWorld(), self.body:getX(), self.body:getY(), 2, 5, 200,
-                self.direction)
+                self.direction, self.damage)
             table.insert(self.shots, shot)
             love.audio.play(shotSound)
         end
 
         function self:slash(slashSound)
             if #self.slashes >= 1 then return end
-            local shot = shots.new(cat.P_SHOT, self.body:getWorld(), self.body:getX(), self.body:getY(), 15, 15, 13,
-                self.direction, 3)
+            local shot = shots.new(cat.P_SHOT, self.body:getWorld(), self.body:getX(), self.body:getY(), 30, 30, 13,
+                self.direction, self.damage, 3)
             table.insert(self.slashes, shot)
             love.audio.play(slashSound)
         end
@@ -143,7 +143,7 @@ player = {
                 s.update(remShot, i, dt)
             end
 
-            for i, s in ipairs(remShot) do
+            for i, _ in ipairs(remShot) do
                 table.remove(self.slashes, i)
             end
         end
@@ -196,16 +196,18 @@ player = {
             for i, s in ipairs(self.slashes) do
                 if not s.body:isDestroyed() then
                     s:draw()
+                    --love.graphics.polygon("fill", s.body:getWorldPoints(s.shape:getPoints()))
                 end
             end
 
-            self.anim:draw(self.spriteSheet, self.body:getX(), self.body:getY(), nil, 4, nil, 6, 9)
+            --love.graphics.polygon("fill", player.body:getWorldPoints(player.shape:getPoints()))
+            self.anim:draw(self.spriteSheet, self.body:getX(), self.body:getY(), nil, 2.1, nil, 12, 19)
 
             --След
             love.graphics.setColor(0.7, 0.7, 0.9, 0.2)
             for i = #self.trail, 1, -1 do
                 local t = self.trail[i]
-                t.anim:draw(self.spriteSheet, t.x, t.y, nil, 4, nil, 6, 9)
+                t.anim:draw(self.spriteSheet, t.x, t.y, nil, 2, nil, 12, 19)
             end
 
             love.graphics.setColor(0, 1, 0, 1)
@@ -214,14 +216,14 @@ player = {
             love.graphics.setColor(d1, d2, d3, d4)
         end
 
-        function self:collisionWithEnemy(fixture_b)
-            self.health = self.health - 5
+        function self:collisionWithEnemy(fixture_b, damage)
+            self.health = self.health - damage
             xi, yi = fixture_b:getBody():getLinearVelocity()
             self.body:applyLinearImpulse(xi * 55, yi * 55) --отскок игрока при получении урона, пока слишком резкий, если получится сделать плавным - оставим
         end
 
-        function self:collisionWithShot()
-            self.health = self.health - 10
+        function self:collisionWithShot(damage)
+            self.health = self.health - damage
         end
 
         return self
