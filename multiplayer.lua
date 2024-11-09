@@ -1,75 +1,66 @@
-local level = {}
+local multiplayer = {}
 
 cat = require("objectsCategories")
-
+require("client")
 local physics = require("physics")
 local player = require("player")
-local enemy = require("enemy")
+local enemyFabric = require("enemy")
 local camera = require 'libraries/camera'
 anim8 = require 'libraries/anim8'
 local sti = require 'libraries/sti'
 
-local enemies
 local cam
 local gameMap
 local world
 local lake
 local day
+local enemy
 
-local levels = {
-    {
-        map = "maps/testMap.lua",
-        playerPosition = { 300, 450 },
-        enemyPositions = { { 600, 100 }, { 600, 200 }, { 600, 300 } },
-        lakePosition = { 400, 550 }
-    },
-    {
-        map = "maps/testMap.lua",
-        playerPosition = { 100, 200 },
-        enemyPositions = { { 400, 100 }, { 500, 200 }, { 600, 300 }, { 700, 400 } },
-        lakePosition = { 300, 400 }
-    }
-    -- Добавляйте больше уровней с разными настройками
+local multiplayerInit = {
+    map = "maps/testMap.lua",
+    playerPosition = { 300, 450 },
+    enemyPosition = { 600, 100 },
+    lakePosition = { 400, 550 }
 }
 
+function multiplayer.startMultiplayer()
+    hub = client.new({ server = "127.0.0.1", port = 1337, gameState = player })
+    port = hub:subscribe({ channel = "MORENA" })
+    otherClients = hub:getOtherClients()
 
-function level.startLevel(levelNumber)
-    local levelData = levels[levelNumber]
-    love.window.setTitle("Morena - Level")
+    love.window.setTitle("Morena - Multiplayer")
     cam = camera()
     love.graphics.setDefaultFilter('nearest', 'nearest')
-    gameMap = sti(levelData.map)
+    gameMap = sti(multiplayerInit.map)
     world = love.physics.newWorld(0, 0, true)
     world:setGravity(0, 40)
-    world:setCallbacks(level.collisionOnEnter)
+    world:setCallbacks(multiplayerInit.collisionOnEnter)
 
-    player.init(world, levelData.playerPosition[1], levelData.playerPosition[2])
-    enemies = {}
+    player.init(world, multiplayerInit.playerPosition[1], multiplayerInit.playerPosition[2])
+    enemy = enemyFabric.new()
+    enemy.init(world, multiplayerInit.enemyPosition[1], multiplayerInit.enemyPosition[2])
     day = true
 
-    for i = 1, 3 do
-        local e = enemy.new()
-        e.init(world, levelData.enemyPositions[i][1], levelData.enemyPositions[i][2])
-        table.insert(enemies, e)
-    end
-
-    lake = physics.makeBody(world, levelData.lakePosition[1], levelData.lakePosition[2], 80, 80, "static")
+    lake = physics.makeBody(world, multiplayerInit.lakePosition[1], multiplayerInit.lakePosition[2], 80, 80, "static")
     lake.fixture:setCategory(cat.TEXTURE)
     shotSound = love.audio.newSource("sounds/shot.wav", "static")
 end
 
-function level.endLevel()
-    enemies = {}
-end
-
-function level.update(dt)
+function multiplayer.update(dt)
     player.update(dt)
-
-    for i, e in ipairs(enemies) do
-        e.update(dt, player.body:getX(), player.body:getY())
-    end
-
     world:update(dt)
+    enemy.update(dt, player.body:getX(), player.body:getY())
+
+    hub:getMessage()
+    hub:sendMessage({
+        port = port,
+        x    = player.body:getX(),
+        y    = player.body:getY(),
+        xv   = xv,
+        yv   = yv,
+        anim = player.direction
+    })
+
     cam:lookAt(player.body:getX(), player.body:getY())
 
     -- Ограничиваем камеру в границах карты
@@ -86,7 +77,7 @@ function level.update(dt)
     if cam.y > (mapH - h / 2) then cam.y = (mapH - h / 2) end
 end
 
-function level.draw()
+function multiplayer.draw()
     cam:attach()
     gameMap:drawLayer(gameMap.layers["grass"])
     gameMap:drawLayer(gameMap.layers["road"])
@@ -97,15 +88,21 @@ function level.draw()
     love.graphics.polygon("fill", lake.body:getWorldPoints(lake.shape:getPoints()))
 
     love.graphics.setColor(d1, d2, d3, d4)
-    for _, e in ipairs(enemies) do
-        e:draw(d1, d2, d3, d4)
+
+    -- Отрисовка себя
+    player:draw(d1, d2, d3, d4)
+    enemy:draw(d1, d2, d3, d4)
+
+    -- Отрисовка других игроков
+    for _, client in pairs(otherClients) do
+        local clientAnim = player.animations[client.anim] or player.animations.left
+        clientAnim:draw(player.spriteSheet, client.x, client.y, nil, 4, nil, 6, 9)
     end
 
-    player:draw(d1, d2, d3, d4)
     cam:detach()
 end
 
-function level.keypressed(key)
+function multiplayer.keypressed(key)
     if key == " " or key == "space" then
         if player.attackType then
             player.slash(shotSound)
@@ -119,7 +116,7 @@ function level.keypressed(key)
     end
 end
 
-function level.collisionOnEnter(fixture_a, fixture_b, contact)
+function multiplayer.collisionOnEnter(fixture_a, fixture_b, contact)
     if fixture_a:getCategory() == cat.PLAYER and fixture_b:getCategory() == cat.ENEMY then
         player.collisionWithEnemy(fixture_b)
     end
@@ -135,12 +132,10 @@ function level.collisionOnEnter(fixture_a, fixture_b, contact)
     end
 
     if fixture_b:getCategory() == cat.P_SHOT and fixture_a:getCategory() == cat.ENEMY then
-        for i, e in ipairs(enemies) do
-            e.colisionWithShot(fixture_a, player.damage)
-            fixture_b:getBody():destroy()
-            fixture_b:destroy()
-        end
+        enemy.colisionWithShot(fixture_a, player.damage)
+        fixture_b:getBody():destroy()
+        fixture_b:destroy()
     end
 end
 
-return level
+return multiplayer

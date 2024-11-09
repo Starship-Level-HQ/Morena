@@ -1,3 +1,3 @@
 function love.conf(t)
-    t.console = false -- Enable the console
+    t.console = true -- Enable the console
 end

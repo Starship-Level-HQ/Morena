@@ -1,8 +1,10 @@
+require("logger")
 local menu = require("menu")
 local level = require("level")
+local multiplayer = require("multiplayer")
 
 -- Глобальная переменная для состояния игры
-gameState = "menu"  -- Начальное состояние — меню
+gameState = "menu" -- Начальное состояние — меню
 
 function love.load()
     menu.load()
@@ -16,6 +18,8 @@ function love.update(dt)
         menu.update(dt)
     elseif gameState == "level" then
         level.update(dt)
+    elseif gameState == "multiplayer" then
+        multiplayer.update(dt)
     end
 end
 
@@ -24,6 +28,8 @@ function love.draw()
         menu.draw()
     elseif gameState == "level" then
         level.draw()
+    elseif gameState == "multiplayer" then
+        multiplayer.draw()
     end
 end
 
@@ -39,11 +45,19 @@ function love.keypressed(key)
         menu.load()
     elseif gameState == "level" then
         level.keypressed(key)
+    elseif gameState == "multiplayer" then
+        multiplayer.keypressed(key)
     end
 end
 
 function startLevel(levelNumber)
     gameState = "level"
-    print(levelNumber)
+    log(levelNumber)
     level.startLevel(levelNumber)
+end
+
+function startMultiplayer()
+    gameState = "multiplayer"
+    log(gameState)
+    multiplayer.startMultiplayer()
 end
