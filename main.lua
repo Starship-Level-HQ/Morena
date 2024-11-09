@@ -9,11 +9,8 @@ local level = require("level")
 local multiplayer = require("multiplayer")
 
 -- Глобальная переменная для состояния игры
-gameState = "menu" -- Начальное состояние — меню
-
-function love.conf(t)
-    t.console = DEBUG
-end
+gameState = "menu"  -- Начальное состояние — меню
+userConfig = require("userConfig")
 
 function love.load()
     menu.load()

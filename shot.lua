@@ -10,12 +10,13 @@ shotFabric.slashAnimations.down = anim8.newAnimation(shotFabric.slashGrid('1-4',
 shotFabric.slashAnimations.right = anim8.newAnimation(shotFabric.slashGrid('1-4', 2), 0.1)
 shotFabric.slashAnimations.left = anim8.newAnimation(shotFabric.slashGrid('1-4', 3), 0.1)
 
-function shotFabric.new(category, world, x, y, h, w, lifeTime, dir, speed)
+function shotFabric.new(category, world, x, y, h, w, lifeTime, dir, damage, speed)
   if speed == nil then
     speed = 1
   end
   local shot = physics.makeBody(world, x, y, h, w, "dynamic")
   shot.fixture:setCategory(category)
+  shot.fixture:setUserData(damage)
   shot.h = h
   shot.w = w
   if category == cat.P_SHOT then
@@ -63,7 +64,7 @@ function shotFabric.new(category, world, x, y, h, w, lifeTime, dir, speed)
   end
   
   function shot.draw()
-    shot.anim:draw(shotFabric.slashSprite, shot.body:getX(), shot.body:getY(), nil, 4, nil, 6, 9)
+    shot.anim:draw(shotFabric.slashSprite, shot.body:getX(), shot.body:getY(), nil, 4, nil, 5, 5)
   end
 
   return shot

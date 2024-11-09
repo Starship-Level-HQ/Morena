@@ -1,14 +1,14 @@
 local menu = {}
 local buttonStart = { x = 100, y = 100, width = 200, height = 50 }
 local buttonLevel2 = { x = 100, y = 170, width = 200, height = 50 }
-local buttonMultiplayer = { x = 100, y = 240, width = 200, height = 50 }
+local buttonConfig = { x = 100, y = 240, width = 200, height = 50 }
 local buttonExit = { x = 100, y = 310, width = 200, height = 50 }
 
 local background
 local character
 local buttonStartBackground
 local buttonLevel2Background
-local buttonMultiplayerBackground
+local buttonConfigBackground
 local buttonExitBackground
 
 -- Цвета для фона кнопок
@@ -60,12 +60,12 @@ end
 function menu.load()
     love.window.setTitle("Morena - Main Menu")
 
-    background = love.graphics.newImage('menu/backGround.png')
-    character = love.graphics.newImage("menu/character.png")
-
+    background = love.graphics.newImage('menu/backGround.png') 
+    character = love.graphics.newImage("menu/MC.png")   
+    
     buttonStartBackground = generateButtonBackhround(buttonStart)
     buttonLevel2Background = generateButtonBackhround(buttonLevel2)
-    buttonMultiplayerBackground = generateButtonBackhround(buttonMultiplayer)
+    buttonConfigBackground = generateButtonBackhround(buttonLevel2)
     buttonExitBackground = generateButtonBackhround(buttonExit)
 end
 
@@ -80,12 +80,11 @@ local function drawButton(button, buttonBackground, text)
 end
 
 function menu.draw()
-    love.graphics.draw(background, 0, 0, 0, love.graphics.getWidth() / background:getWidth(),
-        love.graphics.getHeight() / background:getHeight())
-    love.graphics.draw(character, 600, 500, 0, 3, 3)
+    love.graphics.draw(background, 0, 0, 0, love.graphics.getWidth() / background:getWidth(), love.graphics.getHeight() / background:getHeight())
+    love.graphics.draw(character, 560, 480, 0, 2, 2)    
     drawButton(buttonStart, buttonStartBackground, "Start Level 1")
     drawButton(buttonLevel2, buttonLevel2Background, "Start Level 2")
-    drawButton(buttonMultiplayer, buttonMultiplayerBackground, "Multiplayer")
+    drawButton(buttonConfig, buttonConfigBackground, "Settings")
     drawButton(buttonExit, buttonExitBackground, "Exit")
 end
 
@@ -99,8 +98,8 @@ function menu.mousepressed(x, y, button)
             startLevel(1)
         elseif isMouseOverButton(x, y, buttonLevel2) then
             startLevel(2)
-        elseif isMouseOverButton(x, y, buttonMultiplayer) then
-            startMultiplayer()
+        elseif isMouseOverButton(x, y, buttonConfig) then
+            userConfig.blood = not userConfig.blood
         elseif isMouseOverButton(x, y, buttonExit) then
             love.event.quit()
         end
