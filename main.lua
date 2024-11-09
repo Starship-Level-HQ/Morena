@@ -1,10 +1,19 @@
 require("logger")
+require("libraries/anim8")
+sti = require("libraries/sti")
+camera = require("libraries/camera")
+cat = require("objectsCategories")
+
 local menu = require("menu")
 local level = require("level")
 local multiplayer = require("multiplayer")
 
 -- Глобальная переменная для состояния игры
 gameState = "menu" -- Начальное состояние — меню
+
+function love.conf(t)
+    t.console = DEBUG
+end
 
 function love.load()
     menu.load()
@@ -40,7 +49,7 @@ function love.mousepressed(x, y, button, istouch, presses)
 end
 
 function love.keypressed(key)
-    if gameState == "level" and key == "escape" then
+    if gameState ~= "menu" and key == "escape" then
         gameState = "menu"
         menu.load()
     elseif gameState == "level" then

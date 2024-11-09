@@ -1,13 +1,10 @@
-local multiplayer = {}
-
-cat = require("objectsCategories")
 require("client")
+
 local physics = require("physics")
 local player = require("player")
 local enemyFabric = require("enemy")
-local camera = require 'libraries/camera'
-anim8 = require 'libraries/anim8'
-local sti = require 'libraries/sti'
+
+local multiplayer = {}
 
 local cam
 local gameMap

@@ -1,3 +1,5 @@
+DEBUG = false
+
 function love.conf(t)
-    t.console = true -- Enable the console
+    t.console = DEBUG
 end
