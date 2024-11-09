@@ -81,6 +81,10 @@ function level.update(dt)
 
     if cam.x > (mapW - w / 2) then cam.x = (mapW - w / 2) end
     if cam.y > (mapH - h / 2) then cam.y = (mapH - h / 2) end
+    
+    if player.health < 0 then
+      level.startLevel(1)
+    end
 end
 
 function level.draw()
