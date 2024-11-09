@@ -8,7 +8,7 @@ cat = require("objectsCategories")
 require("libraries/anim8")
 
 -- Глобальная переменная для состояния игры
-gameState = "menu"  -- Начальное состояние — меню
+gameState = "menu" -- Начальное состояние — меню
 userConfig = require("userConfig")
 
 function love.load()

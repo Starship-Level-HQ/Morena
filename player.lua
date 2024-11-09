@@ -186,6 +186,7 @@ Player = {
             end
         end
 
+
         function self:draw(t, d1, d2, d3, d4)
             for i, s in ipairs(self.shots) do
                 if not s.body:isDestroyed() then
