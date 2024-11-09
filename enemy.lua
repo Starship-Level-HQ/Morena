@@ -4,12 +4,12 @@ function enemyFabric.new()
 
   local enemy = {}
 
-  function enemy.init(world, x, y)
+  function enemy.init(world, x, y, canShoot)
     enemy.defaultSpeed = 40
     enemy.body = love.physics.newBody(world, x, y, "dynamic") --тело для движения и отрисовки
     --enemy.body:setMass(49)
-    enemy.shape = love.physics.newRectangleShape(22, 29) --размер коллайдера
-    enemy.fixture = love.physics.newFixture(enemy.body, enemy.shape, 1) --коллайдер
+    enemy.shape = love.physics.newRectangleShape(23, 59) --размер коллайдера
+    enemy.fixture = love.physics.newFixture(enemy.body, enemy.shape, 0) --коллайдер
     enemy.fixture:setCategory(cat.ENEMY) 
     enemy.fixture:setMask(cat.E_SHOT, cat.VOID, cat.DASHING_PLAYER) 
     enemy.body:setGravityScale(0)
@@ -29,6 +29,7 @@ function enemyFabric.new()
     enemy.direction = "l"
     enemy.isAlive = true
     enemy.tick = x+y % 150
+    enemy.canShoot = canShoot
 
   end
 
@@ -78,8 +79,10 @@ function enemyFabric.new()
         xv, yv = enemy.body:getLinearVelocity()
         enemy.direction = physics.calculateDirection(xv, yv, enemy.direction) -- 45'
 
-        if enemy.tick % 5 == 0 then
-          enemy.shoot()
+        if enemy.canShoot then
+          if enemy.tick % 5 == 0 then
+            enemy.shoot()
+          end
         end
 
         enemy.tick = enemy.tick + 1
@@ -98,14 +101,7 @@ function enemyFabric.new()
       enemy.anim:update(dt)
 
       if enemy.health <= 0 then
-        enemy.body:setLinearVelocity(0, 0)
-        enemy.spriteSheet = love.graphics.newImage('sprites/enemy-dead.png')
-        enemy.grid = anim8.newGrid(12, 18, enemy.spriteSheet:getWidth(), enemy.spriteSheet:getHeight())
-        enemy.anim = anim8.newAnimation(enemy.grid('1-1', 1), 0.2)
-        enemy.anim:update(dt)
-        enemy.fixture:destroy()
-        enemy.isAlive = false
-        enemy.bloodDrops = physics.bloodDrops(enemy.body:getWorld(), enemy.body:getX(), enemy.body:getY())
+        enemy.die(dt)
       end
 
     end
@@ -113,6 +109,21 @@ function enemyFabric.new()
     enemy.updateShots(dt)
     enemy.updateBloodDrops(dt)
 
+  end
+
+  function enemy.die(dt)
+    enemy.body:setLinearVelocity(0, 0)
+    enemy.spriteSheet = love.graphics.newImage('sprites/enemy-dead.png')
+    enemy.grid = anim8.newGrid(12, 18, enemy.spriteSheet:getWidth(), enemy.spriteSheet:getHeight())
+    if userConfig.blood then
+      enemy.anim = anim8.newAnimation(enemy.grid('1-1', 1), 0.2)
+    else
+      enemy.anim = anim8.newAnimation(enemy.grid('2-2', 1), 0.2)
+    end
+    enemy.anim:update(dt)
+    enemy.fixture:destroy()
+    enemy.isAlive = false
+    enemy.bloodDrops = physics.bloodDrops(enemy.body:getWorld(), enemy.body:getX(), enemy.body:getY())
   end
 
   function enemy.updateShots(dt)
@@ -151,7 +162,7 @@ function enemyFabric.new()
   end
 
   function enemy.shoot()
-    local shot = shots.new(cat.E_SHOT, enemy.body:getWorld(), enemy.body:getX(), enemy.body:getY(), 2, 5, 150, enemy.direction)
+    local shot = shots.new(cat.E_SHOT, enemy.body:getWorld(), enemy.body:getX(), enemy.body:getY(), 2, 5, 150, enemy.direction, 5)
     table.insert(enemy.shots, shot)
   end
 
@@ -170,6 +181,7 @@ function enemyFabric.new()
       end
     end
     love.graphics.setColor(d1, d2, d3, d4)
+    --love.graphics.polygon("fill", enemy.body:getWorldPoints(enemy.shape:getPoints()))
     enemy.anim:draw(enemy.spriteSheet, enemy.body:getX(), enemy.body:getY(), nil, 4, nil, 6, 9)
     if enemy.health > 0 then
       love.graphics.setColor(1, 0, 0, 1)
