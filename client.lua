@@ -8,7 +8,7 @@ client = {
     new = function(params) -- constructor method
         params = params
         if (not params.server or not params.port) then
-            log("Client requires server and port to be specified")
+            _log("Client requires server and port to be specified")
             return false
         end
         local self = {}
@@ -22,7 +22,7 @@ client = {
             self.channel = params.channel
             self.sock, err_msg = socket.connect(self.server, self.port)
             if (self.sock == nil) then
-                log("Client connection error: ", err_msg)
+                _log("Client connection error: ", err_msg)
                 return false
             end
             self.sock:setoption('tcp-nodelay', true) -- disable Nagle's algorithm for the connection
@@ -44,21 +44,21 @@ client = {
 
         function self:reconnect()
             if (not self.channel) then return false end
-            log("Client attempts to reconnect...")
+            _log("Client attempts to reconnect...")
             return self:subscribe({ channel = self.channel })
         end
 
         function self:sendMessage(message)
             -- TODO: add retries
             if (self.sock == nil) then
-                log("Client attempts to publish without valid subscription (bad socket)")
+                _log("Client attempts to publish without valid subscription (bad socket)")
                 self:reconnect()
                 return false
             end
             local err, err_msg, num_bytes = self.sock:send("__JSON__START__" ..
                 json.encode(message) .. "__JSON__END__")
             if (err == nil) then
-                log("Client publish error: ", err_msg, '  sent ', num_bytes, ' bytes')
+                _log("Client publish error: ", err_msg, '  sent ', num_bytes, ' bytes')
                 if (err_msg == 'closed') then self:reconnect() end
                 return false
             end
@@ -89,7 +89,7 @@ client = {
                         local data = json.decode(jsonData)
 
                         local _, port = self.sock:getsockname()
-                        log('MSG FROM SERVER: ', jsonData)
+                        _log('MSG FROM SERVER: ', jsonData)
                         if (data.alive) then
                             if port == data.port then
                                 if data.anim == "l" then
@@ -115,7 +115,8 @@ client = {
                                     y = data.y,
                                     xv = data.xv,
                                     yv = data.yv,
-                                    anim = data.anim
+                                    anim = data.anim,
+                                    health = data.health,
                                 }
                             end
                         else

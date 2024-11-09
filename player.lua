@@ -1,225 +1,229 @@
-local player = {}
 shots = require("shot")
 
-function player.init(world, x, y)
-  player.speed = 150
-  player.defaultSpeed = 150
-  player.body = love.physics.newBody(world, x, y, "dynamic")             --тело для движения и отрисовки
-  player.shape = love.physics.newRectangleShape(33, 58)                  --размер коллайдера
-  player.fixture = love.physics.newFixture(player.body, player.shape, 0) --коллайдер
-  player.fixture:setCategory(cat.PLAYER) -- Категория объектов, к которой относится игрок
-  player.fixture:setMask(cat.P_SHOT, cat.VOID) -- Категории, которые игрок игнорирует (свои выстрелы и пустоту)
-  player.shots = {}                                                      -- holds our fired shots
-  player.slashes = {}
-  player.health = 100
-  player.body:setGravityScale(0)
-  player.attackType = true
-  player.damage = 10
-
-  player.spriteSheet = love.graphics.newImage('sprites/MC.png')
-  player.grid = anim8.newGrid(24, 36, player.spriteSheet:getWidth(), player.spriteSheet:getHeight())
-  player.animations = {}
-  player.animations.down = anim8.newAnimation(player.grid('1-4', 1), 0.17)
-  player.animations.up = anim8.newAnimation(player.grid('1-4', 4), 0.17)
-  player.animations.right = anim8.newAnimation(player.grid('1-4', 3), 0.17)
-  player.animations.left = anim8.newAnimation(player.grid('1-4', 2), 0.17)
-
-    player.anim = player.animations.left
-    player.direction = "l"
-
-    --Рывок
-    player.isDashing = false
-    player.dashSpeed = 300
-    player.dashDuration = 0.2
-    player.dashCooldown = 0.4
-    player.dashTimeLeft = 0
-    player.dashCooldownLeft = 0
-
-    --След рывка
-    player.trail = {}            -- таблица для хранения следов
-    player.trailDuration = 0.05  -- как долго следы остаются на экране (в секундах)
-    player.trailFrequency = 0.01 -- как часто добавляются следы (в секундах)
-    player.trailTimer = 0        -- таймер для добавления следов
-end
-
-function player.update(dt)
-    local isMoving = false
-    local speed = player.defaultSpeed
-    if player.isDashing then
-        speed = speed + player.dashSpeed
-    end
-
-    if love.keyboard.isDown("left") then
-        xv, yv = player.body:getLinearVelocity()
-        player.body:setLinearVelocity(-speed, yv)
-        player.anim = player.animations.left
-        player.direction = "l"
-        isMoving = true
-    elseif love.keyboard.isDown("right") then
-        xv, yv = player.body:getLinearVelocity()
-        player.body:setLinearVelocity(speed, yv)
-        player.anim = player.animations.right
-        player.direction = "r"
-        isMoving = true
-    else
-        xv, yv = player.body:getLinearVelocity()
-        player.body:setLinearVelocity(0, yv)
-    end
-
-    if love.keyboard.isDown("up") then
-        xv, yv = player.body:getLinearVelocity()
-        player.body:setLinearVelocity(xv, -speed)
-        player.anim = player.animations.up
-        player.direction = "u"
-        isMoving = true
-    elseif love.keyboard.isDown("down") then
-        xv, yv = player.body:getLinearVelocity()
-        player.body:setLinearVelocity(xv, speed)
-        player.anim = player.animations.down
-        player.direction = "d"
-        isMoving = true
-    else
-        xv, yv = player.body:getLinearVelocity()
-        player.body:setLinearVelocity(xv, 0)
-    end
-
-    xv, yv = player.body:getLinearVelocity()
-    player.direction = physics.calculateDirection(xv, yv, player.direction) -- 45'
-
-    if isMoving == false then
-        player.anim:gotoFrame(2)
-    end
-
-    if love.keyboard.isDown("lshift") and not player.isDashing and player.dashCooldownLeft <= 0 then
-        player.isDashing = true
-        player.dashTimeLeft = player.dashDuration
-        player.fixture:setCategory(cat.DASHING_PLAYER)
-    end
-    player.updateDash(dt)
-    player.anim:update(dt)
-    player.updateShots(dt)
-    player.updateSlash(dt)
-end
-
-function player.updateShots(dt)
-    local remShot = {}
-
-    -- update the shots
-    for i, s in ipairs(player.shots) do
-        s.update(remShot, i, dt)
-    end
-
-    for i, s in ipairs(remShot) do
-        table.remove(player.shots, i)
-    end
-end
-
-function player.shoot(shotSound)
-  --if #player.shots >= 5 then return end
-  local shot = shots.new(cat.P_SHOT, player.body:getWorld(), player.body:getX(), player.body:getY(), 2, 5, 200, player.direction, player.damage)
-  table.insert(player.shots, shot)
-  love.audio.play(shotSound)
-end
-
-function player.slash(slashSound)
-  if #player.slashes >= 1 then return end
-  local shot = shots.new(cat.P_SHOT, player.body:getWorld(), player.body:getX(), player.body:getY(), 30, 30, 13, player.direction, player.damage, 3)
-  table.insert(player.slashes, shot)
-  love.audio.play(slashSound)
-end
-
-function player.updateSlash(dt)
-    local remShot = {}
-
-    -- update the shots
-    for i, s in ipairs(player.slashes) do
-        s.update(remShot, i, dt)
-    end
-
-    for i, s in ipairs(remShot) do
-        table.remove(player.slashes, i)
-    end
-end
-
-function player.updateDash(dt)
-    --След
-    if player.dashTimeLeft > 0 then
-        player.trailTimer = player.trailTimer - dt
-        if player.trailTimer <= 0 then
-            table.insert(player.trail,
-                {
-                    x = player.body:getX(),
-                    y = player.body:getY(),
-                    anim = player.anim,
-                    alpha = 0.3,
-                    lifetime = player
-                        .trailDuration
-                })
-            player.trailTimer = player.trailFrequency
+player = {
+    new = function(world, x, y)
+        if not (world and x and y) then
+            _log("Player requires parameters 'world', 'x', and 'y' to be specified")
+            return false
         end
-    end
-    -- Обновление следов во время рывка
-    for i, t in ipairs(player.trail) do
-        t.lifetime = t.lifetime - dt
-        if t.lifetime <= 0 then
-            table.remove(player.trail, i)
+        local self = {}
+
+        self.speed = 150
+        self.defaultSpeed = 150
+        self.body = love.physics.newBody(world, x, y, "dynamic")         -- тело для движения и отрисовки
+        self.shape = love.physics.newRectangleShape(20, 28)              -- размер коллайдера
+        self.fixture = love.physics.newFixture(self.body, self.shape, 1) -- коллайдер
+        self.fixture:setCategory(cat.PLAYER)                             -- Категория объектов, к которой относится игрок
+        self.fixture:setMask(cat.P_SHOT, cat.VOID)                       -- Категории, которые игрок игнорирует (свои выстрелы и пустоту)
+        self.shots = {}                                                  -- holds our fired shots
+        self.slashes = {}
+        self.health = 100
+        self.body:setGravityScale(0)
+        self.attackType = true
+        self.damage = 10
+
+        self.spriteSheet = love.graphics.newImage('sprites/player-sheet.png')
+        self.grid = anim8.newGrid(12, 18, self.spriteSheet:getWidth(), self.spriteSheet:getHeight())
+        self.animations = {}
+        self.animations.down = anim8.newAnimation(self.grid('1-4', 1), 0.2)
+        self.animations.up = anim8.newAnimation(self.grid('1-4', 4), 0.2)
+        self.animations.right = anim8.newAnimation(self.grid('1-4', 3), 0.2)
+        self.animations.left = anim8.newAnimation(self.grid('1-4', 2), 0.2)
+
+        self.anim = self.animations.left
+        self.direction = "l"
+
+        --Рывок
+        self.isDashing = false
+        self.dashSpeed = 300
+        self.dashDuration = 0.2
+        self.dashCooldown = 0.4
+        self.dashTimeLeft = 0
+        self.dashCooldownLeft = 0
+
+        --След рывка
+        self.trail = {}            -- таблица для хранения следов
+        self.trailDuration = 0.05  -- как долго следы остаются на экране (в секундах)
+        self.trailFrequency = 0.01 -- как часто добавляются следы (в секундах)
+        self.trailTimer = 0        -- таймер для добавления следов
+
+        function self:update(dt)
+            local isMoving = false
+            local speed = self.defaultSpeed
+            if self.isDashing then
+                speed = speed + self.dashSpeed
+            end
+
+            if love.keyboard.isDown("left") then
+                xv, yv = self.body:getLinearVelocity()
+                self.body:setLinearVelocity(-speed, yv)
+                self.anim = self.animations.left
+                self.direction = "l"
+                isMoving = true
+            elseif love.keyboard.isDown("right") then
+                xv, yv = self.body:getLinearVelocity()
+                self.body:setLinearVelocity(speed, yv)
+                self.anim = self.animations.right
+                self.direction = "r"
+                isMoving = true
+            else
+                xv, yv = self.body:getLinearVelocity()
+                self.body:setLinearVelocity(0, yv)
+            end
+
+            if love.keyboard.isDown("up") then
+                xv, yv = self.body:getLinearVelocity()
+                self.body:setLinearVelocity(xv, -speed)
+                self.anim = self.animations.up
+                self.direction = "u"
+                isMoving = true
+            elseif love.keyboard.isDown("down") then
+                xv, yv = self.body:getLinearVelocity()
+                self.body:setLinearVelocity(xv, speed)
+                self.anim = self.animations.down
+                self.direction = "d"
+                isMoving = true
+            else
+                xv, yv = self.body:getLinearVelocity()
+                self.body:setLinearVelocity(xv, 0)
+            end
+
+            xv, yv = self.body:getLinearVelocity()
+            self.direction = physics.calculateDirection(xv, yv, self.direction) -- 45'
+
+            if isMoving == false then
+                self.anim:gotoFrame(2)
+            end
+
+            if love.keyboard.isDown("lshift") and not self.isDashing and self.dashCooldownLeft <= 0 then
+                self.isDashing = true
+                self.dashTimeLeft = self.dashDuration
+                self.fixture:setCategory(cat.DASHING_PLAYER)
+            end
+            self:updateDash(dt)
+            self.anim:update(dt)
+            self:updateShots(dt)
+            self:updateSlash(dt)
         end
-    end
-    if player.isDashing then
-        player.dashTimeLeft = player.dashTimeLeft - dt
-        if player.dashTimeLeft <= 0 then
-            player.isDashing = false
-            player.dashCooldownLeft = player.dashCooldown
+
+        function self:updateShots(dt)
+            local remShot = {}
+
+            -- update the shots
+            for i, s in ipairs(self.shots) do
+                s.update(remShot, i, dt)
+            end
+
+            for i, s in ipairs(remShot) do
+                table.remove(self.shots, i)
+            end
         end
-    elseif player.dashCooldownLeft > 0 then
-        player.dashCooldownLeft = player.dashCooldownLeft - dt
+
+        function self:shoot(shotSound)
+            --if #self.shots >= 5 then return end
+            local shot = shots.new(cat.P_SHOT, self.body:getWorld(), self.body:getX(), self.body:getY(), 2, 5, 200,
+                self.direction)
+            table.insert(self.shots, shot)
+            love.audio.play(shotSound)
+        end
+
+        function self:slash(slashSound)
+            if #self.slashes >= 1 then return end
+            local shot = shots.new(cat.P_SHOT, self.body:getWorld(), self.body:getX(), self.body:getY(), 15, 15, 13,
+                self.direction, 3)
+            table.insert(self.slashes, shot)
+            love.audio.play(slashSound)
+        end
+
+        function self:updateSlash(dt)
+            local remShot = {}
+
+            -- update the shots
+            for i, s in ipairs(self.slashes) do
+                s.update(remShot, i, dt)
+            end
+
+            for i, s in ipairs(remShot) do
+                table.remove(self.slashes, i)
+            end
+        end
+
+        function self:updateDash(dt)
+            --След
+            if self.dashTimeLeft > 0 then
+                self.trailTimer = self.trailTimer - dt
+                if self.trailTimer <= 0 then
+                    table.insert(self.trail,
+                        {
+                            x = self.body:getX(),
+                            y = self.body:getY(),
+                            anim = self.anim,
+                            alpha = 0.3,
+                            lifetime = self
+                                .trailDuration
+                        })
+                    self.trailTimer = self.trailFrequency
+                end
+            end
+            -- Обновление следов во время рывка
+            for i, t in ipairs(self.trail) do
+                t.lifetime = t.lifetime - dt
+                if t.lifetime <= 0 then
+                    table.remove(self.trail, i)
+                end
+            end
+            if self.isDashing then
+                self.dashTimeLeft = self.dashTimeLeft - dt
+                if self.dashTimeLeft <= 0 then
+                    self.isDashing = false
+                    self.dashCooldownLeft = self.dashCooldown
+                end
+            elseif self.dashCooldownLeft > 0 then
+                self.dashCooldownLeft = self.dashCooldownLeft - dt
+            end
+            if not self.isDashing then
+                self.fixture:setCategory(cat.PLAYER)
+            end
+        end
+
+        function self:draw(t, d1, d2, d3, d4)
+            for i, s in ipairs(self.shots) do
+                if not s.body:isDestroyed() then
+                    love.graphics.rectangle("fill", s.body:getX(), s.body:getY(), s.h, s.w)
+                end
+            end
+
+            for i, s in ipairs(self.slashes) do
+                if not s.body:isDestroyed() then
+                    s:draw()
+                end
+            end
+
+            self.anim:draw(self.spriteSheet, self.body:getX(), self.body:getY(), nil, 4, nil, 6, 9)
+
+            --След
+            love.graphics.setColor(0.7, 0.7, 0.9, 0.2)
+            for i = #self.trail, 1, -1 do
+                local t = self.trail[i]
+                t.anim:draw(self.spriteSheet, t.x, t.y, nil, 4, nil, 6, 9)
+            end
+
+            love.graphics.setColor(0, 1, 0, 1)
+            love.graphics.print(self.health, self.body:getX() - 23, self.body:getY() - 65, 0, 2, 2)
+
+            love.graphics.setColor(d1, d2, d3, d4)
+        end
+
+        function self:collisionWithEnemy(fixture_b)
+            self.health = self.health - 5
+            xi, yi = fixture_b:getBody():getLinearVelocity()
+            self.body:applyLinearImpulse(xi * 55, yi * 55) --отскок игрока при получении урона, пока слишком резкий, если получится сделать плавным - оставим
+        end
+
+        function self:collisionWithShot()
+            self.health = self.health - 10
+        end
+
+        return self
     end
-    if not player.isDashing then
-        player.fixture:setCategory(cat.PLAYER)
-    end
-end
-
-function player.draw(t, d1, d2, d3, d4)
-  for i, s in ipairs(player.shots) do
-    if not s.body:isDestroyed() then
-      love.graphics.rectangle("fill", s.body:getX(), s.body:getY(), s.h, s.w)
-    end
-  end
-  
-  for i, s in ipairs(player.slashes) do
-    if not s.body:isDestroyed() then
-      s:draw()
-      --love.graphics.polygon("fill", s.body:getWorldPoints(s.shape:getPoints()))
-    end
-  end
-
-  --love.graphics.polygon("fill", player.body:getWorldPoints(player.shape:getPoints()))
-  player.anim:draw(player.spriteSheet, player.body:getX(), player.body:getY(), nil, 2.1, nil, 12, 19)
-
-  --След
-  love.graphics.setColor(0.7,0.7,0.9,0.2)
-  for i = #player.trail, 1, -1 do
-    local t = player.trail[i]
-    t.anim:draw(player.spriteSheet, t.x, t.y, nil, 2, nil, 12, 19)
-  end
-
-    love.graphics.setColor(0, 1, 0, 1)
-    love.graphics.print(player.health, player.body:getX() - 23, player.body:getY() - 65, 0, 2, 2)
-
-    love.graphics.setColor(d1, d2, d3, d4)
-end
-
-function player.collisionWithEnemy(fixture_b, damage)
-
-  player.health = player.health - damage
-  xi, yi = fixture_b:getBody():getLinearVelocity()
-  player.body:applyLinearImpulse(xi*55, yi*55) --отскок игрока при получении урона, пока слишком резкий, если получится сделать плавным - оставим
-end
-
-function player.collisionWithShot(damage)
-
-  player.health = player.health - damage
-
-end
-
-return player
+}

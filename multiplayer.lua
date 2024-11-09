@@ -1,11 +1,10 @@
 require("client")
+require("player")
 
 local physics = require("physics")
-local player = require("player")
 local enemyFabric = require("enemy")
 
 local multiplayer = {}
-
 local cam
 local gameMap
 local world
@@ -21,10 +20,6 @@ local multiplayerInit = {
 }
 
 function multiplayer.startMultiplayer()
-    hub = client.new({ server = "127.0.0.1", port = 1337, gameState = player })
-    port = hub:subscribe({ channel = "MORENA" })
-    otherClients = hub:getOtherClients()
-
     love.window.setTitle("Morena - Multiplayer")
     cam = camera()
     love.graphics.setDefaultFilter('nearest', 'nearest')
@@ -33,7 +28,7 @@ function multiplayer.startMultiplayer()
     world:setGravity(0, 40)
     world:setCallbacks(multiplayerInit.collisionOnEnter)
 
-    player.init(world, multiplayerInit.playerPosition[1], multiplayerInit.playerPosition[2])
+    player = player.new(world, multiplayerInit.playerPosition[1], multiplayerInit.playerPosition[2])
     enemy = enemyFabric.new()
     enemy.init(world, multiplayerInit.enemyPosition[1], multiplayerInit.enemyPosition[2])
     day = true
@@ -41,21 +36,26 @@ function multiplayer.startMultiplayer()
     lake = physics.makeBody(world, multiplayerInit.lakePosition[1], multiplayerInit.lakePosition[2], 80, 80, "static")
     lake.fixture:setCategory(cat.TEXTURE)
     shotSound = love.audio.newSource("sounds/shot.wav", "static")
+
+    hub = client.new({ server = "127.0.0.1", port = 1337, gameState = player })
+    port = hub:subscribe({ channel = "MORENA" })
+    otherPlayers = hub:getOtherClients()
 end
 
 function multiplayer.update(dt)
-    player.update(dt)
+    player:update(dt)
     world:update(dt)
     enemy.update(dt, player.body:getX(), player.body:getY())
 
     hub:getMessage()
     hub:sendMessage({
-        port = port,
-        x    = player.body:getX(),
-        y    = player.body:getY(),
-        xv   = xv,
-        yv   = yv,
-        anim = player.direction
+        port   = port,
+        x      = player.body:getX(),
+        y      = player.body:getY(),
+        xv     = xv,
+        yv     = yv,
+        anim   = player.direction,
+        health = player.health,
     })
 
     cam:lookAt(player.body:getX(), player.body:getY())
@@ -91,9 +91,11 @@ function multiplayer.draw()
     enemy:draw(d1, d2, d3, d4)
 
     -- Отрисовка других игроков
-    for _, client in pairs(otherClients) do
+    for _, client in pairs(otherPlayers) do
         local clientAnim = player.animations[client.anim] or player.animations.left
         clientAnim:draw(player.spriteSheet, client.x, client.y, nil, 4, nil, 6, 9)
+        love.graphics.setColor(0, 1, 0, 1)
+        love.graphics.print(player.health, player.body:getX() - 23, player.body:getY() - 65, 0, 2, 2)
     end
 
     cam:detach()
@@ -102,9 +104,9 @@ end
 function multiplayer.keypressed(key)
     if key == " " or key == "space" then
         if player.attackType then
-            player.slash(shotSound)
+            player:slash(shotSound)
         else
-            player.shoot(shotSound)
+            player:shoot(shotSound)
         end
     elseif key == "q" then
         day = not day
@@ -115,11 +117,11 @@ end
 
 function multiplayer.collisionOnEnter(fixture_a, fixture_b, contact)
     if fixture_a:getCategory() == cat.PLAYER and fixture_b:getCategory() == cat.ENEMY then
-        player.collisionWithEnemy(fixture_b)
+        player:collisionWithEnemy(fixture_b)
     end
 
     if fixture_a:getCategory() == cat.PLAYER and fixture_b:getCategory() == cat.E_SHOT then
-        player.collisionWithShot()
+        player:collisionWithShot()
         fixture_b:getBody():destroy()
         fixture_b:destroy()
     end
@@ -129,7 +131,7 @@ function multiplayer.collisionOnEnter(fixture_a, fixture_b, contact)
     end
 
     if fixture_b:getCategory() == cat.P_SHOT and fixture_a:getCategory() == cat.ENEMY then
-        enemy.colisionWithShot(fixture_a, player.damage)
+        enemy:colisionWithShot(fixture_a, player.damage)
         fixture_b:getBody():destroy()
         fixture_b:destroy()
     end

@@ -1,5 +1,5 @@
 -- вместо print(); для дебага
-function log(...)
+function _log(...)
     if DEBUG then
         print(...)
     end

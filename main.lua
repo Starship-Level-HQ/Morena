@@ -58,12 +58,12 @@ end
 
 function startLevel(levelNumber)
     gameState = "level"
-    log(levelNumber)
+    _log(levelNumber)
     level.startLevel(levelNumber)
 end
 
 function startMultiplayer()
     gameState = "multiplayer"
-    log(gameState)
+    _log(gameState)
     multiplayer.startMultiplayer()
 end

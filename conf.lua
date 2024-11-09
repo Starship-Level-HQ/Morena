@@ -1,4 +1,4 @@
-DEBUG = false
+DEBUG = true
 
 function love.conf(t)
     t.console = DEBUG
