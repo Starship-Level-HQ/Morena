@@ -116,14 +116,14 @@ end
 
 function player.shoot(shotSound)
   --if #player.shots >= 5 then return end
-  local shot = shots.new(cat.P_SHOT, player.body:getWorld(), player.body:getX(), player.body:getY(), 2, 5, 200, player.direction)
+  local shot = shots.new(cat.P_SHOT, player.body:getWorld(), player.body:getX(), player.body:getY(), 2, 5, 200, player.direction, player.damage)
   table.insert(player.shots, shot)
   love.audio.play(shotSound)
 end
 
 function player.slash(slashSound)
   if #player.slashes >= 1 then return end
-  local shot = shots.new(cat.P_SHOT, player.body:getWorld(), player.body:getX(), player.body:getY(), 30, 30, 13, player.direction, 3)
+  local shot = shots.new(cat.P_SHOT, player.body:getWorld(), player.body:getX(), player.body:getY(), 30, 30, 13, player.direction, player.damage, 3)
   table.insert(player.slashes, shot)
   love.audio.play(slashSound)
 end

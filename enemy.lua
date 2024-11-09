@@ -162,7 +162,7 @@ function enemyFabric.new()
   end
 
   function enemy.shoot()
-    local shot = shots.new(cat.E_SHOT, enemy.body:getWorld(), enemy.body:getX(), enemy.body:getY(), 2, 5, 150, enemy.direction)
+    local shot = shots.new(cat.E_SHOT, enemy.body:getWorld(), enemy.body:getX(), enemy.body:getY(), 2, 5, 150, enemy.direction, 5)
     table.insert(enemy.shots, shot)
   end
 

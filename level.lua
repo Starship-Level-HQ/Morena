@@ -122,7 +122,7 @@ function level.collisionOnEnter(fixture_a, fixture_b, contact)
   end
   
   if fixture_a:getCategory() == cat.PLAYER and fixture_b:getCategory() == cat.E_SHOT then
-    player.collisionWithShot(5)
+    player.collisionWithShot(fixture_b:getUserData())
     fixture_b:getBody():destroy()
     fixture_b:destroy()
   end
@@ -133,7 +133,7 @@ function level.collisionOnEnter(fixture_a, fixture_b, contact)
   
   if fixture_b:getCategory() == cat.P_SHOT and fixture_a:getCategory() == cat.ENEMY then
     for i, e in ipairs(enemies) do
-      e.colisionWithShot(fixture_a, player.damage)
+      e.colisionWithShot(fixture_a, fixture_b:getUserData())
       fixture_b:getBody():destroy()
       fixture_b:destroy()
       end
