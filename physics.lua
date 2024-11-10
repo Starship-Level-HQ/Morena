@@ -6,11 +6,11 @@ function physics.collisionOnEnter(fixture_a, fixture_b, contact) --выводи�
     local dx, dy = contact:getNormal()
     dx = dx * 30
     dy = dy * 30
-    log("dx: ", dx, "dy: ", dy)
+    -- _log("dx: ", dx, "dy: ", dy)
     local point = { contact:getPositions() }
     for i = 1, #point, 2 do
         local x, y = point[i], point[i + 1]
-        log("x: ", x, "y: ", y)
+        -- _log("x: ", x, "y: ", y)
         -- Cache the values inside the contacts because they're not guaranteed
         -- to be valid later in the frame.
         table.insert(physics.normals, { x, y, x + dx, y + dy })
@@ -29,18 +29,18 @@ function physics.makeBody(world, x, y, height, width, bodyType)
 end
 
 function physics.bloodDrops(world, x, y)
-  drops = {}
-  if userConfig.blood then
-    for i = 1, 8 do
-      local drop = physics.makeBody(world, x, y, 2, 5, "dynamic")
-      drop.body:setLinearVelocity(50*(5-i), -150 * (i%3))
-      drop.time = 0
-      drop.fixture:setCategory(cat.VOID)
-      drop.fixture:setMask(cat.VOID)
-      table.insert(drops, drop)
+    drops = {}
+    if userConfig.blood then
+        for i = 1, 8 do
+            local drop = physics.makeBody(world, x, y, 2, 5, "dynamic")
+            drop.body:setLinearVelocity(50 * (5 - i), -150 * (i % 3))
+            drop.time = 0
+            drop.fixture:setCategory(cat.VOID)
+            drop.fixture:setMask(cat.VOID)
+            table.insert(drops, drop)
+        end
     end
-  end
-  return drops
+    return drops
 end
 
 function physics.calculateDirection(xv, yv, d)

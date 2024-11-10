@@ -1,6 +1,5 @@
 require("enemy")
 require("player")
-local physics = require("physics")
 
 local level = {}
 local enemies

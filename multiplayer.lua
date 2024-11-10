@@ -1,136 +1,150 @@
-require("client")
 require("player")
 require("enemy")
-local physics = require("physics")
+require("client")
 
+Multiplayer = {
+    new = function(map, playerPosition, enemyPosition, lakePosition)
+        -- Если параметры не были переданы, задаем значения по умолчанию
+        map = map or "maps/testMap.lua"
+        playerPosition = playerPosition or { 300, 300 }
+        enemyPosition = enemyPosition or { 600, 100 }
+        lakePosition = lakePosition or { 400, 550 }
 
-local multiplayer = {}
-local cam
-local gameMap
-local world
-local lake
-local day
+        -- Создаем новый объект
+        local self = {}
 
-local multiplayerInit = {
-    map = "maps/testMap.lua",
-    playerPosition = { 300, 450 },
-    enemyPosition = { 600, 100 },
-    lakePosition = { 400, 550 }
-}
+        self.multiplayer = {}
+        self.remotePlayers = {}
 
-function multiplayer.startMultiplayer()
-    love.window.setTitle("Morena - Multiplayer")
-    cam = camera()
-    love.graphics.setDefaultFilter('nearest', 'nearest')
-    gameMap = sti(multiplayerInit.map)
-    world = love.physics.newWorld(0, 0, true)
-    world:setGravity(0, 40)
-    world:setCallbacks(multiplayerInit.collisionOnEnter)
+        love.window.setTitle("Morena - Multiplayer")
+        love.graphics.setDefaultFilter('nearest', 'nearest')
+        self.cam = camera()
+        self.gameMap = sti(map)
+        self.world = love.physics.newWorld(0, 0, true)
+        self.world:setGravity(0, 40)
+        self.world:setCallbacks(self.multiplayer.collisionOnEnter)
 
-    player = Player.new(world, multiplayerInit.playerPosition[1], multiplayerInit.playerPosition[2])
-    enemy = Enemy.new(world, multiplayerInit.enemyPosition[1], multiplayerInit.enemyPosition[2])
-    day = true
+        self.player = Player.new(self.world, playerPosition[1], playerPosition[2])
+        self.enemy = Enemy.new(self.world, enemyPosition[1], enemyPosition[2])
+        self.lake = physics.makeBody(self.world, lakePosition[1], lakePosition[2], 80, 80, "static")
+        self.day = true
+        self.lake.fixture:setCategory(cat.TEXTURE)
+        self.shotSound = love.audio.newSource("sounds/shot.wav", "static")
 
-    lake = physics.makeBody(world, multiplayerInit.lakePosition[1], multiplayerInit.lakePosition[2], 80, 80, "static")
-    lake.fixture:setCategory(cat.TEXTURE)
-    shotSound = love.audio.newSource("sounds/shot.wav", "static")
+        self.hub = Client.new({ server = "127.0.0.1", port = 1337, gameState = self.player })
+        self.port = self.hub:subscribe({ channel = "MORENA" })
 
-    hub = client.new({ server = "127.0.0.1", port = 1337, gameState = player })
-    port = hub:subscribe({ channel = "MORENA" })
-    otherPlayers = hub:getOtherClients()
-end
+        function self:update(dt)
+            self.player:update(dt)
+            self.world:update(dt)
+            self.enemy:update(dt, self.player.body:getX(), self.player.body:getY())
 
-function multiplayer.update(dt)
-    player:update(dt)
-    world:update(dt)
-    enemy:update(dt, player.body:getX(), player.body:getY())
+            self.hub:getMessage()
+            -- создать игроков или обновить их состояние
+            for remotePlayerPort, remotePlayerData in pairs(self.hub.remotePlayersData) do
+                local remotePlayer = self.remotePlayers[remotePlayerPort]
+                if remotePlayer then
+                    remotePlayer:updateRemotePlayer(dt, remotePlayerData)
+                else
+                    local tempPlayer = Player.new(self.world, remotePlayerData.x, remotePlayerData.y)
+                    tempPlayer.health = remotePlayerData.health
+                    self.remotePlayers[remotePlayerPort] = tempPlayer
+                end
+            end
 
-    hub:getMessage()
-    hub:sendMessage({
-        port   = port,
-        x      = player.body:getX(),
-        y      = player.body:getY(),
-        xv     = xv,
-        yv     = yv,
-        anim   = player.direction,
-        health = player.health,
-    })
+            for remotePlayerPort, _ in pairs(self.remotePlayers) do
+                if not self.hub.remotePlayersData[remotePlayerPort] then
+                    self.remotePlayers[remotePlayerPort] = nil
+                end
+            end
 
-    cam:lookAt(player.body:getX(), player.body:getY())
+            self.hub:sendMessage({
+                port       = self.port,
+                x          = self.player.body:getX(),
+                y          = self.player.body:getY(),
+                xv         = self.xv,
+                yv         = self.yv,
+                directionX = self.player.serverDirectionX,
+                directionY = self.player.serverDirectionY,
+                health     = self.player.health,
+            })
 
-    -- Ограничиваем камеру в границах карты
-    local w = love.graphics.getWidth()
-    local h = love.graphics.getHeight()
+            self.cam:lookAt(self.player.body:getX(), self.player.body:getY())
 
-    if cam.x < w / 2 then cam.x = w / 2 end
-    if cam.y < h / 2 then cam.y = h / 2 end
+            -- Ограничиваем камеру в границах карты
+            local w = love.graphics.getWidth()
+            local h = love.graphics.getHeight()
 
-    local mapW = gameMap.width * gameMap.tilewidth
-    local mapH = gameMap.height * gameMap.tileheight
+            if self.cam.x < w / 2 then self.cam.x = w / 2 end
+            if self.cam.y < h / 2 then self.cam.y = h / 2 end
 
-    if cam.x > (mapW - w / 2) then cam.x = (mapW - w / 2) end
-    if cam.y > (mapH - h / 2) then cam.y = (mapH - h / 2) end
-end
+            local mapW = self.gameMap.width * self.gameMap.tilewidth
+            local mapH = self.gameMap.height * self.gameMap.tileheight
 
-function multiplayer.draw()
-    cam:attach()
-    gameMap:drawLayer(gameMap.layers["grass"])
-    gameMap:drawLayer(gameMap.layers["road"])
-    gameMap:drawLayer(gameMap.layers["trees"])
-
-    local d1, d2, d3, d4 = day and 255 or 0.23, day and 255 or 0.25, day and 255 or 0.59, 1
-    love.graphics.setColor(0.23, 0.25, 0.59, 1)
-    love.graphics.polygon("fill", lake.body:getWorldPoints(lake.shape:getPoints()))
-
-    love.graphics.setColor(d1, d2, d3, d4)
-
-    -- Отрисовка себя
-    player:draw(d1, d2, d3, d4)
-    enemy:draw(d1, d2, d3, d4)
-
-    -- Отрисовка других игроков
-    for _, client in pairs(otherPlayers) do
-        local clientAnim = player.animations[client.anim] or player.animations.left
-        clientAnim:draw(player.spriteSheet, client.x, client.y, nil, 2.1, nil, 12, 19)
-    end
-
-    cam:detach()
-end
-
-function multiplayer.keypressed(key)
-    if key == " " or key == "space" then
-        if player.attackType then
-            player:slash(shotSound)
-        else
-            player:shoot(shotSound)
+            if self.cam.x > (mapW - w / 2) then self.cam.x = (mapW - w / 2) end
+            if self.cam.y > (mapH - h / 2) then self.cam.y = (mapH - h / 2) end
         end
-    elseif key == "q" then
-        day = not day
-    elseif key == "1" then
-        player.attackType = not player.attackType
-    end
-end
 
-function multiplayer.collisionOnEnter(fixture_a, fixture_b, contact)
-    if fixture_a:getCategory() == cat.PLAYER and fixture_b:getCategory() == cat.ENEMY then
-        player:collisionWithEnemy(fixture_b)
-    end
+        function self:draw()
+            self.cam:attach()
+            self.gameMap:drawLayer(self.gameMap.layers["grass"])
+            self.gameMap:drawLayer(self.gameMap.layers["road"])
+            self.gameMap:drawLayer(self.gameMap.layers["trees"])
 
-    if fixture_a:getCategory() == cat.PLAYER and fixture_b:getCategory() == cat.E_SHOT then
-        player:collisionWithShot()
-        fixture_b:getBody():destroy()
-        fixture_b:destroy()
-    end
+            local d1, d2, d3, d4 = self.day and 255 or 0.23, self.day and 255 or 0.25, self.day and 255 or 0.59, 1
+            love.graphics.setColor(0.23, 0.25, 0.59, 1)
+            love.graphics.polygon("fill", self.lake.body:getWorldPoints(self.lake.shape:getPoints()))
 
-    if fixture_a:getCategory() == cat.DASHING_PLAYER and fixture_b:getCategory() == cat.E_SHOT then
-        fixture_b:setCategory(cat.P_SHOT)
-    end
+            love.graphics.setColor(d1, d2, d3, d4)
 
-    if fixture_b:getCategory() == cat.P_SHOT and fixture_a:getCategory() == cat.ENEMY then
-        enemy:colisionWithShot(fixture_a, player.damage)
-        fixture_b:getBody():destroy()
-        fixture_b:destroy()
-    end
-end
+            -- Отрисовка себя
+            self.player:draw(d1, d2, d3, d4)
+            self.enemy:draw(d1, d2, d3, d4)
 
-return multiplayer
+            -- Отрисовка других игроков
+            for _, remotePlayer in pairs(self.remotePlayers) do
+                remotePlayer:draw(d1, d2, d3, d4)
+            end
+
+            self.cam:detach()
+        end
+
+        function self:keypressed(key)
+            if key == " " or key == "space" then
+                if self.player.attackType then
+                    self.player:slash(self.shotSound)
+                else
+                    self.player:shoot(self.shotSound)
+                end
+            elseif key == "q" then
+                self.day = not self.day
+            elseif key == "1" then
+                self.player.attackType = not self.player.attackType
+            end
+        end
+
+        function self:collisionOnEnter(fixture_a, fixture_b, contact)
+            if fixture_a:getCategory() == cat.PLAYER and fixture_b:getCategory() == cat.ENEMY then
+                self.player:collisionWithEnemy(fixture_b)
+            end
+
+            if fixture_a:getCategory() == cat.PLAYER and fixture_b:getCategory() == cat.E_SHOT then
+                self.player:collisionWithShot()
+                fixture_b:getBody():destroy()
+                fixture_b:destroy()
+            end
+
+            if fixture_a:getCategory() == cat.DASHING_PLAYER and fixture_b:getCategory() == cat.E_SHOT then
+                fixture_b:setCategory(cat.P_SHOT)
+            end
+
+            if fixture_b:getCategory() == cat.P_SHOT and fixture_a:getCategory() == cat.ENEMY then
+                self.enemy:colisionWithShot(fixture_a, self.player.damage)
+                fixture_b:getBody():destroy()
+                fixture_b:destroy()
+            end
+        end
+
+        return self
+    end
+}

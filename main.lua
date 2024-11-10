@@ -1,15 +1,16 @@
 require("logger")
+require("physics")
+require("libraries/anim8")
 local menu = require("menu")
 local level = require("level")
 local multiplayer = require("multiplayer")
 sti = require("libraries/sti")
 camera = require("libraries/camera")
 cat = require("objectsCategories")
-require("libraries/anim8")
+userConfig = require("userConfig")
 
 -- Глобальная переменная для состояния игры
 gameState = "menu" -- Начальное состояние — меню
-userConfig = require("userConfig")
 
 function love.load()
     menu.load()
@@ -24,7 +25,7 @@ function love.update(dt)
     elseif gameState == "level" then
         level.update(dt)
     elseif gameState == "multiplayer" then
-        multiplayer.update(dt)
+        multiplayer:update(dt)
     end
 end
 
@@ -34,7 +35,7 @@ function love.draw()
     elseif gameState == "level" then
         level.draw()
     elseif gameState == "multiplayer" then
-        multiplayer.draw()
+        multiplayer:draw()
     end
 end
 
@@ -45,13 +46,17 @@ function love.mousepressed(x, y, button, istouch, presses)
 end
 
 function love.keypressed(key)
-    if gameState ~= "menu" and key == "escape" then
+    if gameState == "level" and key == "escape" then
+        gameState = "menu"
+        menu.load()
+    elseif gameState == "multiplayer" and key == "escape" then
+        multiplayer.hub:unsubscribe()
         gameState = "menu"
         menu.load()
     elseif gameState == "level" then
         level.keypressed(key)
     elseif gameState == "multiplayer" then
-        multiplayer.keypressed(key)
+        multiplayer:keypressed(key)
     end
 end
 
@@ -64,5 +69,5 @@ end
 function startMultiplayer()
     gameState = "multiplayer"
     _log(gameState)
-    multiplayer.startMultiplayer()
+    multiplayer = Multiplayer.new()
 end

@@ -1,11 +1,9 @@
-package.path = "./libraries/?.lua;" .. package.path -- как сделать лучше?
-socket = require("socket")
+package.path = "./libraries/?.lua;" .. package.path
 json = require("json")
+socket = require("socket")
 
-local otherClients = {}
-
-client = {
-    new = function(params) -- constructor method
+Client = {
+    new = function(params)
         params = params
         if (not params.server or not params.port) then
             _log("Client requires server and port to be specified")
@@ -17,6 +15,7 @@ client = {
         self.server = params.server
         self.port = params.port
         self.gameState = params.gameState
+        self.remotePlayersData = {}
 
         function self:subscribe(params)
             self.channel = params.channel
@@ -87,50 +86,29 @@ client = {
                         local jsonData = string.sub(self.buffer, start + 15, finish - 1)            -- взяли сообщение
                         self.buffer = self.buffer:sub(1, start - 1) .. self.buffer:sub(finish + 13) -- вырезали из буфера
                         local data = json.decode(jsonData)
-
                         local _, port = self.sock:getsockname()
-                        _log('MSG FROM SERVER: ', jsonData)
+                        -- _log('MSG FROM SERVER: ', jsonData)
                         if (data.alive) then
-                            if port == data.port then
-                                if data.anim == "l" then
-                                    self.gameState.body:setLinearVelocity(data.yv, self.gameState.defaultSpeed)
-                                    self.gameState.anim = self.gameState.animations
-                                        ["left"]
-                                elseif data.anim == "r" then
-                                    self.gameState.body:setLinearVelocity(self.gameState.defaultSpeed, data.yv)
-                                    self.gameState.anim = self.gameState.animations
-                                        ["right"]
-                                elseif data.anim == "u" then
-                                    self.gameState.body:setLinearVelocity(data.xv, -self.gameState.defaultSpeed)
-                                    self.gameState.anim = self.gameState.animations
-                                        ["up"]
-                                elseif data.anim == "d" then
-                                    self.gameState.body:setLinearVelocity(data.xv, self.gameState.defaultSpeed)
-                                    self.gameState.anim = self.gameState.animations
-                                        ["down"]
-                                end
-                            else
-                                otherClients[data.port] = {
+                            if (port ~= data.port) then
+                                self.remotePlayersData[data.port] = {
                                     x = data.x,
                                     y = data.y,
                                     xv = data.xv,
                                     yv = data.yv,
-                                    anim = data.anim,
+                                    directionX = data.directionX,
+                                    directionY = data.directionY,
+                                    isIdle = data.isIdle,
                                     health = data.health,
                                 }
                             end
                         else
-                            otherClients[data.port] = nil
+                            self.remotePlayersData[data.port] = nil
                         end
                     else
                         break
                     end
                 end
             end
-        end
-
-        function self:getOtherClients()
-            return otherClients
         end
 
         return self
