@@ -116,6 +116,7 @@ Player = {
         end
 
         function self:updateRemotePlayer(dt, remotePlayerData)
+            self.health = remotePlayerData.health
             local speed = self.defaultSpeed
 
             -- Проверяем состояние dash на основе данных от сервера

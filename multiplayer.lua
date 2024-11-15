@@ -13,8 +13,8 @@ Multiplayer = {
         -- Создаем новый объект
         local self = {}
 
-        self.multiplayer = {}
         self.remotePlayers = {}
+        self.enemies = {}
 
         love.window.setTitle("Morena - Multiplayer")
         love.graphics.setDefaultFilter('nearest', 'nearest')
@@ -22,10 +22,12 @@ Multiplayer = {
         self.gameMap = sti(map)
         self.world = love.physics.newWorld(0, 0, true)
         self.world:setGravity(0, 40)
-        self.world:setCallbacks(self.multiplayer.collisionOnEnter)
+        self.world:setCallbacks(function(fixture_a, fixture_b, contact)
+            self:collisionOnEnter(fixture_a, fixture_b, contact)
+        end)
 
         self.player = Player.new(self.world, playerPosition[1], playerPosition[2])
-        self.enemy = Enemy.new(self.world, enemyPosition[1], enemyPosition[2])
+        self.enemy = Enemy.new(self.world, enemyPosition[1], enemyPosition[2], true)
         self.lake = physics.makeBody(self.world, lakePosition[1], lakePosition[2], 80, 80, "static")
         self.day = true
         self.lake.fixture:setCategory(cat.TEXTURE)
@@ -50,9 +52,8 @@ Multiplayer = {
                 if remotePlayer then
                     remotePlayer:updateRemotePlayer(dt, remotePlayerData)
                 else
-                    local tempPlayer = Player.new(self.world, remotePlayerData.x, remotePlayerData.y)
-                    tempPlayer.health = remotePlayerData.health
-                    self.remotePlayers[remotePlayerPort] = tempPlayer
+                    self.remotePlayers[remotePlayerPort] =
+                        Player.new(self.world, remotePlayerData.x, remotePlayerData.y)
                 end
             end
 
@@ -139,11 +140,11 @@ Multiplayer = {
 
         function self:collisionOnEnter(fixture_a, fixture_b, contact)
             if fixture_a:getCategory() == cat.PLAYER and fixture_b:getCategory() == cat.ENEMY then
-                self.player:collisionWithEnemy(fixture_b)
+                self.player:collisionWithEnemy(fixture_b, 10)
             end
 
             if fixture_a:getCategory() == cat.PLAYER and fixture_b:getCategory() == cat.E_SHOT then
-                self.player:collisionWithShot()
+                self.player:collisionWithShot(fixture_b:getUserData())
                 fixture_b:getBody():destroy()
                 fixture_b:destroy()
             end
@@ -153,7 +154,7 @@ Multiplayer = {
             end
 
             if fixture_b:getCategory() == cat.P_SHOT and fixture_a:getCategory() == cat.ENEMY then
-                self.enemy:colisionWithShot(fixture_a, self.player.damage)
+                self.enemy:colisionWithShot(fixture_a, fixture_b:getUserData())
                 fixture_b:getBody():destroy()
                 fixture_b:destroy()
             end
