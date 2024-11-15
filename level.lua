@@ -1,14 +1,7 @@
-local level = {}
-
-cat = require("objectsCategories")
-
-local physics = require("physics")
-require("player")
 require("enemy")
-local camera = require 'libraries/camera'
-anim8 = require 'libraries/anim8'
-local sti = require 'libraries/sti'
+require("player")
 
+local level = {}
 local enemies
 local cam
 local gameMap

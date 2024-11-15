@@ -32,6 +32,8 @@ Player = {
 
         self.anim = self.animations.left
         self.direction = "l"
+        self.serverDirectionX = ""
+        self.serverDirectionY = ""
 
         --Рывок
         self.isDashing = false
@@ -59,16 +61,19 @@ Player = {
                 self.body:setLinearVelocity(-speed, yv)
                 self.anim = self.animations.left
                 self.direction = "l"
+                self.serverDirectionX = "l"
                 isMoving = true
             elseif love.keyboard.isDown("right") then
                 xv, yv = self.body:getLinearVelocity()
                 self.body:setLinearVelocity(speed, yv)
                 self.anim = self.animations.right
                 self.direction = "r"
+                self.serverDirectionX = "r"
                 isMoving = true
             else
                 xv, yv = self.body:getLinearVelocity()
                 self.body:setLinearVelocity(0, yv)
+                self.serverDirectionX = ""
             end
 
             if love.keyboard.isDown("up") then
@@ -76,16 +81,19 @@ Player = {
                 self.body:setLinearVelocity(xv, -speed)
                 self.anim = self.animations.up
                 self.direction = "u"
+                self.serverDirectionY = "u"
                 isMoving = true
             elseif love.keyboard.isDown("down") then
                 xv, yv = self.body:getLinearVelocity()
                 self.body:setLinearVelocity(xv, speed)
                 self.anim = self.animations.down
                 self.direction = "d"
+                self.serverDirectionY = "d"
                 isMoving = true
             else
                 xv, yv = self.body:getLinearVelocity()
                 self.body:setLinearVelocity(xv, 0)
+                self.serverDirectionY = ""
             end
 
             xv, yv = self.body:getLinearVelocity()
@@ -100,6 +108,63 @@ Player = {
                 self.dashTimeLeft = self.dashDuration
                 self.fixture:setCategory(cat.DASHING_PLAYER)
             end
+
+            self:updateDash(dt)
+            self.anim:update(dt)
+            self:updateShots(dt)
+            self:updateSlash(dt)
+        end
+
+        function self:updateRemotePlayer(dt, remotePlayerData)
+            self.health = remotePlayerData.health
+            local speed = self.defaultSpeed
+
+            -- Проверяем состояние dash на основе данных от сервера
+            if remotePlayerData.isDashing then
+                speed = speed + self.dashSpeed
+                self.isDashing = true
+            else
+                self.isDashing = false
+            end
+
+            if remotePlayerData.directionX == "l" then
+                self.body:setLinearVelocity(-speed, remotePlayerData.yv)
+                self.anim = self.animations.left
+                self.direction = "l"
+            elseif remotePlayerData.directionX == "r" then
+                self.body:setLinearVelocity(speed, remotePlayerData.yv)
+                self.anim = self.animations.right
+                self.direction = "r"
+            else
+                self.body:setLinearVelocity(0, remotePlayerData.yv)
+            end
+
+            if remotePlayerData.directionY == "u" then
+                self.body:setLinearVelocity(remotePlayerData.xv, -speed)
+                self.anim = self.animations.up
+                self.direction = "u"
+            elseif remotePlayerData.directionY == "d" then
+                self.body:setLinearVelocity(remotePlayerData.xv, speed)
+                self.anim = self.animations.down
+                self.direction = "d"
+            else
+                self.body:setLinearVelocity(remotePlayerData.xv, 0)
+            end
+
+            if (remotePlayerData.directionX == "" and remotePlayerData.directionY == "") then
+                self.anim:gotoFrame(2) -- не движется
+            end
+
+            self.direction = physics.calculateDirection(remotePlayerData.xv, remotePlayerData.yv, self.direction)
+
+            -- Обновляем dash-статус и анимацию
+            if self.isDashing then
+                self.dashTimeLeft = self.dashDuration
+                self.fixture:setCategory(cat.DASHING_PLAYER)
+            else
+                self.fixture:setCategory(cat.PLAYER)
+            end
+
             self:updateDash(dt)
             self.anim:update(dt)
             self:updateShots(dt)
@@ -186,7 +251,7 @@ Player = {
             end
         end
 
-        function self:draw(d1, d2, d3, d4)
+        function self:draw(t, d1, d2, d3, d4)
             for i, s in ipairs(self.shots) do
                 if not s.body:isDestroyed() then
                     love.graphics.rectangle("fill", s.body:getX(), s.body:getY(), s.h, s.w)
@@ -200,7 +265,7 @@ Player = {
                 end
             end
 
-            --love.graphics.polygon("fill", player.body:getWorldPoints(player.shape:getPoints()))
+            --love.graphics.polygon("fill", self.player.body:getWorldPoints(player.shape:getPoints()))
             self.anim:draw(self.spriteSheet, self.body:getX(), self.body:getY(), nil, 2.1, nil, 12, 19)
 
             --След
