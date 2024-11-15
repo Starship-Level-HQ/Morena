@@ -87,6 +87,7 @@ Client = {
                         self.buffer = self.buffer:sub(1, start - 1) .. self.buffer:sub(finish + 13) -- вырезали из буфера
                         local data = json.decode(jsonData)
                         local _, port = self.sock:getsockname()
+                        
                         -- _log('MSG FROM SERVER: ', jsonData)
                         if (data.alive) then
                             if (port ~= data.port) then
@@ -97,7 +98,6 @@ Client = {
                                     yv = data.yv,
                                     directionX = data.directionX,
                                     directionY = data.directionY,
-                                    isIdle = data.isIdle,
                                     health = data.health,
                                 }
                             end

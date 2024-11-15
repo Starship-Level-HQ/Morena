@@ -57,13 +57,13 @@ Multiplayer = {
                     self.remotePlayers[remotePlayerPort] = nil
                 end
             end
-
+            local xv, yv = self.player.body:getLinearVelocity()
             self.hub:sendMessage({
                 port       = self.port,
                 x          = self.player.body:getX(),
                 y          = self.player.body:getY(),
-                xv         = self.xv,
-                yv         = self.yv,
+                xv         = xv,
+                yv         = yv,
                 directionX = self.player.serverDirectionX,
                 directionY = self.player.serverDirectionY,
                 health     = self.player.health,
