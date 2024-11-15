@@ -34,13 +34,17 @@ Multiplayer = {
         self.hub = Client.new({ server = "127.0.0.1", port = 1337, gameState = self.player })
         self.port = self.hub:subscribe({ channel = "MORENA" })
 
+        self.checkRemotePlayerInterval = 5 -- Интервал проверки в секундах
+        self.timeSinceLastCheck = 0        -- Время с момента последней проверкиs
+
         function self:update(dt)
             self.player:update(dt)
             self.world:update(dt)
             self.enemy:update(dt, self.player.body:getX(), self.player.body:getY())
 
             self.hub:getMessage()
-            -- создать игроков или обновить их состояние
+
+            -- Обновление или создание удаленных игроков
             for remotePlayerPort, remotePlayerData in pairs(self.hub.remotePlayersData) do
                 local remotePlayer = self.remotePlayers[remotePlayerPort]
                 if remotePlayer then
@@ -52,11 +56,21 @@ Multiplayer = {
                 end
             end
 
+            -- Удаление неактивных игроков
             for remotePlayerPort, _ in pairs(self.remotePlayers) do
                 if not self.hub.remotePlayersData[remotePlayerPort] then
                     self.remotePlayers[remotePlayerPort] = nil
                 end
             end
+
+            -- Таймер проверки координат
+            self.timeSinceLastCheck = self.timeSinceLastCheck + dt
+            if self.timeSinceLastCheck >= self.checkRemotePlayerInterval then
+                self:validateRemotePlayers()
+                self.timeSinceLastCheck = 0
+            end
+
+            -- Отправка текущего состояния игрока на сервер
             local xv, yv = self.player.body:getLinearVelocity()
             self.hub:sendMessage({
                 port       = self.port,
@@ -142,6 +156,19 @@ Multiplayer = {
                 self.enemy:colisionWithShot(fixture_a, self.player.damage)
                 fixture_b:getBody():destroy()
                 fixture_b:destroy()
+            end
+        end
+
+        -- Проверка координат удаленных игроков
+        function self:validateRemotePlayers()
+            for remotePlayerPort, remotePlayer in pairs(self.remotePlayers) do
+                local remotePlayerData = self.hub.remotePlayersData[remotePlayerPort]
+                if remotePlayerData then
+                    local x, y = remotePlayer.body:getX(), remotePlayer.body:getY()
+                    if math.abs(x - remotePlayerData.x) > 2 or math.abs(y - remotePlayerData.y) > 2 then
+                        remotePlayer.body:setPosition(remotePlayerData.x, remotePlayerData.y)
+                    end
+                end
             end
         end
 
