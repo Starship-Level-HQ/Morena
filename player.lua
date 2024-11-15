@@ -1,4 +1,4 @@
-shots = require("shot")
+local shots = require("shot")
 
 Player = {
     new = function(world, x, y)

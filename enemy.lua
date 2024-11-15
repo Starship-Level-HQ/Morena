@@ -1,3 +1,5 @@
+local shots = require("shot")
+
 Enemy = {
     new = function(world, x, y, canShoot)
         if not (world and x and y) then
