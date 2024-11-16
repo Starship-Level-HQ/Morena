@@ -62,8 +62,8 @@ end
 function menu.load()
     love.window.setTitle("Morena - Main Menu")
 
-    background = love.graphics.newImage('menu/backGround.png')
-    character = love.graphics.newImage("menu/MC.png")
+    background = love.graphics.newImage('res/menu/backGround.png')
+    character = love.graphics.newImage("res/menu/MC.png")
 
     buttonStartBackground = generateButtonBackhround(buttonStart)
     buttonLevel2Background = generateButtonBackhround(buttonLevel2)

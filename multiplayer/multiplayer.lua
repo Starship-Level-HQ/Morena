@@ -1,11 +1,11 @@
 require("player")
 require("enemy")
-require("client")
+require("multiplayer/client")
 
 Multiplayer = {
     new = function(map, playerPosition, enemyPosition, lakePosition)
         -- Если параметры не были переданы, задаем значения по умолчанию
-        map = map or "maps/testMap.lua"
+        map = map or "res/maps/testMap.lua"
         playerPosition = playerPosition or { 300, 300 }
         enemyPosition = enemyPosition or { 600, 100 }
         lakePosition = lakePosition or { 400, 550 }
@@ -31,7 +31,7 @@ Multiplayer = {
         self.lake = physics.makeBody(self.world, lakePosition[1], lakePosition[2], 80, 80, "static")
         self.day = true
         self.lake.fixture:setCategory(cat.TEXTURE)
-        self.shotSound = love.audio.newSource("sounds/shot.wav", "static")
+        self.shotSound = love.audio.newSource("res/sounds/shot.wav", "static")
 
         self.hub = Client.new({ server = "127.0.0.1", port = 1337, gameState = self.player })
         self.port = self.hub:subscribe({ channel = "MORENA" })

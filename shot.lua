@@ -2,7 +2,7 @@ local shotFabric = {}
 physics = require("physics")
 anim8 = require 'libraries/anim8'
 
-shotFabric.slashSprite = love.graphics.newImage('sprites/slash.png')
+shotFabric.slashSprite = love.graphics.newImage('res/sprites/slash.png')
 shotFabric.slashGrid = anim8.newGrid(12, 12, shotFabric.slashSprite:getWidth(), shotFabric.slashSprite:getHeight())
 shotFabric.slashAnimations = {}
 shotFabric.slashAnimations.up = anim8.newAnimation(shotFabric.slashGrid('1-4', 1), 0.1)

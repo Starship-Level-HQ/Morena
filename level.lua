@@ -11,13 +11,13 @@ local day
 
 local levels = {
     {
-        map = "maps/testMap.lua",
+        map = "res/maps/testMap.lua",
         playerPosition = { 300, 450 },
         enemyPositions = { { 600, 100 }, { 600, 200 }, { 600, 300 } },
         lakePosition = { 400, 550 }
     },
     {
-        map = "maps/testMap.lua",
+        map = "res/maps/testMap.lua",
         playerPosition = { 100, 200 },
         enemyPositions = { { 400, 100 }, { 500, 200 }, { 600, 300 }, { 700, 400 } },
         lakePosition = { 300, 400 }
@@ -27,6 +27,7 @@ local levels = {
 
 function level.startLevel(levelNumber)
     local levelData = levels[levelNumber]
+    level.number = levelNumber
     love.window.setTitle("Morena - Level")
     cam = camera()
     love.graphics.setDefaultFilter('nearest', 'nearest')
@@ -46,7 +47,7 @@ function level.startLevel(levelNumber)
 
     lake = physics.makeBody(world, levelData.lakePosition[1], levelData.lakePosition[2], 80, 80, "static")
     lake.fixture:setCategory(cat.TEXTURE)
-    shotSound = love.audio.newSource("sounds/shot.wav", "static")
+    shotSound = love.audio.newSource("res/sounds/shot.wav", "static")
 end
 
 function level.endLevel()
@@ -77,7 +78,7 @@ function level.update(dt)
     if cam.y > (mapH - h / 2) then cam.y = (mapH - h / 2) end
 
     if player.health < 0 then
-        level.startLevel(1)
+        level.startLevel(level.number)
     end
 end
 

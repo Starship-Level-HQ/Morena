@@ -20,7 +20,7 @@ Enemy = {
         self.shots = {} -- holds our fired shots
         self.bloodDrops = {}
 
-        self.spriteSheet = love.graphics.newImage('sprites/enemy-sheet.png')
+        self.spriteSheet = love.graphics.newImage('res/sprites/enemy-sheet.png')
         self.grid = anim8.newGrid(12, 18, self.spriteSheet:getWidth(), self.spriteSheet:getHeight())
         self.animations = {}
         self.animations.down = anim8.newAnimation(self.grid('1-4', 1), 0.2)
@@ -108,7 +108,7 @@ Enemy = {
 
         function self:die(dt)
             self.body:setLinearVelocity(0, 0)
-            self.spriteSheet = love.graphics.newImage('sprites/enemy-dead.png')
+            self.spriteSheet = love.graphics.newImage('res/sprites/enemy-dead.png')
             self.grid = anim8.newGrid(12, 18, self.spriteSheet:getWidth(), self.spriteSheet:getHeight())
             if userConfig.blood then
                 self.anim = anim8.newAnimation(self.grid('1-1', 1), 0.2)
