@@ -6,6 +6,7 @@ local categories = {
   NPC = 5,
   TEXTURE = 6,
   DASHING_PLAYER = 7,
+  BARRIER = 8,
   
   TRIGGER = 15,
   VOID = 16 
