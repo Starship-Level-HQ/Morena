@@ -58,7 +58,7 @@ Multiplayer = {
                     remotePlayer:updateRemotePlayer(dt, remotePlayerData)
                 else
                     self.remotePlayers[remotePlayerPort] =
-                        Player.new(self.world, remotePlayerData.x, remotePlayerData.y)
+                        Player.new(self.world, remotePlayerData.x, remotePlayerData.y, true)
                 end
             end
 
