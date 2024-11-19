@@ -3,12 +3,17 @@ require("enemy")
 require("multiplayer/client")
 
 Multiplayer = {
-    new = function(map, playerPosition, enemyPosition, lakePosition)
+    new = function(params)
+        if (not params.channel) then
+            _log("Multiplayer requires channel to be specified")
+            return false
+        end
+
         -- Если параметры не были переданы, задаем значения по умолчанию
-        map = map or "res/maps/testMap.lua"
-        playerPosition = playerPosition or { 300, 300 }
-        enemyPosition = enemyPosition or { 600, 100 }
-        lakePosition = lakePosition or { 400, 550 }
+        map = params.map or "res/maps/testMap.lua"
+        playerPosition = params.playerPosition or { 300, 300 }
+        enemyPosition = params.enemyPosition or { 600, 100 }
+        lakePosition = params.lakePosition or { 400, 550 }
 
         -- Создаем новый объект
         local self = {}
@@ -34,7 +39,7 @@ Multiplayer = {
         self.shotSound = love.audio.newSource("res/sounds/shot.wav", "static")
 
         self.hub = Client.new({ server = "127.0.0.1", port = 1337, gameState = self.player })
-        self.port = self.hub:subscribe({ channel = "MORENA" })
+        self.port = self.hub:subscribe({ channel = params.channel })
 
         self.checkRemotePlayerInterval = 5 -- Интервал проверки в секундах
         self.timeSinceLastCheck = 0        -- Время с момента последней проверкиs
@@ -53,7 +58,7 @@ Multiplayer = {
                     remotePlayer:updateRemotePlayer(dt, remotePlayerData)
                 else
                     self.remotePlayers[remotePlayerPort] =
-                        Player.new(self.world, remotePlayerData.x, remotePlayerData.y)
+                        Player.new(self.world, remotePlayerData.x, remotePlayerData.y, true)
                 end
             end
 
