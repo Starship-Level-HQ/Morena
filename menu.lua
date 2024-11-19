@@ -1,6 +1,6 @@
 local menu = {}
 
-local menuRouter = {"main"} -- solo, multiplayer, settings, список если вдруг понадобится более сложная вложеная менюшка
+local menuRouter = { "main" } -- solo, multiplayer, settings, список если вдруг понадобится более сложная вложеная менюшка
 local activeInputButton = nil
 
 local cursorBlink = true -- Для мигания курсора
@@ -10,23 +10,32 @@ local cursorBlinkInterval = 0.5
 -- Таблица для хранения данных о кнопках
 local buttons = {
     main = {
-        { text = "Camping", action = function() table.insert(menuRouter, "solo") end },
+        { text = "Camping",     action = function() table.insert(menuRouter, "solo") end },
         { text = "Multiplayer", action = function() table.insert(menuRouter, "multiplayer") end },
-        { text = "Settings", action = function() userConfig.blood = not userConfig.blood end },
-        { text = "Exit", action = function() love.event.quit() end }
+        { text = "Settings",    action = function() userConfig.blood = not userConfig.blood end },
+        { text = "Exit",        action = function() love.event.quit() end }
     },
     solo = {
         { text = "Start Level 1", action = function() startLevel(1) end },
         { text = "Start Level 2", action = function() startLevel(2) end },
         --{ text = "Load", action = function()  end },
-        { text = "Back", action = function() table.remove(menuRouter) end }
+        { text = "Back",          action = function() table.remove(menuRouter) end }
     },
     multiplayer = {
-         { text = "Port", action = function(self)
-            self.text = ""
-            activeInputButton = self
-        end }, -- поле для ввода. Пока что ни на что не влияет.
-        { text = "Join", action = function() startMultiplayer() end },
+        {
+            text = "Port",
+            action = function(self)
+                self.text = ""
+                activeInputButton = self
+            end
+        }, -- поле для ввода. Пока что ни на что не влияет.
+        {
+            text = "Join",
+            action = function()
+                local channel = activeInputButton ~= nil and activeInputButton.text or "Morena"
+                startMultiplayer(channel)
+            end
+        },
         { text = "Back", action = function() table.remove(menuRouter) end }
     }
 }
@@ -49,7 +58,7 @@ local colors = {
     { 0.65, 0.48, 0.3 },
     { 0.61, 0.46, 0.3 },
 }
---[[local colors = {  
+--[[local colors = {
     {0.5, 0.4, 0.3},   -- темно-коричневый, основа
     {0.6, 0.5, 0.4},   -- более светлый коричневый
     {0.4, 0.35, 0.3},  -- темный землистый коричневый
@@ -94,7 +103,7 @@ function menu.load()
     -- Генерация фонов и размещение кнопок
     local buttonWidth, buttonHeight = 200, 50
     local startX, startY, spacing = 100, 100, 70
-    
+
     for state, btnList in pairs(buttons) do
         for i, button in ipairs(btnList) do
             button.x = startX
@@ -107,7 +116,7 @@ function menu.load()
 end
 
 function menu.update(dt)
-   -- Обновление таймера для мигания курсора
+    -- Обновление таймера для мигания курсора
     cursorBlinkTimer = cursorBlinkTimer + dt
     if cursorBlinkTimer >= cursorBlinkInterval then
         cursorBlink = not cursorBlink -- Переключение состояния курсора
@@ -130,8 +139,8 @@ function menu.draw()
     love.graphics.draw(background, 0, 0, 0, love.graphics.getWidth() / background:getWidth(),
         love.graphics.getHeight() / background:getHeight())
     love.graphics.draw(character, 560, 480, 0, 2, 2)
-    
-    
+
+
     local currentState = menuRouter[#menuRouter]
     local currentButtons = buttons[currentState]
 
@@ -160,10 +169,9 @@ function menu.mousepressed(x, y, button)
 end
 
 function menu.textinput(text)
-    print(text)
+    _log(text)
     if activeInputButton then
         activeInputButton.text = activeInputButton.text .. text
-        
     end
 end
 
@@ -172,4 +180,5 @@ function menu.keypressed(key)
         activeInputButton.text = activeInputButton.text:sub(1, -2)
     end
 end
+
 return menu

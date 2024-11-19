@@ -61,19 +61,21 @@ function love.keypressed(key)
         menu.keypressed(key)
     end
 end
+
 function love.textinput(text)
     if gameState == "menu" then
         menu.textinput(text)
     end
 end
+
 function startLevel(levelNumber)
     gameState = "level"
     _log(levelNumber)
     level.startLevel(levelNumber)
 end
 
-function startMultiplayer()
+function startMultiplayer(channel)
     gameState = "multiplayer"
     _log(gameState)
-    multiplayer = Multiplayer.new()
+    multiplayer = Multiplayer.new({ channel = channel })
 end
