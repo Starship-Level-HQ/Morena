@@ -37,14 +37,14 @@ function level.startLevel(levelNumber)
   gameMap = sti(levelData.map)
   world = love.physics.newWorld(0, 0, true)
   world:setGravity(0, 40)
-  world:setCallbacks(level.collisionOnEnter)
+  world:setCallbacks(level.collisionOnEnter, level.collisionOnEnd)
 
   player = Player.new(world, levelData.playerPosition[1], levelData.playerPosition[2])
   enemies = {}
   day = true
 
   for i, p in ipairs(levelData.enemyPositions) do
-    local enemy = Enemy.new(world, p[1], p[2], i % 2 == 0)
+    local enemy = Enemy.new(world, p[1], p[2], i % 2 == 0, 250, 100)
     table.insert(enemies, enemy)
   end
 
@@ -83,7 +83,7 @@ function level.update(dt)
       player:update(dt)
 
       for _, enemy in ipairs(enemies) do
-        enemy:update(dt, player.body:getX(), player.body:getY())
+        enemy:update(dt)
       end
 
       world:update(dt)
@@ -149,6 +149,11 @@ function level.collisionOnEnter(fixture_a, fixture_b, contact)
   if fixture_a:getCategory() == cat.PLAYER and fixture_b:getCategory() == cat.ENEMY then
     player:collisionWithEnemy(fixture_b, 10)
   end
+  
+  if (fixture_a:getCategory() == cat.PLAYER or fixture_a:getCategory() == cat.DASHING_PLAYER) 
+  and fixture_b:getCategory() == cat.E_RANGE then
+    fixture_b:getUserData():seePlayer(fixture_a)
+  end
 
   if fixture_a:getCategory() == cat.PLAYER and fixture_b:getCategory() == cat.E_SHOT then
     player:collisionWithShot(fixture_b:getUserData())
@@ -161,11 +166,16 @@ function level.collisionOnEnter(fixture_a, fixture_b, contact)
   end
 
   if fixture_b:getCategory() == cat.P_SHOT and fixture_a:getCategory() == cat.ENEMY then
-    for _, enemy in ipairs(enemies) do
-      enemy:colisionWithShot(fixture_a, fixture_b:getUserData())
-      fixture_b:getBody():destroy()
-      fixture_b:destroy()
-    end
+    fixture_a:getUserData():colisionWithShot(fixture_b:getUserData())
+    fixture_b:getBody():destroy()
+    fixture_b:destroy()
+  end
+end
+
+function level.collisionOnEnd(fixture_a, fixture_b, contact)
+  if (fixture_a:getCategory() == cat.PLAYER or fixture_a:getCategory() == cat.DASHING_PLAYER) 
+  and fixture_b:getCategory() == cat.E_RANGE then
+    fixture_b:getUserData():dontSeePlayer(fixture_a)
   end
 end
 
