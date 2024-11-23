@@ -1,7 +1,7 @@
 local shots = require("shot")
 
 Enemy = {
-    new = function(world, x, y, canShoot)
+    new = function(world, x, y, canShoot, range, health)
         if not (world and x and y) then
             _log("Enemy requires parameters 'world', 'x', and 'y' to be specified")
             return false
@@ -15,10 +15,18 @@ Enemy = {
         self.fixture = love.physics.newFixture(self.body, self.shape, 0) --коллайдер
         self.fixture:setCategory(cat.ENEMY)
         self.fixture:setMask(cat.E_SHOT, cat.VOID, cat.DASHING_PLAYER)
+        self.fixture:setUserData(self)
+        self.rangeFixture = love.physics.newFixture(self.body, love.physics.newCircleShape(range), 0) --коллайдер
+        self.rangeFixture:setCategory(cat.E_RANGE)
+        self.rangeFixture:setMask(cat.E_SHOT, cat.VOID, cat.DASHING_PLAYER, cat.ENEMY, cat.P_SHOT, cat.TEXTURE)
+        self.rangeFixture:setSensor(true)
+        self.rangeFixture:setUserData(self)
         self.body:setGravityScale(0)
-        self.health = 100
+        self.health = health
+        self.range = range
         self.shots = {} -- holds our fired shots
         self.bloodDrops = {}
+        self.playerPos = {}
 
         self.spriteSheet = love.graphics.newImage('res/sprites/enemy-sheet.png')
         self.grid = anim8.newGrid(12, 18, self.spriteSheet:getWidth(), self.spriteSheet:getHeight())
@@ -34,13 +42,23 @@ Enemy = {
         self.tick = x + y % 150
         self.canShoot = canShoot
 
-        function self:update(dt, playerX, playerY)
+        function self:update(dt)
             if self.isAlive then
                 local isMoving = false
 
-                if math.sqrt((self.body:getX() - playerX) ^ 2 + (self.body:getY() - playerY) ^ 2) < 210 then
+                if #self.playerPos > 0 then
+                  local player = self.playerPos[1]
+                  for i, p in ipairs(self.playerPos) do
+                    d1, _, _, _, _ = love.physics.getDistance(self.fixture, p)
+                    d2, _, _, _, _ = love.physics.getDistance(self.fixture, player)
+                    if d1 < d2 then
+                      player = p
+                    end
+                  end
                     local speedX = 0
                     local speedY = 0
+                    local playerX = player:getBody():getX()
+                    local playerY = player:getBody():getY()
 
                     if self.tick < 100 then
                         if self.body:getX() > playerX and math.abs(self.body:getX() - playerX) > 5 then
@@ -185,10 +203,23 @@ Enemy = {
             love.graphics.setColor(d1, d2, d3, d4)
         end
 
-        function self:colisionWithShot(f, damage)
-            if f == self.fixture then
-                self.health = self.health - damage
+        function self:colisionWithShot(damage)
+          self.health = self.health - damage
+        end
+        
+        function self:seePlayer(playerBody)
+          table.insert(self.playerPos, playerBody)
+        end
+        
+        function self:dontSeePlayer(playerBody)
+          local remP = 0
+          for i, p in ipairs(self.playerPos) do
+            if p == playerBody then
+              remP = i
+              break
             end
+          end
+          table.remove(self.playerPos, remP)
         end
 
         return self
