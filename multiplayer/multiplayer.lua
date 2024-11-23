@@ -146,7 +146,8 @@ Multiplayer = {
       end
     end
 
-    function self.collisionOnEnter(fixture_a, fixture_b, contact)
+    function self.collisionOnEnter(_, fixture_a, fixture_b, contact)
+      
       if fixture_a:getCategory() == cat.PLAYER and fixture_b:getCategory() == cat.ENEMY then
         fixture_a:getUserData():collisionWithEnemy(fixture_b, 10)
       end
@@ -173,7 +174,7 @@ Multiplayer = {
       end
     end
 
-    function self.collisionOnEnd(fixture_a, fixture_b, contact)
+    function self.collisionOnEnd(_, fixture_a, fixture_b, contact)
       if (fixture_a:getCategory() == cat.PLAYER or fixture_a:getCategory() == cat.DASHING_PLAYER) 
       and fixture_b:getCategory() == cat.E_RANGE then
         fixture_b:getUserData():dontSeePlayer(fixture_a)
