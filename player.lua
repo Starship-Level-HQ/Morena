@@ -1,4 +1,7 @@
 local shots = require("shot")
+local inventory = require("inventory.src.inventory")
+local item = require("inventory.src.item")
+local inventoryGuiSrc = require("inventory.src.inventoryGui")
 
 Player = {
     new = function(world, x, y, isRemote)
@@ -42,6 +45,17 @@ Player = {
         self.serverDirectionX = ""
         self.serverDirectionY = ""
         self.isRemote = isRemote
+
+        self.inventory = inventory.new(6, 4)
+        self.inventory:addItem(item.new("Thing", "inventory/assets/thing.png", "It's a thing. Yeah."))
+        self.inventory:addItem(item.new("Another Thing", "inventory/assets/thing2.png",
+            "It's another thing. It has colors."))
+        self.inventory:addItem(item.new("Gold Nugget", "inventory/assets/gold nugget.png",
+            "I found it lying on the ground. I must be lucky - you can sell one of these for 50 coins..."))
+
+        self.inventoryGui = inventoryGuiSrc
+        self.inventoryGui:setInventory(self.inventory, 50, 50)
+        self.inventoryIsOpen = false
 
         --Рывок
         self.isDashing = false
@@ -133,6 +147,7 @@ Player = {
             self.anim:update(dt)
             self:updateShots(dt)
             self:updateSlash(dt)
+            self:updateInventary()
         end
 
         function self:updateRemotePlayer(dt, remotePlayerData)
@@ -189,6 +204,16 @@ Player = {
             self.anim:update(dt)
             self:updateShots(dt)
             self:updateSlash(dt)
+        end
+
+        function self:mousepressed(xMousepressed, yMousepressed, b)
+            if self.inventoryIsOpen then -- проверяем, открыт ли инвентарь
+                self.inventoryGui:mousepressed(xMousepressed, yMousepressed, b)
+            end
+        end
+
+        function self:updateInventary()
+            if (self.inventoryIsOpen) then self.inventoryGui:update() end
         end
 
         function self:updateShots(dt)
@@ -306,6 +331,11 @@ Player = {
             love.graphics.print(self.health, self.body:getX() - 23, self.body:getY() - 65, 0, 2, 2)
 
             love.graphics.setColor(d1, d2, d3, d4)
+
+            --Инвентарь
+            if (self.inventoryIsOpen) then
+                self.inventoryGui:draw()
+            end
         end
 
         function self:collisionWithEnemy(fixture_b, damage)

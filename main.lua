@@ -5,9 +5,10 @@ local menu = require("menu")
 local level = require("level")
 local multiplayer = require("multiplayer/multiplayer")
 sti = require("libraries/sti")
-camera = require("libraries/camera")
 cat = require("objectsCategories")
 userConfig = require("userConfig")
+camera = require("libraries/camera")
+cam = camera()
 
 -- Глобальная переменная для состояния игры
 gameState = "menu" -- Начальное состояние — меню
@@ -42,6 +43,8 @@ end
 function love.mousepressed(x, y, button, istouch, presses)
     if gameState == "menu" then
         menu.mousepressed(x, y, button)
+    elseif gameState == "level" then
+        level.mousepressed(x, y, button)
     end
 end
 

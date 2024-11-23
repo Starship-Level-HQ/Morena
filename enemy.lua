@@ -6,6 +6,8 @@ Enemy = {
             _log("Enemy requires parameters 'world', 'x', and 'y' to be specified")
             return false
         end
+        canShoot = canShoot or false
+
         local self = {}
 
         self.defaultSpeed = 40
