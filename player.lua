@@ -20,7 +20,7 @@ Player = {
         self.fixture:setMask(cat.P_SHOT, cat.VOID, cat.PLAYER)           -- Категории, которые игрок игнорирует (свои выстрелы, других игроков и пустоту)
         self.fixture:setUserData(self)
         self.body:setGravityScale(0)
-        self.shots = {}                                                  -- holds our fired shots
+        self.shots = {} -- holds our fired shots
         self.slashes = {}
         self.health = 100
         self.attackType = true
@@ -140,14 +140,6 @@ Player = {
             self.health = remotePlayerData.health
             local speed = self.defaultSpeed
 
-            -- Проверяем состояние dash на основе данных от сервера
-            if remotePlayerData.isDashing then
-                speed = speed + self.dashSpeed
-                self.isDashing = true
-            else
-                self.isDashing = false
-            end
-
             if remotePlayerData.directionX == "l" then
                 self.body:setLinearVelocity(-speed, remotePlayerData.yv)
                 self.anim = self.animations.left
@@ -177,19 +169,9 @@ Player = {
             end
 
             self.direction = physics.calculateDirection(remotePlayerData.xv, remotePlayerData.yv, self.direction)
+            self.fixture:setCategory(cat.PLAYER)
 
-            -- Обновляем dash-статус и анимацию
-            if self.isDashing then
-                self.dashTimeLeft = self.dashDuration
-                self.fixture:setCategory(cat.DASHING_PLAYER)
-            else
-                self.fixture:setCategory(cat.PLAYER)
-            end
-
-            self:updateDash(dt)
             self.anim:update(dt)
-            self:updateShots(dt)
-            self:updateSlash(dt)
         end
 
         function self:updateShots(dt)

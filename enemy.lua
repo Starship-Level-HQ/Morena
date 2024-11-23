@@ -42,19 +42,50 @@ Enemy = {
         self.tick = x + y % 150
         self.canShoot = canShoot
 
-        function self:update(dt)
+        function self:update(dt, enemyData)
+            if enemyData ~= nil then
+                -- Обновление состояния врага из данных enemyData
+                self.body:setX(enemyData.x)
+                self.body:setY(enemyData.y)
+                self.body:setLinearVelocity(enemyData.xv, enemyData.yv)
+                self.direction = physics.calculateDirection(enemyData.xv, enemyData.yv, self.direction) -- 45'
+                self.health = enemyData.health
+
+                if enemyData.directionX == "l" then
+                    self.anim = self.animations.left
+                elseif enemyData.directionX == "r" then
+                    self.anim = self.animations.right
+                end
+
+                if enemyData.directionY == "u" then
+                    self.anim = self.animations.up
+                elseif enemyData.directionY == "d" then
+                    self.anim = self.animations.down
+                end
+
+                -- Обновляем анимацию
+                self.anim:update(dt)
+
+                if self.health <= 0 then
+                    self:die(dt)
+                end
+
+                return -- Завершаем обновление, так как enemyData был использован
+            end
+
+
             if self.isAlive then
                 local isMoving = false
 
                 if #self.playerPos > 0 then
-                  local player = self.playerPos[1]
-                  for i, p in ipairs(self.playerPos) do
-                    d1, _, _, _, _ = love.physics.getDistance(self.fixture, p)
-                    d2, _, _, _, _ = love.physics.getDistance(self.fixture, player)
-                    if d1 < d2 then
-                      player = p
+                    local player = self.playerPos[1]
+                    for i, p in ipairs(self.playerPos) do
+                        d1, _, _, _, _ = love.physics.getDistance(self.fixture, p)
+                        d2, _, _, _, _ = love.physics.getDistance(self.fixture, player)
+                        if d1 < d2 then
+                            player = p
+                        end
                     end
-                  end
                     local speedX = 0
                     local speedY = 0
                     local playerX = player:getBody():getX()
@@ -204,22 +235,22 @@ Enemy = {
         end
 
         function self:colisionWithShot(damage)
-          self.health = self.health - damage
+            self.health = self.health - damage
         end
-        
+
         function self:seePlayer(playerBody)
-          table.insert(self.playerPos, playerBody)
+            table.insert(self.playerPos, playerBody)
         end
-        
+
         function self:dontSeePlayer(playerBody)
-          local remP = 0
-          for i, p in ipairs(self.playerPos) do
-            if p == playerBody then
-              remP = i
-              break
+            local remP = 0
+            for i, p in ipairs(self.playerPos) do
+                if p == playerBody then
+                    remP = i
+                    break
+                end
             end
-          end
-          table.remove(self.playerPos, remP)
+            table.remove(self.playerPos, remP)
         end
 
         return self
