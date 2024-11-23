@@ -18,6 +18,7 @@ Player = {
         self.fixture = love.physics.newFixture(self.body, self.shape, 0) -- коллайдер
         self.fixture:setCategory(cat.PLAYER)                             -- Категория объектов, к которой относится игрок
         self.fixture:setMask(cat.P_SHOT, cat.VOID, cat.PLAYER)           -- Категории, которые игрок игнорирует (свои выстрелы и пустоту)
+        self.fixture:setUserData(self)
         self.body:setGravityScale(0)
         self.shots = {}                                                  -- holds our fired shots
         self.slashes = {}
