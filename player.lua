@@ -47,11 +47,11 @@ Player = {
         self.isRemote = isRemote
 
         self.inventory = inventory.new(6, 4)
-        self.inventory:addItem(item.new("Thing", "inventory/assets/thing.png", "It's a thing. Yeah."))
+        self.inventory:addItem(item.new("Thing", "inventory/assets/thing.png", "It's a thing. Yeah.", nil))
         self.inventory:addItem(item.new("Another Thing", "inventory/assets/thing2.png",
-            "It's another thing. It has colors."))
+            "It's another thing. It has colors.", nil))
         self.inventory:addItem(item.new("Gold Nugget", "inventory/assets/gold nugget.png",
-            "I found it lying on the ground. I must be lucky - you can sell one of these for 50 coins..."))
+            "I found it lying on the ground. I must be lucky - you can sell one of these for 50 coins...", function() self.health = self.health + 30 ; table.remove(self.inventory, 3) end))
 
         self.inventoryGui = inventoryGuiSrc
         self.inventoryGui:setInventory(self.inventory, 50, 50)
@@ -328,7 +328,7 @@ Player = {
             end
 
             love.graphics.setColor(0, 1, 0, 1)
-            love.graphics.print(self.health, self.body:getX() - 23, self.body:getY() - 65, 0, 2, 2)
+            love.graphics.print(self.health, self.body:getX() - 24, self.body:getY() - 67, 0, 1.8, 1.8)
 
             love.graphics.setColor(d1, d2, d3, d4)
 

@@ -23,7 +23,8 @@ local selected = { is = false, x = 1, y = 1 }
 local infoBox = { w = 200, h = 200 }
 
 function inventoryGui:update()
-    local offsetX, offsetY = cam:position()
+    local offsetX, offsetY = cam:position() -- Вот здесь если какую то пропорцию составить, то можно получить глобально-локальные координаты
+    _log("Cam POS: ", offsetX, offsetY)
     
     offsetX = offsetX - love.graphics.getWidth()/5
     offsetY = offsetY - love.graphics.getHeight()/5
@@ -33,7 +34,9 @@ function inventoryGui:update()
     for y = 1, invH do
         for x = 1, invW do
             local drawX = (x - 1) * itemDrawW + offsetX
-            local drawY = (y - 1) * itemDrawH + offsetY - 3*itemDrawH
+            local drawY = (y - 1) * itemDrawH + offsetY
+            _log("interacton zone: ", drawX, drawY)
+            _log("Mouse position: ", mx, my)
             
             local mouseIsOn = mx > drawX and mx <= drawX + itemDrawW and my > drawY and my <= drawY + itemDrawH
             if mouseIsOn then
@@ -63,6 +66,13 @@ function inventoryGui:mousepressed(x, y, b)
             end
         end
     end
+    if b == 2 then
+      if mouseOn.is then
+            if inv.arr[mouseOn.y][mouseOn.x] ~= 0 and inv.arr[mouseOn.y][mouseOn.x].usage ~= nil then
+                inv.arr[mouseOn.y][mouseOn.x].usage()
+            end
+        end
+      end
 end
 
 love.graphics.setLineWidth(2)
@@ -79,6 +89,7 @@ function inventoryGui:draw()
         for x = 1, invW do
             local drawX = (x - 1) * itemDrawW + offsetX
             local drawY = (y - 1) * itemDrawH + offsetY
+            _log("Image position: ", drawX, drawY)
             local mouseOnThis = mouseOn.is and mouseOn.x == x and mouseOn.y == y
             if mouseOnThis then
                 love.graphics.setColor(200, 200, 200)
