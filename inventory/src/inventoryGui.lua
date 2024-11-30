@@ -29,9 +29,8 @@ function inventoryGui:update()
     mx = mx + offsetX - love.graphics.getWidth()/2
     my = my + offsetY - love.graphics.getHeight()/2
     
-    offsetX = offsetX - love.graphics.getWidth()/5
-    offsetY = offsetY - love.graphics.getHeight()/5
-    
+    offsetX = offsetX - 140
+    offsetY = offsetY - 140
   
     mouseOn.is = false
     for y = 1, invH do
@@ -82,8 +81,8 @@ love.graphics.setNewFont(15)
 function inventoryGui:draw()
     local offsetX, offsetY = cam:position()
     
-    offsetX = offsetX - love.graphics.getWidth()/5
-    offsetY = offsetY - love.graphics.getHeight()/5
+    offsetX = offsetX - 140
+    offsetY = offsetY - 140
   
     love.graphics.setColor(255, 255, 255)
 
