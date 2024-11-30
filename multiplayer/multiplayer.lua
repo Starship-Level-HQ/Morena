@@ -66,11 +66,36 @@ Multiplayer = {
             for enemyId, enemyData in pairs(self.hub.enemiesData) do
                 local tempEnemy = self.enemies[enemyId]
                 if tempEnemy then
-                    tempEnemy:update(dt, enemyData)
+                    if self.player.host then
+                        tempEnemy:update(dt)
+                    else
+                        tempEnemy:update(dt, enemyData)
+                    end
                 else
                     self.enemies[enemyId] =
                         Enemy.new(self.world, enemyData.x, enemyData.y, true, 250, enemyData.health)
                 end
+            end
+
+            -- Отправка текущего состояния врагов на сервер
+            if self.player.host then
+                local enemiesData = {}
+
+                -- Собираем данные о врагах
+                for enemyId, enemy in pairs(self.enemies) do
+                    table.insert(enemiesData, {
+                        id         = enemyId,
+                        x          = enemy.body:getX(),
+                        y          = enemy.body:getY(),
+                        xv         = enemy.body:getLinearVelocity(),
+                        directionX = enemy.directionX,
+                        directionY = enemy.directionY,
+                        health     = enemy.health,
+                    })
+                end
+
+                -- Отправляем на сервер
+                self.hub:sendEnemyData(enemiesData)
             end
 
             -- Удаление неактивных игроков

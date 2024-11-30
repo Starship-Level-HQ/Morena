@@ -109,7 +109,7 @@ Client = {
                         self.buffer = self.buffer:sub(1, startJSON - 1) .. self.buffer:sub(finishJSON + 13)
                         local data = json.decode(jsonData)
                         local _, port = self.sock:getsockname()
-                        _log('__JSON__START__: ', data)
+                        -- _log('__JSON__START__: ', data)
 
                         if data.alive then
                             if port ~= data.port then
@@ -122,14 +122,17 @@ Client = {
                                     directionY = data.directionY,
                                     health = data.health,
                                 }
+                            else
+                                _log('HOST FROM SERVER: ', data.host)
+                                self.gameState.host = data.host
                             end
                         else
                             self.remotePlayersData[data.port] = nil
                         end
                     elseif startEnemy and finishEnemy then
                         -- Обработка сообщения о состоянии врагов
-                        local enemyData = string.sub(self.buffer, startEnemy + 21, finishEnemy - 1)
-                        self.buffer = self.buffer:sub(1, startEnemy - 1) .. self.buffer:sub(finishEnemy + 17)
+                        local enemyData = string.sub(self.buffer, startEnemy + 22, finishEnemy - 1)
+                        self.buffer = self.buffer:sub(1, startEnemy - 1) .. self.buffer:sub(finishEnemy + 20)
                         local enemies = json.decode(enemyData)
                         _log('__JSON__ENEMY__START__: ', enemies)
 
@@ -147,8 +150,8 @@ Client = {
                         end
                     elseif startAddEnemy and finishAddEnemy then
                         -- Обработка добавления нового врага
-                        local addEnemyData = string.sub(self.buffer, startAddEnemy + 18, finishAddEnemy - 1)
-                        self.buffer = self.buffer:sub(1, startAddEnemy - 1) .. self.buffer:sub(finishAddEnemy + 15)
+                        local addEnemyData = string.sub(self.buffer, startAddEnemy + 19, finishAddEnemy - 1)
+                        self.buffer = self.buffer:sub(1, startAddEnemy - 1) .. self.buffer:sub(finishAddEnemy + 17)
                         local newEnemy = json.decode(addEnemyData)
                         _log('__ADDENEMY__START__: ', newEnemy)
 
