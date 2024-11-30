@@ -51,7 +51,7 @@ Player = {
         self.inventory:addItem(item.new("Another Thing", "inventory/assets/thing2.png",
             "It's another thing. It has colors.", nil))
         self.inventory:addItem(item.new("Gold Nugget", "inventory/assets/gold nugget.png",
-            "I found it lying on the ground. I must be lucky - you can sell one of these for 50 coins...", function() self.health = self.health + 30 ; table.remove(self.inventory, 3) end))
+            "I found it lying on the ground. I must be lucky - you can sell one of these for 50 coins...", function() self.health = self.health + 30 end))
 
         self.inventoryGui = inventoryGuiSrc
         self.inventoryGui:setInventory(self.inventory, 50, 50)

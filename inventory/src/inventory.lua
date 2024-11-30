@@ -26,6 +26,10 @@ function inventory:addItem(item)
     end
 end
 
+function inventory:removeItem(i, j)
+    self.arr[i][j] = 0
+end
+
 function inventory:replace(x1, y1, x2, y2)
     local ph = self.arr[y1][x1]
     self.arr[y1][x1] = self.arr[y2][x2]

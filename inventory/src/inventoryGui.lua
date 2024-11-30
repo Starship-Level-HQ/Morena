@@ -71,6 +71,7 @@ function inventoryGui:mousepressed(x, y, b)
       if mouseOn.is then
             if inv.arr[mouseOn.y][mouseOn.x] ~= 0 and inv.arr[mouseOn.y][mouseOn.x].usage ~= nil then
                 inv.arr[mouseOn.y][mouseOn.x].usage()
+                inv:removeItem(mouseOn.y, mouseOn.x)
             end
         end
       end
