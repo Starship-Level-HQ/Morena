@@ -26,29 +26,32 @@ local levels = {
 }
 
 function level.startLevel(levelNumber)
-    local levelData = levels[levelNumber]
-    level.number = levelNumber
-    level.pause = false
-    level.isDialog = false
-    love.window.setTitle("Morena - Level")
-    love.graphics.setDefaultFilter('nearest', 'nearest')
-    gameMap = sti(levelData.map)
-    world = love.physics.newWorld(0, 0, true)
-    world:setGravity(0, 40)
-    world:setCallbacks(level.collisionOnEnter)
 
-    player = Player.new(world, levelData.playerPosition[1], levelData.playerPosition[2])
-    enemies = {}
-    day = true
+  local levelData = levels[levelNumber]
+  level.number = levelNumber
+  level.pause = false
+  level.isDialog = false
+  love.window.setTitle("Morena - Level")
+  cam = camera()
+  love.graphics.setDefaultFilter('nearest', 'nearest')
+  gameMap = sti(levelData.map)
+  world = love.physics.newWorld(0, 0, true)
+  world:setGravity(0, 40)
+  world:setCallbacks(level.collisionOnEnter, level.collisionOnEnd)
 
-    for i, p in ipairs(levelData.enemyPositions) do
-        local enemy = Enemy.new(world, p[1], p[2], i % 2 == 0)
-        table.insert(enemies, enemy)
-    end
+  player = Player.new(world, levelData.playerPosition[1], levelData.playerPosition[2])
+  enemies = {}
+  day = true
 
-    lake = physics.makeBody(world, levelData.lakePosition[1], levelData.lakePosition[2], 80, 80, "static")
-    lake.fixture:setCategory(cat.TEXTURE)
-    shotSound = love.audio.newSource("res/sounds/shot.wav", "static")
+  for i, p in ipairs(levelData.enemyPositions) do
+    local enemy = Enemy.new(world, p[1], p[2], i % 2 == 0, 250, 100)
+    table.insert(enemies, enemy)
+  end
+
+  lake = physics.makeBody(world, levelData.lakePosition[1], levelData.lakePosition[2], 80, 80, "static")
+  lake.fixture:setCategory(cat.TEXTURE)
+  shotSound = love.audio.newSource("res/sounds/shot.wav", "static")
+
 end
 
 function level.endLevel()
@@ -71,14 +74,16 @@ function level.cameraFocus()
 end
 
 function level.update(dt)
-    if not level.pause then
-        if level.isDialog then
-            local b = level.dialog.update()
-            cam:lookAt(b:getX(), b:getY())
-            level.cameraFocus()
-            love.timer.sleep(1)
-        else
-            player:update(dt)
+
+  if not level.pause then
+    if level.isDialog then
+      local b = level.dialog.update(dt)
+      if b ~= nil then
+        cam:lookAt(b:getX(), b:getY())
+        level.cameraFocus()
+      end
+    else
+       player:update(dt)
 
             for _, enemy in ipairs(enemies) do
                 enemy:update(dt, player.body:getX(), player.body:getY())
@@ -138,9 +143,8 @@ function level.keypressed(key)
     elseif key == "1" then
         player.attackType = not player.attackType
     elseif key == "i" then
-        level.dialog = Dialog.new({ player.body, enemies[3].body }, { "Rrrrrr...", "Ah shit", "Here we go again" },
-            { 2, 1, 1 }, level.callback)
-        level.isDialog = true
+      level.dialog = Dialog.new({{text="Rrrrrr...\nrrrrrr...", body = enemies[3].body}, {text = "Ah shit", body = player.body}, {text = "Here we go again", body = player.body, dur = 1.2}}, level.callback)
+      level.isDialog = true
     elseif key == "p" then
         level.pause = not level.pause
     elseif key == "e" then
@@ -154,9 +158,14 @@ function level.mousepressed(x, y, b)
 end
 
 function level.collisionOnEnter(fixture_a, fixture_b, contact)
-    if fixture_a:getCategory() == cat.PLAYER and fixture_b:getCategory() == cat.ENEMY then
-        player:collisionWithEnemy(fixture_b, 10)
-    end
+  if fixture_a:getCategory() == cat.PLAYER and fixture_b:getCategory() == cat.ENEMY then
+    player:collisionWithEnemy(fixture_b, 10)
+  end
+  
+  if (fixture_a:getCategory() == cat.PLAYER or fixture_a:getCategory() == cat.DASHING_PLAYER) 
+  and fixture_b:getCategory() == cat.E_RANGE then
+    fixture_b:getUserData():seePlayer(fixture_a)
+  end
 
     if fixture_a:getCategory() == cat.PLAYER and fixture_b:getCategory() == cat.E_SHOT then
         player:collisionWithShot(fixture_b:getUserData())
@@ -168,13 +177,18 @@ function level.collisionOnEnter(fixture_a, fixture_b, contact)
         fixture_b:setCategory(cat.P_SHOT)
     end
 
-    if fixture_b:getCategory() == cat.P_SHOT and fixture_a:getCategory() == cat.ENEMY then
-        for _, enemy in ipairs(enemies) do
-            enemy:colisionWithShot(fixture_a, fixture_b:getUserData())
-            fixture_b:getBody():destroy()
-            fixture_b:destroy()
-        end
-    end
+  if fixture_b:getCategory() == cat.P_SHOT and fixture_a:getCategory() == cat.ENEMY then
+    fixture_a:getUserData():colisionWithShot(fixture_b:getUserData())
+    fixture_b:getBody():destroy()
+    fixture_b:destroy()
+  end
+end
+
+function level.collisionOnEnd(fixture_a, fixture_b, contact)
+  if (fixture_a:getCategory() == cat.PLAYER or fixture_a:getCategory() == cat.DASHING_PLAYER) 
+  and fixture_b:getCategory() == cat.E_RANGE then
+    fixture_b:getUserData():dontSeePlayer(fixture_a)
+  end
 end
 
 return level

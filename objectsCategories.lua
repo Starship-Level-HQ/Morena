@@ -7,6 +7,7 @@ local categories = {
   TEXTURE = 6,
   DASHING_PLAYER = 7,
   BARRIER = 8,
+  E_RANGE = 9,
   
   TRIGGER = 15,
   VOID = 16 
