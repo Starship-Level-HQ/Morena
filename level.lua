@@ -140,7 +140,7 @@ function level.keypressed(key)
   elseif key == "1" then
     player.attackType = not player.attackType
   elseif key == "i" then
-    level.dialog = Dialog.new({{text="Rrrrrr...", body = enemies[3].body}, {text = "Ah shit", body = player.body}, {text = "Here we go again", body = player.body, dur = 1.2}}, level.callback)
+    level.dialog = Dialog.new({{text="Rrrrrr...\nrrrrrr...", body = enemies[3].body}, {text = "Ah shit", body = player.body}, {text = "Here we go again", body = player.body, dur = 1.2}}, level.callback)
     level.isDialog = true
   elseif key == "p" then
     level.pause = not level.pause
