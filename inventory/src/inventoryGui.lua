@@ -24,24 +24,28 @@ local infoBox = { w = 200, h = 200 }
 
 function inventoryGui:update()
     local offsetX, offsetY = cam:position()
+    
+    offsetX = offsetX - love.graphics.getWidth()/5
+    offsetY = offsetY - love.graphics.getHeight()/5
     mx, my = love.mouse.getPosition()
-
-    -- mx, my = mx - offsetX + 130 + itemDrawW, my - offsetY + 180 + itemDrawH * 2
+  
     mouseOn.is = false
     for y = 1, invH do
         for x = 1, invW do
-            local drawX = (x - 1) * itemDrawW
-            local drawY = (y - 1) * itemDrawH
+            local drawX = (x - 1) * itemDrawW + offsetX
+            local drawY = (y - 1) * itemDrawH + offsetY - 3*itemDrawH
+            
             local mouseIsOn = mx > drawX and mx <= drawX + itemDrawW and my > drawY and my <= drawY + itemDrawH
             if mouseIsOn then
                 mouseOn.is = true
                 mouseOn.x, mouseOn.y = x, y
+              
             end
         end
     end
-    _log("Mouse position: ", mx, my)
-    _log("Offset position: ", offsetX, offsetY)
-    _log("Mouse on cell: ", mouseOn.is, mouseOn.x, mouseOn.y)
+    --_log("Mouse position: ", mx, my)
+    --_log("Offset position: ", offsetX, offsetY)
+    --_log("Mouse on cell: ", mouseOn.is, mouseOn.x, mouseOn.y)
 end
 
 function inventoryGui:mousepressed(x, y, b)
@@ -65,11 +69,11 @@ love.graphics.setLineWidth(2)
 love.graphics.setNewFont(15)
 function inventoryGui:draw()
     local offsetX, offsetY = cam:position()
-    love.graphics.setColor(0, 0, 0)
-    love.graphics.rectangle("line", offsetX, offsetX, 50, 50)
+    
+    offsetX = offsetX - love.graphics.getWidth()/5
+    offsetY = offsetY - love.graphics.getHeight()/5
+  
     love.graphics.setColor(255, 255, 255)
-    offsetX = offsetX - 180
-    offsetY = offsetY - 130
 
     for y = 1, invH do
         for x = 1, invW do
@@ -85,22 +89,7 @@ function inventoryGui:draw()
             love.graphics.setColor(0, 0, 0)
             love.graphics.rectangle("line", drawX, drawY, itemDrawW, itemDrawH)
             love.graphics.setColor(255, 255, 255)
-        end
-    end
-    for y = 1, invH do
-        for x = 1, invW do
-            local drawX = (x - 1) * itemDrawW + offsetX
-            local drawY = (y - 1) * itemDrawH + offsetY
             local item = inv.arr[y][x]
-            if selected.is and selected.x == x and selected.y == y then
-                love.graphics.setColor(255, 255, 255, 100)
-                love.graphics.draw(item.img, drawX, drawY)
-                love.graphics.setColor(0, 0, 0, 30)
-                love.graphics.draw(item.img, mx + 10 + offsetX, my + 10 + offsetY)
-            elseif item ~= 0 then
-                love.graphics.setColor(255, 255, 255)
-                love.graphics.draw(item.img, drawX, drawY)
-            end
             if mouseOn.is and item ~= 0 and mouseOn.x == x and mouseOn.y == y then
                 love.graphics.setColor(255, 255, 255) -- Белый цвет для фона
                 love.graphics.rectangle("fill", itemDrawW * invW + 10 + offsetX, offsetY, infoBox.w, infoBox.h)
@@ -109,11 +98,19 @@ function inventoryGui:draw()
                     infoBox.w - 5)
                 love.graphics.setColor(255, 255, 255) -- Сбрасываем цвет для остальных элементов
             end
+            
+            if not selected.id and item ~= 0 then
+                love.graphics.setColor(255, 255, 255)
+                love.graphics.draw(item.img, drawX, drawY)
+            end
         end
     end
+  
     if selected.is then
-        love.graphics.setColor(255, 255, 255)
-        love.graphics.draw(inv.arr[selected.y][selected.x].img, mx + offsetX, my + offsetY)
+      love.graphics.setColor(0, 0, 0, 30)
+      love.graphics.draw(inv.arr[selected.y][selected.x].img, mx+10, my+10+2*itemDrawH)
+      love.graphics.setColor(255, 255, 255)
+      love.graphics.draw(inv.arr[selected.y][selected.x].img, mx, my+2*itemDrawH)
     end
 end
 
