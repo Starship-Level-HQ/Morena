@@ -67,14 +67,17 @@ function inventoryGui:mousepressed(x, y, b)
         else 
             selected.is = false
             print(selected.x, selected.y)
-            return inv:removeItem(selected.x, selected.y)
+            return {target = "world", signature = inv:removeItem(selected.x, selected.y)}
         end
     end
     if b == 2 then
       if mouseOn.is then
-            if inv.arr[mouseOn.y][mouseOn.x] ~= 0 and inv.arr[mouseOn.y][mouseOn.x].usage ~= nil then
-                inv.arr[mouseOn.y][mouseOn.x].usage()
-                inv:removeItem(mouseOn.y, mouseOn.x)
+            if inv.arr[mouseOn.y][mouseOn.x] ~= 0 then
+                local item = inv.arr[mouseOn.y][mouseOn.x]
+                if item.type == "Зелье" then
+                    inv:removeItem(mouseOn.x, mouseOn.y)
+                    return {target = item.target, signature = item.effects}
+                end
             end
         end
       end

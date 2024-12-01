@@ -5,28 +5,27 @@ local available_items = {
   [1] = {
       name = "Зелье здоровья",
       type = "Зелье",
-      effects = {здоровье = 50},
+      effects = {{"Здоровье", 20}},
       cost = 10,
-      target = "self",
+      target = "Герой",
       img = "inventory/assets/mem.png",
       desc = "This is a health potion."
   },
   [2] = {
-      name = "Зелье скорости",
+      name = "Зелье регенерации",
       type = "Зелье",
-      effects = {скорость = 10},
+      effects = {{"Регенерация", 3, 20}},
       cost = 15,
-      target = "self",
+      target = "Герой",
       img = "inventory/assets/thing2.png",
       desc = "This is a speed potion."
   }
 }
 
-function Item.new(item_id, name, item_type, effects, cost, target, img, desc)
+function Item.new(name, type, effects, cost, target, img, desc)
     local self = setmetatable({}, Item)
-    self.item_id = item_id
     self.name = name
-    self.item_type = item_type
+    self.type = type
     self.effects = effects
     self.cost = cost
     self.target = target
@@ -37,10 +36,8 @@ end
 
 function Item.create_item(item_id)
     local item_data = available_items[item_id]
-    
     if item_data then
         return Item.new(
-            item_id,
             item_data.name,
             item_data.type,
             item_data.effects,

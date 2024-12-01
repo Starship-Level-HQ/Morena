@@ -50,7 +50,7 @@ Player = {
         self.nearestItem = nil
         self.inventory = inventory.new(6, 4)
         self.inventory:addItem(ItemModule.create_item(1))
-        self.inventory:addItem(ItemModule.create_item(1))
+        self.inventory:addItem(ItemModule.create_item(2))
         self.inventory:addItem(ItemModule.create_item(1))
         -- self.inventory:addItem(item.new("Another Thing", "inventory/assets/thing2.png",
         --     "It's another thing. It has colors.", nil))
@@ -60,6 +60,8 @@ Player = {
         self.inventoryGui = inventoryGuiSrc
         self.inventoryGui:setInventory(self.inventory, 50, 50)
         self.inventoryIsOpen = false
+
+        self.effects = {}
 
         --Рывок
         self.isDashing = false
@@ -147,7 +149,7 @@ Player = {
             if self.health == 0 then
                 self.health = 1
             end
-
+            self.updateEffects(dt)
             self:updateDash(dt)
             self.anim:update(dt)
             self:updateShots(dt)
@@ -213,7 +215,53 @@ Player = {
 
         function self:mousepressed(xMousepressed, yMousepressed, b)
             if self.inventoryIsOpen then -- проверяем, открыт ли инвентарь
-                return self.inventoryGui:mousepressed(xMousepressed, yMousepressed, b)
+                callback = self.inventoryGui:mousepressed(xMousepressed, yMousepressed, b)
+                if not callback then 
+                    return
+                elseif callback.target == "world" then
+                    return callback.signature
+                elseif callback.target == "Герой" then
+                    for _, x in ipairs(callback.signature) do
+                        table.insert(self.effects, x)
+                    end
+                end
+            end
+        end
+
+        function self.updateEffects(dt) -- {name, ..param}
+            local effectHandlers = {
+                Здоровье = function(param) 
+                    self.health = self.health + param[2]
+                    return nil
+                end,
+                
+                Регенерация = function(param) 
+                    if param[3] > 0 then
+                        self.health = self.health + param[2] * dt
+                        return {param[1], param[2], param[3] - dt}
+                    else
+                        return nil
+                    end
+                end,
+        
+                default = function() 
+                    print("Неизвестный эффект")
+                    return nil
+                end
+            }
+
+            for i, effect in ipairs(self.effects) do
+                local effectName = effect[1]
+                       
+                local handler = effectHandlers[effectName] or effectHandlers.default
+                local updatedParams = handler(effect)
+
+                if updatedParams then
+                    self.effects[i] = updatedParams
+                else
+                    table.remove(self.effects, i)
+                    i = i - 1
+                end
             end
         end
 
@@ -347,7 +395,7 @@ Player = {
             end
 
             love.graphics.setColor(0, 1, 0, 1)
-            love.graphics.print(self.health, self.body:getX() - 24, self.body:getY() - 67, 0, 1.8, 1.8)
+            love.graphics.print(math.ceil(self.health), self.body:getX() - 24, self.body:getY() - 67, 0, 1.8, 1.8)
 
             love.graphics.setColor(d1, d2, d3, d4)
 
