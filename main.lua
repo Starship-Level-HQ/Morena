@@ -31,6 +31,8 @@ function love.update(dt)
 end
 
 function love.draw()
+    local font = love.graphics.newFont("res/fonts/Slovic_Demo_VarGX.ttf", 16)  -- название шрифта не я придумывал)
+    love.graphics.setFont(font)
     if gameState == "menu" then
         menu.draw()
     elseif gameState == "level" then

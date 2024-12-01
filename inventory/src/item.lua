@@ -9,7 +9,7 @@ local available_items = {
       cost = 10,
       target = "Герой",
       img = "inventory/assets/mem.png",
-      desc = "This is a health potion."
+      desc = "Сварено из моркови"
   },
   [2] = {
       name = "Зелье регенерации",
@@ -18,7 +18,7 @@ local available_items = {
       cost = 15,
       target = "Герой",
       img = "inventory/assets/thing2.png",
-      desc = "This is a speed potion."
+      desc = "Восстонавливает мнОго здоровья"
   }
 }
 
