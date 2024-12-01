@@ -1,6 +1,6 @@
 local shots = require("shot")
 local inventory = require("inventory.src.inventory")
-local item = require("inventory.src.item")
+local ItemModule = require("inventory.src.item")
 local inventoryGuiSrc = require("inventory.src.inventoryGui")
 
 Player = {
@@ -48,11 +48,13 @@ Player = {
         self.isRemote = isRemote
 
         self.inventory = inventory.new(6, 4)
-        self.inventory:addItem(item.new("Thing", "inventory/assets/thing.png", "It's a thing. Yeah.", nil))
-        self.inventory:addItem(item.new("Another Thing", "inventory/assets/thing2.png",
-            "It's another thing. It has colors.", nil))
-        self.inventory:addItem(item.new("Gold Nugget", "inventory/assets/gold nugget.png",
-            "I found it lying on the ground. I must be lucky - you can sell one of these for 50 coins...", function() self.health = self.health + 30 end))
+        self.inventory:addItem(ItemModule.create_item(1))
+        self.inventory:addItem(ItemModule.create_item(1))
+        self.inventory:addItem(ItemModule.create_item(1))
+        -- self.inventory:addItem(item.new("Another Thing", "inventory/assets/thing2.png",
+        --     "It's another thing. It has colors.", nil))
+        -- self.inventory:addItem(item.new("Gold Nugget", "inventory/assets/gold nugget.png",
+        --     "I found it lying on the ground. I must be lucky - you can sell one of these for 50 coins...", function() self.health = self.health + 30 end))
 
         self.inventoryGui = inventoryGuiSrc
         self.inventoryGui:setInventory(self.inventory, 50, 50)

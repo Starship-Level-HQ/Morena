@@ -1,6 +1,7 @@
 require("enemy")
 require("player")
 require("dialog")
+require("inventory.src.objectsOnMap")
 
 local level = {}
 local enemies
@@ -14,7 +15,8 @@ local levels = {
         map = "res/maps/testMap.lua",
         playerPosition = { 300, 450 },
         enemyPositions = { { 600, 100 }, { 600, 200 }, { 600, 300 } },
-        lakePosition = { 400, 550 }
+        lakePosition = { 400, 550 },
+        loot = {{350, 400, 1}} -- x y id
     },
     {
         map = "res/maps/testMap.lua",
@@ -51,7 +53,11 @@ function level.startLevel(levelNumber)
   lake = physics.makeBody(world, levelData.lakePosition[1], levelData.lakePosition[2], 80, 80, "static")
   lake.fixture:setCategory(cat.TEXTURE)
   shotSound = love.audio.newSource("res/sounds/shot.wav", "static")
-
+  
+  mapStaff = mapStaff.new(world)
+  mapStaff:addItem(350, 400, 1)
+  mapStaff:addItem(353, 400, 1)
+  mapStaff:addItem(355, 400, 1)
 end
 
 function level.endLevel()
@@ -99,9 +105,9 @@ function level.update(dt)
                 level.startLevel(level.number)
             end
         end
-    elseif player.inventoryIsOpen then
-        player:update(dt)
-    end
+  elseif player.inventoryIsOpen then
+      player:update(dt)
+  end
 end
 
 function level.draw()
@@ -113,6 +119,8 @@ function level.draw()
     local d1, d2, d3, d4 = day and 255 or 0.23, day and 255 or 0.25, day and 255 or 0.59, 1
     love.graphics.setColor(0.23, 0.25, 0.59, 1)
     love.graphics.polygon("fill", lake.body:getWorldPoints(lake.shape:getPoints()))
+
+    mapStaff:draw(d1, d2, d3, d4)
 
     love.graphics.setColor(d1, d2, d3, d4)
     for _, enemy in ipairs(enemies) do
