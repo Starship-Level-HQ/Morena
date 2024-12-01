@@ -47,6 +47,7 @@ Player = {
         self.serverDirectionY = ""
         self.isRemote = isRemote
 
+        self.nearestItem = nil
         self.inventory = inventory.new(6, 4)
         self.inventory:addItem(ItemModule.create_item(1))
         self.inventory:addItem(ItemModule.create_item(1))
@@ -140,6 +141,7 @@ Player = {
                 self.isDashing = true
                 self.dashTimeLeft = self.dashDuration
                 self.fixture:setCategory(cat.DASHING_PLAYER)
+                print(self.nearestItem)
             end
 
             if self.health == 0 then
@@ -211,7 +213,7 @@ Player = {
 
         function self:mousepressed(xMousepressed, yMousepressed, b)
             if self.inventoryIsOpen then -- проверяем, открыт ли инвентарь
-                self.inventoryGui:mousepressed(xMousepressed, yMousepressed, b)
+                return self.inventoryGui:mousepressed(xMousepressed, yMousepressed, b)
             end
         end
 
@@ -296,6 +298,20 @@ Player = {
             end
             if not self.isDashing then
                 self.fixture:setCategory(cat.PLAYER)
+            end
+        end
+
+        function self:pickupItem(from, itemBody)
+            itemBody = itemBody or self.nearestItem
+            if itemBody then
+                item = from:takeItemByID(itemBody.id)
+                if item then
+                    self.inventory:addItem(itemBody.item)
+                else 
+                    print("nil item Big Fail")
+                end
+            else 
+                print("no near item")
             end
         end
 

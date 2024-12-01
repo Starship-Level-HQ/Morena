@@ -54,7 +54,7 @@ function level.startLevel(levelNumber)
   lake.fixture:setCategory(cat.TEXTURE)
   shotSound = love.audio.newSource("res/sounds/shot.wav", "static")
   
-  mapStaff = mapStaff.new(world)
+  mapStaff = MapStaff.new(world)
   mapStaff:addItem(350, 400, 1)
   mapStaff:addItem(353, 400, 1)
   mapStaff:addItem(355, 400, 1)
@@ -62,6 +62,8 @@ end
 
 function level.endLevel()
     enemies = {}
+    mapStaff:clearWorld()
+    mapStaff = nil
 end
 
 function level.cameraFocus()
@@ -158,11 +160,17 @@ function level.keypressed(key)
     elseif key == "e" then
         level.pause = not level.pause
         player.inventoryIsOpen = not player.inventoryIsOpen
+    elseif key == "f" then
+        player:pickupItem(mapStaff)
     end
 end
 
 function level.mousepressed(x, y, b)
-    player:mousepressed(x, y, b)
+    dropedItem = player:mousepressed(x, y, b) 
+    if dropedItem then
+        print(dropedItem)
+        mapStaff:dropItem(player.body:getX(), player.body:getY(), dropedItem)
+    end
 end
 
 function level.collisionOnEnter(fixture_a, fixture_b, contact)
@@ -190,6 +198,12 @@ function level.collisionOnEnter(fixture_a, fixture_b, contact)
     fixture_b:getBody():destroy()
     fixture_b:destroy()
   end
+
+  if fixture_a:getCategory() == cat.PLAYER and fixture_b:getCategory() == cat.ITEM then
+    local item = fixture_b:getUserData()
+    item.collision = true 
+    fixture_a:getUserData().nearestItem = item
+  end 
 end
 
 function level.collisionOnEnd(fixture_a, fixture_b, contact)
@@ -197,6 +211,16 @@ function level.collisionOnEnd(fixture_a, fixture_b, contact)
   and fixture_b:getCategory() == cat.E_RANGE then
     fixture_b:getUserData():dontSeePlayer(fixture_a)
   end
+
+  if fixture_a:getCategory() == cat.PLAYER and fixture_b:getCategory() == cat.ITEM then
+    local item = fixture_b:getUserData()
+    item.collision = false 
+    local player = fixture_a:getUserData()
+    if ( player.nearestItem == item) then
+        fixture_a:getUserData().nearestItem = nil
+    end
+  end
+
 end
 
 return level

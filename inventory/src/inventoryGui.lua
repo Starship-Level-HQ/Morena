@@ -64,6 +64,10 @@ function inventoryGui:mousepressed(x, y, b)
                 inv:replace(selected.x, selected.y, mouseOn.x, mouseOn.y)
                 selected.is = false
             end
+        else 
+            selected.is = false
+            print(selected.x, selected.y)
+            return inv:removeItem(selected.x, selected.y)
         end
     end
     if b == 2 then

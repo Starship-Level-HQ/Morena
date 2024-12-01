@@ -26,8 +26,10 @@ function inventory:addItem(item)
     end
 end
 
-function inventory:removeItem(i, j)
+function inventory:removeItem(j, i)
+    item = self.arr[i][j]
     self.arr[i][j] = 0
+    return item
 end
 
 function inventory:replace(x1, y1, x2, y2)
