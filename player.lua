@@ -1,4 +1,7 @@
 local shots = require("shot")
+local inventory = require("inventory.src.inventory")
+local ItemModule = require("inventory.src.item")
+local inventoryGuiSrc = require("inventory.src.inventoryGui")
 
 Player = {
     new = function(world, x, y, isRemote)
@@ -43,6 +46,22 @@ Player = {
         self.serverDirectionX = ""
         self.serverDirectionY = ""
         self.isRemote = isRemote
+
+        self.nearestItem = nil
+        self.inventory = inventory.new(6, 4)
+        self.inventory:addItem(ItemModule.create_item(1))
+        self.inventory:addItem(ItemModule.create_item(2))
+        self.inventory:addItem(ItemModule.create_item(1))
+        -- self.inventory:addItem(item.new("Another Thing", "inventory/assets/thing2.png",
+        --     "It's another thing. It has colors.", nil))
+        -- self.inventory:addItem(item.new("Gold Nugget", "inventory/assets/gold nugget.png",
+        --     "I found it lying on the ground. I must be lucky - you can sell one of these for 50 coins...", function() self.health = self.health + 30 end))
+
+        self.inventoryGui = inventoryGuiSrc
+        self.inventoryGui:setInventory(self.inventory, 50, 50)
+        self.inventoryIsOpen = false
+
+        self.effects = {}
 
         --Рывок
         self.isDashing = false
@@ -124,16 +143,18 @@ Player = {
                 self.isDashing = true
                 self.dashTimeLeft = self.dashDuration
                 self.fixture:setCategory(cat.DASHING_PLAYER)
+                print(self.nearestItem)
             end
 
             if self.health == 0 then
                 self.health = 1
             end
-
+            self.updateEffects(dt)
             self:updateDash(dt)
             self.anim:update(dt)
             self:updateShots(dt)
             self:updateSlash(dt)
+            self:updateInventary()
         end
 
         function self:updateRemotePlayer(dt, remotePlayerData)
@@ -190,6 +211,62 @@ Player = {
             self.anim:update(dt)
             self:updateShots(dt)
             self:updateSlash(dt)
+        end
+
+        function self:mousepressed(xMousepressed, yMousepressed, b)
+            if self.inventoryIsOpen then -- проверяем, открыт ли инвентарь
+                callback = self.inventoryGui:mousepressed(xMousepressed, yMousepressed, b)
+                if not callback then 
+                    return false
+                elseif callback.target == "world" then
+                    return callback.signature
+                elseif callback.target == "Герой" then
+                    for _, x in ipairs(callback.signature) do
+                        table.insert(self.effects, x)
+                    end
+                end
+            end
+        end
+
+        function self.updateEffects(dt) -- {name, ..param}
+            local effectHandlers = {
+                Здоровье = function(param) 
+                    self.health = self.health + param[2]
+                    return nil
+                end,
+                
+                Регенерация = function(param) 
+                    if param[3] > 0 then
+                        self.health = self.health + param[2] * dt
+                        return {param[1], param[2], param[3] - dt}
+                    else
+                        return nil
+                    end
+                end,
+        
+                default = function() 
+                    print("Неизвестный эффект")
+                    return nil
+                end
+            }
+
+            for i, effect in ipairs(self.effects) do
+                local effectName = effect[1]
+                       
+                local handler = effectHandlers[effectName] or effectHandlers.default
+                local updatedParams = handler(effect)
+
+                if updatedParams then
+                    self.effects[i] = updatedParams
+                else
+                    table.remove(self.effects, i)
+                    i = i - 1
+                end
+            end
+        end
+
+        function self:updateInventary()
+            if (self.inventoryIsOpen) then self.inventoryGui:update() end
         end
 
         function self:updateShots(dt)
@@ -272,6 +349,20 @@ Player = {
             end
         end
 
+        function self:pickupItem(from, itemBody)
+            itemBody = itemBody or self.nearestItem
+            if itemBody then
+                item = from:takeItemByID(itemBody.id)
+                if item then
+                    self.inventory:addItem(itemBody.item)
+                else 
+                    print("nil item Big Fail")
+                end
+            else 
+                print("no near item")
+            end
+        end
+
         function self:draw(t, d1, d2, d3, d4)
             -- Устанавливаем прозрачность для удалённых игроков
             if self.isRemote then
@@ -304,9 +395,14 @@ Player = {
             end
 
             love.graphics.setColor(0, 1, 0, 1)
-            love.graphics.print(self.health, self.body:getX() - 23, self.body:getY() - 65, 0, 2, 2)
+            love.graphics.print(math.ceil(self.health), self.body:getX() - 24, self.body:getY() - 67, 0, 1.8, 1.8)
 
             love.graphics.setColor(d1, d2, d3, d4)
+
+            --Инвентарь
+            if (self.inventoryIsOpen) then
+                self.inventoryGui:draw()
+            end
         end
 
         function self:collisionWithEnemy(fixture_b, damage)

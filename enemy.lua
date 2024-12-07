@@ -6,6 +6,8 @@ Enemy = {
             _log("Enemy requires parameters 'world', 'x', and 'y' to be specified")
             return false
         end
+        canShoot = canShoot or false
+
         local self = {}
 
         self.defaultSpeed = 40
@@ -195,7 +197,7 @@ Enemy = {
             self.anim:draw(self.spriteSheet, self.body:getX()-self.width, self.body:getY()-self.height, nil, 4)
             if self.health > 0 then
                 love.graphics.setColor(1, 0, 0, 1)
-                love.graphics.print(self.health, self.body:getX() - 23, self.body:getY() - 65, 0, 2, 2)
+                love.graphics.print(self.health, self.body:getX() - 23, self.body:getY() - 65, 0, 1.8, 1.8)
             end
             love.graphics.setColor(d1, d2, d3, d4)
         end

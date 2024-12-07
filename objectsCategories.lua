@@ -8,6 +8,7 @@ local categories = {
   DASHING_PLAYER = 7,
   BARRIER = 8,
   E_RANGE = 9,
+  ITEM = 10,
   
   TRIGGER = 15,
   VOID = 16 

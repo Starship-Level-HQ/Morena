@@ -5,9 +5,10 @@ local menu = require("menu")
 local level = require("level")
 local multiplayer = require("multiplayer/multiplayer")
 sti = require("libraries/sti")
-camera = require("libraries/camera")
 cat = require("objectsCategories")
 userConfig = require("userConfig")
+camera = require("libraries/camera")
+cam = camera()
 
 -- Глобальная переменная для состояния игры
 gameState = "menu" -- Начальное состояние — меню
@@ -30,6 +31,8 @@ function love.update(dt)
 end
 
 function love.draw()
+    local font = love.graphics.newFont("res/fonts/Slovic_Demo_VarGX.ttf", 16)  -- название шрифта не я придумывал)
+    love.graphics.setFont(font)
     if gameState == "menu" then
         menu.draw()
     elseif gameState == "level" then
@@ -42,6 +45,8 @@ end
 function love.mousepressed(x, y, button, istouch, presses)
     if gameState == "menu" then
         menu.mousepressed(x, y, button)
+    elseif gameState == "level" then
+        level.mousepressed(x, y, button)
     end
 end
 
