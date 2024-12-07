@@ -52,7 +52,7 @@ function inventoryGui:update()
 end
 
 function inventoryGui:mousepressed(x, y, b)
-    if b == 1 then
+    if b == 1 then --левая кнопка мыши
         if mouseOn.is then
             if not selected.is then
                 if inv.arr[mouseOn.y][mouseOn.x] ~= 0 then
@@ -65,12 +65,18 @@ function inventoryGui:mousepressed(x, y, b)
                 selected.is = false
             end
         else 
+            local res
+            if selected.is then
+              res = {target = "world", signature = inv:removeItem(selected.x, selected.y)}
+            else
+              res = false
+            end
             selected.is = false
             print(selected.x, selected.y)
-            return {target = "world", signature = inv:removeItem(selected.x, selected.y)}
+            return res
         end
     end
-    if b == 2 then
+    if b == 2 then --правая кнопка мыши
       if mouseOn.is then
             if inv.arr[mouseOn.y][mouseOn.x] ~= 0 then
                 local item = inv.arr[mouseOn.y][mouseOn.x]

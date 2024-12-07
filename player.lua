@@ -217,7 +217,7 @@ Player = {
             if self.inventoryIsOpen then -- проверяем, открыт ли инвентарь
                 callback = self.inventoryGui:mousepressed(xMousepressed, yMousepressed, b)
                 if not callback then 
-                    return
+                    return false
                 elseif callback.target == "world" then
                     return callback.signature
                 elseif callback.target == "Герой" then

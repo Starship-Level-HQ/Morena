@@ -9,6 +9,7 @@ MapStaff = {
         local self = {}
         self.items = {}
         self.nextId = 0
+        
         function self:addItem(x, y, id)
             local newItem = ItemModule.create_item(id)
             self:newItem(x, y, newItem)
