@@ -1,6 +1,7 @@
 require("player/player")
 require("enemy")
 require("multiplayer/client")
+--require()
 
 Multiplayer = {
   new = function(params)
@@ -35,7 +36,7 @@ Multiplayer = {
       end)
 
     self.player = Player.new(self.world, playerPosition[1], playerPosition[2])
-    self.enemy = Enemy.new(self.world, enemyPosition[1], enemyPosition[2], true, 250, 100)
+    self.enemy = Enemy.new(self.world, enemyPosition[1], enemyPosition[2], true, 250, 100, Kaban.new())
     self.lake = physics.makeBody(self.world, lakePosition[1], lakePosition[2], 80, 80, "static")
     self.day = true
     self.lake.fixture:setCategory(cat.TEXTURE)
