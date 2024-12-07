@@ -282,14 +282,14 @@ Player = {
 
             for i, s in ipairs(self.shots) do
                 if not s.body:isDestroyed() then
-                    love.graphics.rectangle("fill", s.body:getX(), s.body:getY(), s.h, s.w)
+                  s:drawShot()
+                    --love.graphics.rectangle("fill", s.body:getX(), s.body:getY(), s.h, s.w)
                 end
             end
 
             for i, s in ipairs(self.slashes) do
                 if not s.body:isDestroyed() then
-                    s:draw()
-                    --love.graphics.polygon("fill", s.body:getWorldPoints(s.shape:getPoints()))
+                    s:drawSlash()
                 end
             end
 
