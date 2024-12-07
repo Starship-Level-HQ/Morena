@@ -2,6 +2,8 @@ local shots = require("shot")
 local inventory = require("inventory.src.inventory")
 local ItemModule = require("inventory.src.item")
 local inventoryGuiSrc = require("inventory.src.inventoryGui")
+require("shots/slash")
+require("shots/arrow")
 
 Player = {
     new = function(world, x, y, isRemote)
@@ -17,6 +19,7 @@ Player = {
         self.defaultSpeed = 150
 
         self.body = love.physics.newBody(world, x, y, "dynamic")         -- тело для движения и отрисовки
+        self.body:setMass(50)
         self.shape = love.physics.newRectangleShape(33, 58)              -- размер коллайдера
         self.fixture = love.physics.newFixture(self.body, self.shape, 0) -- коллайдер
         self.fixture:setCategory(cat.PLAYER)                             -- Категория объектов, к которой относится игрок
@@ -143,7 +146,7 @@ Player = {
                 self.isDashing = true
                 self.dashTimeLeft = self.dashDuration
                 self.fixture:setCategory(cat.DASHING_PLAYER)
-                print(self.nearestItem)
+                --print(self.nearestItem)
             end
 
             if self.health == 0 then
@@ -284,18 +287,18 @@ Player = {
 
         function self:shoot(shotSound)
             --if #self.shots >= 5 then return end
-            local shot = shots.new(cat.P_SHOT, self.body:getWorld(), self.body:getX(), self.body:getY(), 2, 5, 200,
-                self.direction, self.damage)
+            local shot = shots.new(cat.P_SHOT, self.body:getWorld(), self.body:getX(), self.body:getY(), 6, 20, 200,
+                self.direction, self.damage, 2, Arrow.new())
             table.insert(self.shots, shot)
-            love.audio.play(shotSound)
+            --love.audio.play(shotSound)
         end
 
         function self:slash(slashSound)
             if #self.slashes >= 1 then return end
             local shot = shots.new(cat.P_SHOT, self.body:getWorld(), self.body:getX(), self.body:getY(), 30, 30, 13,
-                self.direction, self.damage, 3)
+                self.direction, self.damage, 3, Slash.new())
             table.insert(self.slashes, shot)
-            love.audio.play(slashSound)
+            --love.audio.play(slashSound)
         end
 
         function self:updateSlash(dt)
@@ -373,14 +376,14 @@ Player = {
 
             for i, s in ipairs(self.shots) do
                 if not s.body:isDestroyed() then
-                  s:drawShot()
+                  s:draw()
                     --love.graphics.rectangle("fill", s.body:getX(), s.body:getY(), s.h, s.w)
                 end
             end
 
             for i, s in ipairs(self.slashes) do
                 if not s.body:isDestroyed() then
-                    s:drawSlash()
+                    s:draw()
                 end
             end
 
