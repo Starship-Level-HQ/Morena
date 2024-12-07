@@ -14,7 +14,7 @@ Dialog = {
         love.graphics.rectangle("fill", phrases[self.current].body:getX() - 23, phrases[self.current].body:getY() - 90, 14/strings*#phrases[self.current].text, 31*strings)
         love.graphics.setColor(0, 0, 0, 1)
         love.graphics.print(phrases[self.current].text, phrases[self.current].body:getX() - 23, 
-          phrases[self.current].body:getY() - 90, 0, 1.7, 1.8)
+          phrases[self.current].body:getY() - 90, 0, 1.8, 1.6)
         love.graphics.setColor(d1, d2, d3, d4)
       end
     end
