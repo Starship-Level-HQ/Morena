@@ -21,23 +21,7 @@ local buttons = {
         --{ text = "Load", action = function()  end },
         { text = "Back",          action = function() table.remove(menuRouter) end }
     },
-    multiplayer = {
-        {
-            text = "Port",
-            action = function(self)
-                self.text = ""
-                activeInputButton = self
-            end
-        }, -- поле для ввода. Пока что ни на что не влияет.
-        {
-            text = "Join",
-            action = function()
-                local channel = activeInputButton ~= nil and activeInputButton.text or "Morena"
-                startMultiplayer(channel)
-            end
-        },
-        { text = "Back", action = function() table.remove(menuRouter) end }
-    }
+  
 }
 
 local buttonBackgrounds = {} -- Таблица для хранения фонов кнопок
@@ -58,19 +42,6 @@ local colors = {
     { 0.65, 0.48, 0.3 },
     { 0.61, 0.46, 0.3 },
 }
---[[local colors = {
-    {0.5, 0.4, 0.3},   -- темно-коричневый, основа
-    {0.6, 0.5, 0.4},   -- более светлый коричневый
-    {0.4, 0.35, 0.3},  -- темный землистый коричневый
-    {0.55, 0.45, 0.35}, -- серо-коричневый, приглушенный оттенок
-    {0.4, 0.4, 0.4},   -- нейтрально-серый для каменного эффекта
-    {0.5, 0.5, 0.45},  -- светло-серый с легким оттенком зелени
-    {0.35, 0.3, 0.25}, -- темно-коричневый с примесью черного
-    {0.45, 0.35, 0.3}, -- темный землистый с чуть теплым оттенком
-    {0.55, 0.5, 0.45}, -- теплый серо-коричневый
-    {0.48, 0.43, 0.38}, -- приглушенный серо-коричневый
-    {0.6, 0.55, 0.5},   -- светло-коричневый для некоторого разнообразия
-}]]
 -- Генерация фона для кнопки
 local function generateButtonBackground(width, height)
     local buttonBackground = love.graphics.newCanvas(width, height)

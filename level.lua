@@ -2,6 +2,8 @@ require("enemy")
 require("player")
 require("dialog")
 require("inventory.src.objectsOnMap")
+require("NPCs/zombee")
+require("NPCs/kaban")
 
 local level = {}
 local enemies
@@ -46,7 +48,12 @@ function level.startLevel(levelNumber)
   day = true
 
   for i, p in ipairs(levelData.enemyPositions) do
-    local enemy = Enemy.new(world, p[1], p[2], i % 2 == 0, 250, 100)
+    local enemy
+    if i%2 ~=0 then
+      enemy = Enemy.new(world, p[1], p[2], i % 2 == 0, 250, 100, Kaban.new())
+    else
+      enemy = Enemy.new(world, p[1], p[2], i % 2 == 0, 250, 100, Zombee.new())
+    end
     table.insert(enemies, enemy)
   end
 
