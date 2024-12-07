@@ -59,7 +59,7 @@ function shotFabric.new(category, world, x, y, h, w, lifeTime, dir, damage, spee
   
   function shot.draw()
     shot.anim:draw(shotType.sprite, shot.body:getX(), shot.body:getY(), shot.rotate, 4, nil, 4, 4)
-    love.graphics.polygon("fill", shot.body:getWorldPoints(shot.shape:getPoints()))
+    --love.graphics.polygon("fill", shot.body:getWorldPoints(shot.shape:getPoints()))
   end
 
   return shot

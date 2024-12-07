@@ -1,5 +1,5 @@
 require("enemy")
-require("player")
+require("player/player")
 require("dialog")
 require("inventory.src.objectsOnMap")
 require("NPCs/zombee")

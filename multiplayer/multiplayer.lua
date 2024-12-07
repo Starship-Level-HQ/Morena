@@ -1,4 +1,4 @@
-require("player")
+require("player/player")
 require("enemy")
 require("multiplayer/client")
 
