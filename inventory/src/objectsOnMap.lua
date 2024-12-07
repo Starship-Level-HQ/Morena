@@ -8,11 +8,16 @@ MapStaff = {
         end
         local self = {}
         self.items = {}
+        self.nonActiveItems = {}
         self.nextId = 0
         
         function self:addItem(x, y, id)
             local newItem = ItemModule.create_item(id)
             self:newItem(x, y, newItem)
+        end
+        
+        function self:addNonActiveItem(item)
+          table.insert(self.nonActiveItems, item)
         end
         
         function self:newItem(x, y, item)
@@ -24,7 +29,7 @@ MapStaff = {
             itemBody.shape = love.physics.newRectangleShape(24, 24)
             itemBody.fixture = love.physics.newFixture(itemBody.body, itemBody.shape)
             itemBody.fixture:setCategory(cat.ITEM)
-            itemBody.fixture:setMask(cat.VOID, cat.ENEMY, cat.P_SHOT, cat.E_SHOT, cat.DASHING_PLAYER, cat.NPC)
+            itemBody.fixture:setMask(cat.VOID, cat.ENEMY, cat.P_SHOT, cat.E_SHOT, cat.NPC)
             itemBody.fixture:setUserData(itemBody)
             itemBody.fixture:setSensor(true)
             table.insert(self.items, itemBody)
@@ -55,6 +60,11 @@ MapStaff = {
                 end
                 love.graphics.draw(itemData.item.img, itemData.x, itemData.y, itemData.angle, 0.7, 0.7, 12, 19)
             end
+            for _, item in ipairs(self.nonActiveItems) do
+                love.graphics.setColor(d1, d2, d3, d4)
+                love.graphics.draw(item.img, item.body:getX(), item.body:getY(), nil, 1, 1, 32, 25)
+                --love.graphics.polygon("fill", item.body:getWorldPoints(item.shape:getPoints()))
+            end
         end
         
         function self:clearWorld()
@@ -64,7 +74,13 @@ MapStaff = {
                     itemData.body:destroy()
                 end
             end
+            for _, item in ipairs(self.nonActiveItems) do
+                if item.body then
+                    item.body:destroy()
+                end
+            end
             self.items = {}
+            self.nonActiveItems = {}
             self.nextId = 0
         end
         return self

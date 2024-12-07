@@ -21,6 +21,23 @@ local buttons = {
         --{ text = "Load", action = function()  end },
         { text = "Back",          action = function() table.remove(menuRouter) end }
     },
+    multiplayer = {
+        {
+            text = "Port",
+            action = function(self)
+                self.text = ""
+                activeInputButton = self
+            end
+        }, -- поле для ввода. Пока что ни на что не влияет.
+        {
+            text = "Join",
+            action = function()
+                local channel = activeInputButton ~= nil and activeInputButton.text or "Morena"
+                startMultiplayer(channel)
+            end
+        },
+        { text = "Back", action = function() table.remove(menuRouter) end }
+    }
   
 }
 

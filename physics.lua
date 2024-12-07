@@ -24,7 +24,8 @@ function physics.makeBody(world, x, y, height, width, bodyType)
     object.body = love.physics.newBody(world, x, y, bodyType)
     object.body:setGravityScale(0)
     object.shape = love.physics.newRectangleShape(height, width)
-    object.fixture = love.physics.newFixture(object.body, object.shape)
+    object.fixture = love.physics.newFixture(object.body, object.shape, 0)
+    object.body:setMass(10)
     return object
 end
 
