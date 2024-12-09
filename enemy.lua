@@ -1,17 +1,21 @@
 local shots = require("shot")
 
 Enemy = {
-    new = function(world, x, y, canShoot, range, health)
+    new = function(world, x, y, canShoot, range, health, enemy)
         if not (world and x and y) then
             _log("Enemy requires parameters 'world', 'x', and 'y' to be specified")
             return false
         end
+        canShoot = canShoot or false
+
         local self = {}
 
         self.defaultSpeed = 40
         self.body = love.physics.newBody(world, x, y, "dynamic")         --тело для движения и отрисовки
         --self.body:setMass(49)
-        self.shape = love.physics.newRectangleShape(23, 59)              --размер коллайдера
+        self.shape = enemy.shape
+        self.width = enemy.width
+        self.height = enemy.height
         self.fixture = love.physics.newFixture(self.body, self.shape, 0) --коллайдер
         self.fixture:setCategory(cat.ENEMY)
         self.fixture:setMask(cat.E_SHOT, cat.VOID, cat.DASHING_PLAYER)
@@ -28,13 +32,8 @@ Enemy = {
         self.bloodDrops = {}
         self.playerPos = {}
 
-        self.spriteSheet = love.graphics.newImage('res/sprites/enemy-sheet.png')
-        self.grid = anim8.newGrid(12, 18, self.spriteSheet:getWidth(), self.spriteSheet:getHeight())
-        self.animations = {}
-        self.animations.down = anim8.newAnimation(self.grid('1-4', 1), 0.2)
-        self.animations.up = anim8.newAnimation(self.grid('1-4', 4), 0.2)
-        self.animations.right = anim8.newAnimation(self.grid('1-4', 3), 0.2)
-        self.animations.left = anim8.newAnimation(self.grid('1-4', 2), 0.2)
+        self.spriteSheet = enemy.spriteSheet
+        self.animations = enemy.animations
 
         self.anim = self.animations.left
         self.direction = "l"
@@ -119,12 +118,14 @@ Enemy = {
                             self.isMoving = true
                         end
 
-                        if self.body:getY() > playerY and math.abs(self.body:getY() - playerY) > 5 then
+                        if self.body:getY() > playerY and math.abs(self.body:getY() - playerY) > 8 then
                             speedY = -self.defaultSpeed
                             self.anim = self.animations.up
                             self.direction = "u"
+
                             self.isMoving = true
                         elseif self.body:getY() < playerY and math.abs(self.body:getY() - playerY) > 5 then
+
                             speedY = self.defaultSpeed
                             self.anim = self.animations.down
                             self.direction = "d"
@@ -241,10 +242,10 @@ Enemy = {
             end
             love.graphics.setColor(d1, d2, d3, d4)
             --love.graphics.polygon("fill", self.body:getWorldPoints(self.shape:getPoints()))
-            self.anim:draw(self.spriteSheet, self.body:getX(), self.body:getY(), nil, 4, nil, 6, 9)
+            self.anim:draw(self.spriteSheet, self.body:getX()-self.width, self.body:getY()-self.height, nil, 4)
             if self.health > 0 then
                 love.graphics.setColor(1, 0, 0, 1)
-                love.graphics.print(self.health, self.body:getX() - 23, self.body:getY() - 65, 0, 2, 2)
+                love.graphics.print(self.health, self.body:getX() - 23, self.body:getY() - 65, 0, 1.8, 1.8)
             end
             love.graphics.setColor(d1, d2, d3, d4)
         end
