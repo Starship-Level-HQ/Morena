@@ -195,6 +195,12 @@ Multiplayer = {
                 remotePlayer:draw(d1, d2, d3, d4)
             end
 
+            love.graphics.setColor(0, 1, 0, 1)
+            local x, y = self.cam:position()
+            love.graphics.print(tostring(self.hub.killedScore), x - love.graphics.getWidth() / 2,
+                y - love.graphics.getHeight() / 2, 0, 2, 2)
+            love.graphics.setColor(d1, d2, d3, d4)
+
             self.cam:detach()
         end
 

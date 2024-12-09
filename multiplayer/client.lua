@@ -19,6 +19,7 @@ Client = {
         self.enemiesData = {}
         self.shootsData = {}
         self.clientPort = 0
+        self.killedScore = 0
 
         function self:subscribe(params)
             self.channel = params.channel
@@ -130,7 +131,9 @@ Client = {
                         local jsonData = string.sub(self.buffer, startJSON + 15, finishJSON - 1)
                         self.buffer = self.buffer:sub(1, startJSON - 1) .. self.buffer:sub(finishJSON + 13)
                         local data = json.decode(jsonData)
-                        -- _log('__JSON__START__: ', jsonData)
+                        _log('__JSON__START__: ', jsonData)
+
+                        if data.host then self.killedScore = data.killedScore end
 
                         if data.alive then
                             if self.clientPort ~= data.port then
@@ -154,7 +157,7 @@ Client = {
                         local enemyData = string.sub(self.buffer, startEnemy + 22, finishEnemy - 1)
                         self.buffer = self.buffer:sub(1, startEnemy - 1) .. self.buffer:sub(finishEnemy + 20)
                         local enemies = json.decode(enemyData)
-                        _log('__JSON__ENEMY__START__: ', enemyData)
+                        -- _log('__JSON__ENEMY__START__: ', enemyData)
 
                         if enemies == nil then return end
 
