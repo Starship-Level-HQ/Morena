@@ -19,6 +19,7 @@ Multiplayer = {
 
         self.remotePlayers = {}
         self.enemies = {}
+        self.shoots = {}
 
         love.window.setTitle("Morena - Multiplayer")
         love.graphics.setDefaultFilter('nearest', 'nearest')
@@ -57,8 +58,8 @@ Multiplayer = {
                 if remotePlayer then
                     remotePlayer:updateRemotePlayer(dt, remotePlayerData)
                 else
-                    self.remotePlayers[remotePlayerPort] =
-                        Player.new(self.world, remotePlayerData.x, remotePlayerData.y, true)
+                    self.remotePlayers[remotePlayerPort] = Player.new(self.world, remotePlayerData.x, remotePlayerData.y,
+                        true)
                 end
             end
 
@@ -70,10 +71,25 @@ Multiplayer = {
                         tempEnemy:update(dt)
                     else
                         tempEnemy:update(dt, enemyData)
+                        if enemyData.health <= 0 then
+                            self.hub.enemiesData[enemyId] = nil
+                        end
                     end
                 else
                     self.enemies[enemyId] =
                         Enemy.new(self.world, enemyData.x, enemyData.y, true, 250, enemyData.health)
+                end
+            end
+
+            -- Обновление или создание выстрелов
+            for remotePlayerPort, remotePlayerShot in pairs(self.hub.shootsData) do
+                if self.remotePlayers[remotePlayerPort] and remotePlayerShot.shotButtonPressed then
+                    if remotePlayerShot.attackType == 'shoot' then
+                        self.remotePlayers[remotePlayerPort]:shoot(self.shotSound)
+                    elseif remotePlayerShot.attackType == 'slash' then
+                        self.remotePlayers[remotePlayerPort]:slash(self.shotSound)
+                    end
+                    remotePlayerShot.shotButtonPressed = false
                 end
             end
 
@@ -156,6 +172,7 @@ Multiplayer = {
             -- Отрисовка себя
             self.player:draw(d1, d2, d3, d4)
 
+            -- Отрисовка врагов
             for _, enemy in pairs(self.enemies) do
                 enemy:draw(d1, d2, d3, d4)
             end
@@ -170,15 +187,25 @@ Multiplayer = {
 
         function self:keypressed(key)
             if key == " " or key == "space" then
-                if self.player.attackType then
+                if self.player.attackType == 'slash' then
                     self.player:slash(self.shotSound)
-                else
+                    self.hub:sendShootsData({
+                        attackType        = self.player.attackType,
+                        shotButtonPressed = true,
+                    })
+                elseif self.player.attackType == 'shoot' then
                     self.player:shoot(self.shotSound)
+                    self.hub:sendShootsData({
+                        attackType        = self.player.attackType,
+                        shotButtonPressed = true,
+                    })
                 end
             elseif key == "q" then
                 self.day = not self.day
             elseif key == "1" then
-                self.player.attackType = not self.player.attackType
+                self.player.attackType = 'slash'
+            elseif key == "2" then
+                self.player.attackType = 'shoot'
             end
         end
 

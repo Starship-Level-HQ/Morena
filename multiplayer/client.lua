@@ -17,6 +17,8 @@ Client = {
         self.gameState = params.gameState
         self.remotePlayersData = {}
         self.enemiesData = {}
+        self.shootsData = {}
+        self.clientPort = 0
 
         function self:subscribe(params)
             self.channel = params.channel
@@ -27,6 +29,8 @@ Client = {
             end
             self.sock:setoption('tcp-nodelay', true) -- disable Nagle's algorithm for the connection
             self.sock:settimeout(0)
+
+            _, self.clientPort = self.sock:getsockname()
 
             local _, output = socket.select(nil, { self.sock }, 3)
             for _, sock in ipairs(output) do sock:send("__SUBSCRIBE__" .. self.channel .. "__ENDSUBSCRIBE__") end
@@ -80,6 +84,22 @@ Client = {
             return true
         end
 
+        function self:sendShootsData(shootsData)
+            if (self.sock == nil) then
+                _log("Client attempts to send enemy data without valid subscription (bad socket)")
+                self:reconnect()
+                return false
+            end
+            local err, err_msg, num_bytes = self.sock:send("__SHOOT__START__" ..
+                json.encode(shootsData) .. "__SHOOT__END__")
+            if (err == nil) then
+                _log("Client publish error (shoots data): ", err_msg, '  sent ', num_bytes, ' bytes')
+                if (err_msg == 'closed') then self:reconnect() end
+                return false
+            end
+            return true
+        end
+
         function self:getMessage()
             local input, _ = socket.select({ self.sock }, nil, 0) -- zero timeout not to block runtime while reading socket
 
@@ -102,17 +122,18 @@ Client = {
                     local finishEnemy = string.find(self.buffer, '__JSON__ENEMY__END__')
                     local startAddEnemy = string.find(self.buffer, '__ADDENEMY__START__')
                     local finishAddEnemy = string.find(self.buffer, '__ADDENEMY__END__')
+                    local startShoot = string.find(self.buffer, '__SHOOT__START__')
+                    local finishShoot = string.find(self.buffer, '__SHOOT__END__')
 
                     if startJSON and finishJSON then
                         -- Обработка обычного JSON сообщения
                         local jsonData = string.sub(self.buffer, startJSON + 15, finishJSON - 1)
                         self.buffer = self.buffer:sub(1, startJSON - 1) .. self.buffer:sub(finishJSON + 13)
                         local data = json.decode(jsonData)
-                        local _, port = self.sock:getsockname()
-                        -- _log('__JSON__START__: ', data)
+                        -- _log('__JSON__START__: ', jsonData)
 
                         if data.alive then
-                            if port ~= data.port then
+                            if self.clientPort ~= data.port then
                                 self.remotePlayersData[data.port] = {
                                     x = data.x,
                                     y = data.y,
@@ -123,7 +144,6 @@ Client = {
                                     health = data.health,
                                 }
                             else
-                                _log('HOST FROM SERVER: ', data.host)
                                 self.gameState.host = data.host
                             end
                         else
@@ -134,7 +154,7 @@ Client = {
                         local enemyData = string.sub(self.buffer, startEnemy + 22, finishEnemy - 1)
                         self.buffer = self.buffer:sub(1, startEnemy - 1) .. self.buffer:sub(finishEnemy + 20)
                         local enemies = json.decode(enemyData)
-                        _log('__JSON__ENEMY__START__: ', enemies)
+                        -- _log('__JSON__ENEMY__START__: ', enemyData)
 
                         -- Сохраняем состояние врагов
                         for _, enemy in ipairs(enemies) do
@@ -153,7 +173,7 @@ Client = {
                         local addEnemyData = string.sub(self.buffer, startAddEnemy + 19, finishAddEnemy - 1)
                         self.buffer = self.buffer:sub(1, startAddEnemy - 1) .. self.buffer:sub(finishAddEnemy + 17)
                         local newEnemy = json.decode(addEnemyData)
-                        _log('__ADDENEMY__START__: ', newEnemy)
+                        -- _log('__ADDENEMY__START__: ', addEnemyData)
 
                         -- Добавляем нового врага
                         self.enemiesData[newEnemy.id] = {
@@ -165,6 +185,19 @@ Client = {
                             directionY = newEnemy.directionY,
                             health = newEnemy.health,
                         }
+                    elseif startShoot and finishShoot then
+                        -- Обработка выстрелов
+                        local shootData = string.sub(self.buffer, startShoot + 16, finishShoot - 1)
+                        self.buffer = self.buffer:sub(1, startShoot - 1) .. self.buffer:sub(finishShoot + 14)
+                        local newShoot = json.decode(shootData)
+                        -- _log('__SHOOT__START__: ', shootData)
+
+                        if self.clientPort ~= newShoot.port then
+                            self.shootsData[newShoot.port] = {
+                                attackType = newShoot.attackType,
+                                shotButtonPressed = newShoot.shotButtonPressed,
+                            }
+                        end
                     else
                         break
                     end
