@@ -42,25 +42,42 @@ Enemy = {
         self.tick = x + y % 150
         self.canShoot = canShoot
 
+        self.isMoving = false
+
         function self:update(dt, enemyData)
             if enemyData ~= nil then
                 -- Обновление состояния врага из данных enemyData
                 self.body:setX(enemyData.x)
                 self.body:setY(enemyData.y)
                 self.body:setLinearVelocity(enemyData.xv, enemyData.yv)
-                self.direction = physics.calculateDirection(enemyData.xv, enemyData.yv, self.direction) -- 45'
+                self.direction = physics.calculateDirection(enemyData.xv, enemyData.yv, enemyData.direction) -- 45'
                 self.health = enemyData.health
 
-                if enemyData.directionX == "l" then
+                local speedX = 0
+                local speedY = 0
+
+                if enemyData.direction == "l" then
+                    speedX = -self.defaultSpeed
                     self.anim = self.animations.left
-                elseif enemyData.directionX == "r" then
+                elseif enemyData.direction == "r" then
+                    speedX = self.defaultSpeed
                     self.anim = self.animations.right
                 end
 
-                if enemyData.directionY == "u" then
+                if enemyData.direction == "u" then
+                    speedY = -self.defaultSpeed
                     self.anim = self.animations.up
-                elseif enemyData.directionY == "d" then
+                elseif enemyData.direction == "d" then
+                    speedY = self.defaultSpeed
                     self.anim = self.animations.down
+                end
+
+                self.body:setLinearVelocity(speedX, speedY)
+
+                if not enemyData.isMoving then
+                    self.anim:gotoFrame(2)
+                    self.anim = self.animations.down
+                    self.body:setLinearVelocity(0, 0)
                 end
 
                 -- Обновляем анимацию
@@ -75,8 +92,6 @@ Enemy = {
 
 
             if self.isAlive then
-                local isMoving = false
-
                 if #self.playerPos > 0 then
                     local player = self.playerPos[1]
                     for i, p in ipairs(self.playerPos) do
@@ -96,31 +111,31 @@ Enemy = {
                             speedX = -self.defaultSpeed
                             self.anim = self.animations.left
                             self.direction = "l"
-                            isMoving = true
+                            self.isMoving = true
                         elseif self.body:getX() < playerX and math.abs(self.body:getX() - playerX) > 5 then
                             speedX = self.defaultSpeed
                             self.anim = self.animations.right
                             self.direction = "r"
-                            isMoving = true
+                            self.isMoving = true
                         end
 
                         if self.body:getY() > playerY and math.abs(self.body:getY() - playerY) > 5 then
                             speedY = -self.defaultSpeed
                             self.anim = self.animations.up
                             self.direction = "u"
-                            isMoving = true
+                            self.isMoving = true
                         elseif self.body:getY() < playerY and math.abs(self.body:getY() - playerY) > 5 then
                             speedY = self.defaultSpeed
                             self.anim = self.animations.down
                             self.direction = "d"
-                            isMoving = true
+                            self.isMoving = true
                         end
 
                         self.body:setLinearVelocity(speedX, speedY)
                     else
                         self.body:setLinearVelocity(0, 0)
                         self.anim = self.animations.down
-                        isMoving = false
+                        self.isMoving = false
                     end
 
                     xv, yv = self.body:getLinearVelocity()
@@ -139,7 +154,7 @@ Enemy = {
                     end
                 end
 
-                if isMoving == false then
+                if self.isMoving == false then
                     self.anim:gotoFrame(2)
                     self.body:setLinearVelocity(0, 0)
                 end

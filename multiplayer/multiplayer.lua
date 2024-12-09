@@ -50,6 +50,16 @@ Multiplayer = {
             self.player:update(dt)
             self.world:update(dt)
 
+            if self.player.health <= 0 then
+                self.hub:unsubscribe()
+                self.hub = {}
+                self.enemies = {}
+                self.shoots = {}
+                self.player = Player.new(self.world, playerPosition[1], playerPosition[2])
+                self.hub = Client.new({ server = "127.0.0.1", port = 1337, gameState = self.player })
+                self.port = self.hub:subscribe({ channel = params.channel })
+            end
+
             self.hub:getMessage()
 
             -- Обновление или создание удаленных игроков
@@ -71,13 +81,14 @@ Multiplayer = {
                         tempEnemy:update(dt)
                     else
                         tempEnemy:update(dt, enemyData)
-                        if enemyData.health <= 0 then
-                            self.hub.enemiesData[enemyId] = nil
-                        end
+                    end
+                    if enemyData.health <= 0 then
+                        self.hub.enemiesData[enemyId] = nil
+                        self.enemies[enemyId] = nil
                     end
                 else
                     self.enemies[enemyId] =
-                        Enemy.new(self.world, enemyData.x, enemyData.y, true, 250, enemyData.health)
+                        Enemy.new(self.world, enemyData.x, enemyData.y, false, 250, enemyData.health)
                 end
             end
 
@@ -99,14 +110,16 @@ Multiplayer = {
 
                 -- Собираем данные о врагах
                 for enemyId, enemy in pairs(self.enemies) do
+                    local xv, yv = enemy.body:getLinearVelocity()
                     table.insert(enemiesData, {
-                        id         = enemyId,
-                        x          = enemy.body:getX(),
-                        y          = enemy.body:getY(),
-                        xv         = enemy.body:getLinearVelocity(),
-                        directionX = enemy.directionX,
-                        directionY = enemy.directionY,
-                        health     = enemy.health,
+                        id        = enemyId,
+                        x         = enemy.body:getX(),
+                        y         = enemy.body:getY(),
+                        xv        = xv,
+                        yv        = yv,
+                        direction = enemy.direction,
+                        health    = enemy.health,
+                        isMoving  = enemy.isMoving,
                     })
                 end
 

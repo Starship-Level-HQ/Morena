@@ -154,7 +154,9 @@ Client = {
                         local enemyData = string.sub(self.buffer, startEnemy + 22, finishEnemy - 1)
                         self.buffer = self.buffer:sub(1, startEnemy - 1) .. self.buffer:sub(finishEnemy + 20)
                         local enemies = json.decode(enemyData)
-                        -- _log('__JSON__ENEMY__START__: ', enemyData)
+                        _log('__JSON__ENEMY__START__: ', enemyData)
+
+                        if enemies == nil then return end
 
                         -- Сохраняем состояние врагов
                         for _, enemy in ipairs(enemies) do
@@ -163,9 +165,9 @@ Client = {
                                 y = enemy.y,
                                 xv = enemy.xv,
                                 yv = enemy.yv,
-                                directionX = enemy.directionX,
-                                directionY = enemy.directionY,
+                                direction = enemy.direction,
                                 health = enemy.health,
+                                isMoving = enemy.isMoving,
                             }
                         end
                     elseif startAddEnemy and finishAddEnemy then
@@ -181,9 +183,9 @@ Client = {
                             y = newEnemy.y,
                             xv = newEnemy.xv,
                             yv = newEnemy.yv,
-                            directionX = newEnemy.directionX,
-                            directionY = newEnemy.directionY,
+                            direction = newEnemy.direction,
                             health = newEnemy.health,
+                            isMoving = newEnemy.isMoving
                         }
                     elseif startShoot and finishShoot then
                         -- Обработка выстрелов
