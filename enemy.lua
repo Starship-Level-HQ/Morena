@@ -1,3 +1,4 @@
+require("shots/arrow")
 local shots = require("shot")
 
 Enemy = {
@@ -12,7 +13,7 @@ Enemy = {
 
     self.defaultSpeed = 40
     self.body = love.physics.newBody(world, x, y, "dynamic")         --тело для движения и отрисовки
-    --self.body:setMass(49)
+    self.body:setMass(49)
     self.shape = enemy.shape
     self.width = enemy.width
     self.height = enemy.height
@@ -43,11 +44,13 @@ Enemy = {
 
     self.isMoving = false
 
-    function self:update(dt, enemyData)
+    function self:update(dt)
 
       if self.isAlive then
+        self.isMoving = false
         if #self.playerPos > 0 then
           local player = self.playerPos[1]
+
           for i, p in ipairs(self.playerPos) do
             d1, _, _, _, _ = love.physics.getDistance(self.fixture, p)
             d2, _, _, _, _ = love.physics.getDistance(self.fixture, player)
@@ -98,7 +101,7 @@ Enemy = {
           self.direction = physics.calculateDirection(xv, yv, self.direction) -- 45'
 
           if self.canShoot then
-            if self.tick % 5 == 0 then
+            if self.tick % 10 == 0 then
               self:shoot()
             end
           end
@@ -178,14 +181,14 @@ Enemy = {
 
     function self:shoot()
       local shot = shots.new(cat.E_SHOT, self.body:getWorld(), self.body:getX(), self.body:getY(), 2, 5, 150,
-        self.direction, 5)
+        self.direction, 5, 2, Arrow.new())
       table.insert(self.shots, shot)
     end
 
     function self:draw(t, d1, d2, d3, d4)
       for i, s in ipairs(self.shots) do
         if not s.body:isDestroyed() then
-          love.graphics.rectangle("fill", s.body:getX(), s.body:getY(), s.h, s.w)
+          s.draw()
         end
       end
 

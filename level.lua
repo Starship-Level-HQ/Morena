@@ -1,5 +1,5 @@
 require("enemy")
-require("player")
+require("player/player")
 require("dialog")
 require("inventory.src.objectsOnMap")
 require("NPCs/zombee")
@@ -58,12 +58,22 @@ function level.startLevel(levelNumber)
 
   lake = physics.makeBody(world, levelData.lakePosition[1], levelData.lakePosition[2], 80, 80, "static")
   lake.fixture:setCategory(cat.TEXTURE)
+  --table.insert(objects, lake)
+
   shotSound = love.audio.newSource("res/sounds/shot.wav", "static")
 
   mapStaff = MapStaff.new(world)
   mapStaff:addItem(350, 400, 1)
-  mapStaff:addItem(353, 400, 1)
-  mapStaff:addItem(355, 400, 1)
+  mapStaff:addItem(370, 400, 2)
+  mapStaff:addItem(355, 330, 1)
+  rock = physics.makeBody(world, 555, 550, 37, 25, "dynamic")
+  rock.body:setMass(55)
+  rock.body:setLinearDamping(9)
+  rock.fixture:setCategory(cat.BARRIER)
+  rock.fixture:setMask(cat.VOID)
+  rock.img = love.graphics.newImage("res/sprites/rock.png")
+  mapStaff:addNonActiveItem(rock)
+  
 end
 
 function level.endLevel()
@@ -199,6 +209,7 @@ function level.collisionOnEnter(fixture_a, fixture_b, contact)
   if fixture_a:getCategory() == cat.DASHING_PLAYER and fixture_b:getCategory() == cat.E_SHOT then
     fixture_b:setCategory(cat.P_SHOT)
   end
+  
   if fixture_b:getCategory() == cat.P_SHOT and fixture_a:getCategory() == cat.ENEMY then
     fixture_a:getUserData():colisionWithShot(fixture_b:getUserData())
     fixture_b:getBody():destroy()
@@ -218,7 +229,7 @@ function level.collisionOnEnd(fixture_a, fixture_b, contact)
     fixture_b:getUserData():dontSeePlayer(fixture_a)
   end
 
-  if fixture_a:getCategory() == cat.PLAYER and fixture_b:getCategory() == cat.ITEM then
+  if (fixture_a:getCategory() == cat.PLAYER or fixture_a:getCategory() == cat.DASHING_PLAYER) and fixture_b:getCategory() == cat.ITEM then
     local item = fixture_b:getUserData()
     item.collision = false 
     local player = fixture_a:getUserData()

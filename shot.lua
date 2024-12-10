@@ -2,19 +2,7 @@ local shotFabric = {}
 physics = require("physics")
 anim8 = require 'libraries/anim8'
 
-shotFabric.slashSprite = love.graphics.newImage('res/sprites/slash.png')
-shotFabric.slashGrid = anim8.newGrid(12, 12, shotFabric.slashSprite:getWidth(), shotFabric.slashSprite:getHeight())
-shotFabric.slashAnimations = {}
-shotFabric.slashAnimations.up = anim8.newAnimation(shotFabric.slashGrid('1-4', 1), 0.05)
-shotFabric.slashAnimations.down = anim8.newAnimation(shotFabric.slashGrid('1-4', 4), 0.05)
-shotFabric.slashAnimations.right = anim8.newAnimation(shotFabric.slashGrid('1-4', 2), 0.05)
-shotFabric.slashAnimations.left = anim8.newAnimation(shotFabric.slashGrid('1-4', 3), 0.05)
-
-shotFabric.shotSprite = love.graphics.newImage('res/sprites/arrow.png')
-shotFabric.shotGrid = anim8.newGrid(5, 13, shotFabric.shotSprite:getWidth(), shotFabric.shotSprite:getHeight())
-shotFabric.shotAnimations = anim8.newAnimation(shotFabric.shotGrid('1-4', 1), 0.1)
-
-function shotFabric.new(category, world, x, y, h, w, lifeTime, dir, damage, speed)
+function shotFabric.new(category, world, x, y, h, w, lifeTime, dir, damage, speed, shotType)
   if speed == nil then
     speed = 1
   end
@@ -23,45 +11,38 @@ function shotFabric.new(category, world, x, y, h, w, lifeTime, dir, damage, spee
   shot.fixture:setUserData(damage)
   shot.h = h
   shot.w = w
-  if category == cat.P_SHOT then
-    shot.fixture:setMask(cat.TEXTURE, cat.E_SHOT)
-  else
-    shot.fixture:setMask(cat.TEXTURE, cat.P_SHOT, cat.E_SHOT, cat.VOID)
-  end
+  shot.fixture:setMask(cat.TEXTURE, cat.P_SHOT, cat.E_SHOT, cat.VOID)
   shot.lifeTime = lifeTime
   shot.time = 0
-  shot.anim = shotFabric.slashAnimations.down
-  shot.arrowAnim = {anim = shotFabric.shotAnimations, rotate = 0}
+  shot.anim = shotType.animations
+  shot.rotate = shotType.rotate
 
   if dir == "r" then
     shot.body:setLinearVelocity(100*speed, 0)
-    shot.anim = shotFabric.slashAnimations.right
-    shot.arrowAnim.rotate = 1
+    shot.rotate = 1.6
   elseif dir == "l" then
     shot.body:setLinearVelocity(-100*speed, 0)
-    shot.anim = shotFabric.slashAnimations.left
-    shot.arrowAnim.rotate = 3
+    shot.rotate = 4.7
   elseif dir == "u" then
     shot.body:setLinearVelocity(0, -100*speed)
-    shot.anim = shotFabric.slashAnimations.up
-    shot.arrowAnim.rotate = 0
+    shot.rotate = 0
   elseif dir == "d" then
     shot.body:setLinearVelocity(0, 100*speed)
-    shot.anim = shotFabric.slashAnimations.down
-    shot.arrowAnim.rotate = 2
+    shot.rotate = 3.1
   elseif dir == "ld" then
     shot.body:setLinearVelocity(-100*speed, 100*speed)
-    shot.arrowAnim.rotate = 2.5
+    shot.rotate = 3.7
   elseif dir == "lu" then
     shot.body:setLinearVelocity(-100*speed, -100*speed)
-    shot.arrowAnim.rotate = 3.5
+    shot.rotate = 5.3
   elseif dir == "ru" then
     shot.body:setLinearVelocity(100*speed, -100*speed)
-    shot.arrowAnim.rotate = 0.5
+    shot.rotate = 0.5
   elseif dir == "rd" then
     shot.body:setLinearVelocity(100*speed, 100*speed)
-    shot.arrowAnim.rotate = 1.5
+    shot.rotate = 2.1
   end
+  shot.body:setAngle(shot.rotate)
 
   function shot.update(remShot, i, dt)
     shot.time = shot.time + 1
@@ -74,15 +55,11 @@ function shotFabric.new(category, world, x, y, h, w, lifeTime, dir, damage, spee
       end
     end
     shot.anim:update(dt)
-    shot.arrowAnim.anim:update(dt)
   end
   
-  function shot.drawSlash()
-    shot.anim:draw(shotFabric.slashSprite, shot.body:getX(), shot.body:getY(), nil, 4, nil, 5, 5)
-  end
-  
-  function shot.drawShot()
-    shot.anim:draw(shotFabric.shotSprite, shot.body:getX(), shot.body:getY(), nil, 3, nil, 5, 5) --shot.arrowAnim.rotate
+  function shot.draw()
+    shot.anim:draw(shotType.sprite, shot.body:getX(), shot.body:getY(), shot.rotate, 4, nil, 4, 4)
+    --love.graphics.polygon("fill", shot.body:getWorldPoints(shot.shape:getPoints()))
   end
 
   return shot
