@@ -2,7 +2,7 @@ require("shots/arrow")
 local shots = require("shot")
 
 Enemy = {
-  new = function(world, x, y, canShoot, range, health, enemy)
+  new = function(world, x, y, canShoot, range, health, enemyType)
     if not (world and x and y) then
       _log("Enemy requires parameters 'world', 'x', and 'y' to be specified")
       return false
@@ -14,9 +14,9 @@ Enemy = {
     self.defaultSpeed = 40
     self.body = love.physics.newBody(world, x, y, "dynamic")         --тело для движения и отрисовки
     self.body:setMass(49)
-    self.shape = enemy.shape
-    self.width = enemy.width
-    self.height = enemy.height
+    self.shape = enemyType.shape
+    self.width = enemyType.width
+    self.height = enemyType.height
     self.fixture = love.physics.newFixture(self.body, self.shape, 0) --коллайдер
     self.fixture:setCategory(cat.ENEMY)
     self.fixture:setMask(cat.E_SHOT, cat.VOID, cat.DASHING_PLAYER)
@@ -33,8 +33,8 @@ Enemy = {
     self.bloodDrops = {}
     self.playerPos = {}
 
-    self.spriteSheet = enemy.spriteSheet
-    self.animations = enemy.animations
+    self.spriteSheet = enemyType.spriteSheet
+    self.animations = enemyType.animations
 
     self.anim = self.animations.left
     self.direction = "l"
@@ -131,13 +131,8 @@ Enemy = {
 
     function self:die(dt)
       self.body:setLinearVelocity(0, 0)
-      self.spriteSheet = love.graphics.newImage('res/sprites/enemy-dead.png')
-      self.grid = anim8.newGrid(12, 18, self.spriteSheet:getWidth(), self.spriteSheet:getHeight())
-      if userConfig.blood then
-        self.anim = anim8.newAnimation(self.grid('1-1', 1), 0.2)
-      else
-        self.anim = anim8.newAnimation(self.grid('2-2', 1), 0.2)
-      end
+      self.spriteSheet = enemyType.deadSpriteSheet
+      self.anim = enemyType.deadAnimations
       self.anim:update(dt)
       self.fixture:destroy()
       self.isAlive = false
