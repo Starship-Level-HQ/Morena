@@ -23,10 +23,10 @@ Player = {
         self.fixture:setMask(cat.P_SHOT, cat.VOID, cat.PLAYER)           -- Категории, которые игрок игнорирует (свои выстрелы, других игроков и пустоту)
         self.fixture:setUserData(self)
         self.body:setGravityScale(0)
-        self.shots = {}                                                  -- holds our fired shots
+        self.shots = {} -- holds our fired shots
         self.slashes = {}
         self.health = 100
-        self.attackType = true
+        self.attackType = 'shoot'
         self.damage = 10
 
         self.spriteSheet = love.graphics.newImage('res/sprites/MC1.png')
@@ -161,14 +161,6 @@ Player = {
             self.health = remotePlayerData.health
             local speed = self.defaultSpeed
 
-            -- Проверяем состояние dash на основе данных от сервера
-            if remotePlayerData.isDashing then
-                speed = speed + self.dashSpeed
-                self.isDashing = true
-            else
-                self.isDashing = false
-            end
-
             if remotePlayerData.directionX == "l" then
                 self.body:setLinearVelocity(-speed, remotePlayerData.yv)
                 self.anim = self.animations.left
@@ -197,17 +189,11 @@ Player = {
                 self.anim:gotoFrame(2) -- не движется
             end
 
+            self.attackType = remotePlayerData.attackType
+
             self.direction = physics.calculateDirection(remotePlayerData.xv, remotePlayerData.yv, self.direction)
+            self.fixture:setCategory(cat.PLAYER)
 
-            -- Обновляем dash-статус и анимацию
-            if self.isDashing then
-                self.dashTimeLeft = self.dashDuration
-                self.fixture:setCategory(cat.DASHING_PLAYER)
-            else
-                self.fixture:setCategory(cat.PLAYER)
-            end
-
-            self:updateDash(dt)
             self.anim:update(dt)
             self:updateShots(dt)
             self:updateSlash(dt)
@@ -286,6 +272,7 @@ Player = {
             --if #self.shots >= 5 then return end
             local shot = shots.new(cat.P_SHOT, self.body:getWorld(), self.body:getX(), self.body:getY(), 2, 5, 200,
                 self.direction, self.damage)
+            self.attackType = 'shoot'
             table.insert(self.shots, shot)
             love.audio.play(shotSound)
         end
@@ -294,6 +281,7 @@ Player = {
             if #self.slashes >= 1 then return end
             local shot = shots.new(cat.P_SHOT, self.body:getWorld(), self.body:getX(), self.body:getY(), 30, 30, 13,
                 self.direction, self.damage, 3)
+            self.attackType = 'slash'
             table.insert(self.slashes, shot)
             love.audio.play(slashSound)
         end
