@@ -32,8 +32,8 @@ Player = {
         self.shots = {}                                                  -- holds our fired shots
         self.slashes = {}
         self.health = 100
-        self.attackType = true
         self.damage = 10
+        self.attackType = 'slash'
 
         PlayerAnim.new(self)
 
@@ -100,7 +100,7 @@ Player = {
 
         function self:slash(slashSound)
             if #self.slashes >= 1 then return end
-            local shot = shots.new(cat.P_SHOT, self.body:getWorld(), self.body:getX(), self.body:getY(), 30, 30, 13,
+            local shot = shots.new(cat.P_SHOT, self.body:getWorld(), self.body:getX(), self.body:getY(), 30, 30, 14,
                 self.direction, self.damage, 3, Slash.new())
             table.insert(self.slashes, shot)
             --love.audio.play(slashSound)

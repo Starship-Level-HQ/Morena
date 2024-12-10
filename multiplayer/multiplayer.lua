@@ -1,7 +1,6 @@
 require("player/player")
 require("enemy")
 require("multiplayer/client")
---require()
 
 Multiplayer = {
   new = function(params)
@@ -13,7 +12,6 @@ Multiplayer = {
     -- Если параметры не были переданы, задаем значения по умолчанию
     map = params.map or "res/maps/testMap.lua"
     playerPosition = params.playerPosition or { 300, 300 }
-    enemyPosition = params.enemyPosition or { 600, 100 }
     lakePosition = params.lakePosition or { 400, 550 }
 
     -- Создаем новый объект
@@ -21,6 +19,7 @@ Multiplayer = {
 
     self.remotePlayers = {}
     self.enemies = {}
+    self.shoots = {}
 
     love.window.setTitle("Morena - Multiplayer")
     love.graphics.setDefaultFilter('nearest', 'nearest')
@@ -30,13 +29,12 @@ Multiplayer = {
     self.world:setGravity(0, 40)
     self.world:setCallbacks(function(fixture_a, fixture_b, contact)
         self:collisionOnEnter(fixture_a, fixture_b, contact)
-      end, 
+      end,
       function(fixture_a, fixture_b, contact)
         self:collisionOnEnd(fixture_a, fixture_b, contact)
       end)
 
     self.player = Player.new(self.world, playerPosition[1], playerPosition[2])
-    self.enemy = Enemy.new(self.world, enemyPosition[1], enemyPosition[2], true, 250, 100, Kaban.new())
     self.lake = physics.makeBody(self.world, lakePosition[1], lakePosition[2], 80, 80, "static")
     self.day = true
     self.lake.fixture:setCategory(cat.TEXTURE)
@@ -51,7 +49,16 @@ Multiplayer = {
     function self:update(dt)
       self.player:update(dt)
       self.world:update(dt)
-      self.enemy:update(dt)
+
+      if self.player.health <= 0 then
+        self.hub:unsubscribe()
+        self.hub = {}
+        self.enemies = {}
+        self.shoots = {}
+        self.player = Player.new(self.world, playerPosition[1], playerPosition[2])
+        self.hub = Client.new({ server = "127.0.0.1", port = 1337, gameState = self.player })
+        self.port = self.hub:subscribe({ channel = params.channel })
+      end
 
       self.hub:getMessage()
 
@@ -61,9 +68,63 @@ Multiplayer = {
         if remotePlayer then
           remotePlayer:updateRemotePlayer(dt, remotePlayerData)
         else
-          self.remotePlayers[remotePlayerPort] =
-          Player.new(self.world, remotePlayerData.x, remotePlayerData.y, true)
+          self.remotePlayers[remotePlayerPort] = Player.new(self.world, remotePlayerData.x, remotePlayerData.y,
+            true)
         end
+      end
+
+      -- Обновление или создание врагов
+      for enemyId, enemyData in pairs(self.hub.enemiesData) do
+        local tempEnemy = self.enemies[enemyId]
+        if tempEnemy then
+          if self.player.host then
+            tempEnemy:update(dt)
+          else
+            tempEnemy:update(dt, enemyData)
+          end
+          if enemyData.health <= 0 then
+            self.hub.enemiesData[enemyId] = nil
+            self.enemies[enemyId] = nil
+          end
+        else
+          self.enemies[enemyId] =
+          Enemy.new(self.world, enemyData.x, enemyData.y, false, 250, enemyData.health)
+        end
+      end
+
+      -- Обновление или создание выстрелов
+      for remotePlayerPort, remotePlayerShot in pairs(self.hub.shootsData) do
+        if self.remotePlayers[remotePlayerPort] and remotePlayerShot.shotButtonPressed then
+          if remotePlayerShot.attackType == 'shoot' then
+            self.remotePlayers[remotePlayerPort]:shoot(self.shotSound)
+          elseif remotePlayerShot.attackType == 'slash' then
+            self.remotePlayers[remotePlayerPort]:slash(self.shotSound)
+          end
+          remotePlayerShot.shotButtonPressed = false
+        end
+      end
+
+      -- Отправка текущего состояния врагов на сервер
+      if self.player.host then
+        local enemiesData = {}
+
+        -- Собираем данные о врагах
+        for enemyId, enemy in pairs(self.enemies) do
+          local xv, yv = enemy.body:getLinearVelocity()
+          table.insert(enemiesData, {
+              id        = enemyId,
+              x         = enemy.body:getX(),
+              y         = enemy.body:getY(),
+              xv        = xv,
+              yv        = yv,
+              direction = enemy.direction,
+              health    = enemy.health,
+              isMoving  = enemy.isMoving,
+            })
+        end
+
+        -- Отправляем на сервер
+        self.hub:sendEnemyData(enemiesData)
       end
 
       -- Удаление неактивных игроков
@@ -123,37 +184,56 @@ Multiplayer = {
 
       -- Отрисовка себя
       self.player:draw(d1, d2, d3, d4)
-      self.enemy:draw(d1, d2, d3, d4)
+
+      -- Отрисовка врагов
+      for _, enemy in pairs(self.enemies) do
+        enemy:draw(d1, d2, d3, d4)
+      end
 
       -- Отрисовка других игроков
       for _, remotePlayer in pairs(self.remotePlayers) do
         remotePlayer:draw(d1, d2, d3, d4)
       end
 
+      love.graphics.setColor(0, 1, 0, 1)
+      local x, y = self.cam:position()
+      love.graphics.print(tostring(self.hub.killedScore), x - love.graphics.getWidth() / 2,
+        y - love.graphics.getHeight() / 2, 0, 2, 2)
+      love.graphics.setColor(d1, d2, d3, d4)
+
       self.cam:detach()
     end
 
     function self:keypressed(key)
       if key == " " or key == "space" then
-        if self.player.attackType then
+        if self.player.attackType == 'slash' then
           self.player:slash(self.shotSound)
-        else
+          self.hub:sendShootsData({
+              attackType        = self.player.attackType,
+              shotButtonPressed = true,
+            })
+        elseif self.player.attackType == 'shoot' then
           self.player:shoot(self.shotSound)
+          self.hub:sendShootsData({
+              attackType        = self.player.attackType,
+              shotButtonPressed = true,
+            })
         end
       elseif key == "q" then
         self.day = not self.day
       elseif key == "1" then
-        self.player.attackType = not self.player.attackType
+        self.player.attackType = 'slash'
+      elseif key == "2" then
+        self.player.attackType = 'shoot'
       end
     end
 
     function self.collisionOnEnter(_, fixture_a, fixture_b, contact)
-      
       if fixture_a:getCategory() == cat.PLAYER and fixture_b:getCategory() == cat.ENEMY then
         fixture_a:getUserData():collisionWithEnemy(fixture_b, 10)
       end
 
-      if (fixture_a:getCategory() == cat.PLAYER or fixture_a:getCategory() == cat.DASHING_PLAYER) 
+      if (fixture_a:getCategory() == cat.PLAYER or fixture_a:getCategory() == cat.DASHING_PLAYER)
       and fixture_b:getCategory() == cat.E_RANGE then
         fixture_b:getUserData():seePlayer(fixture_a)
       end
@@ -176,7 +256,7 @@ Multiplayer = {
     end
 
     function self.collisionOnEnd(_, fixture_a, fixture_b, contact)
-      if (fixture_a:getCategory() == cat.PLAYER or fixture_a:getCategory() == cat.DASHING_PLAYER) 
+      if (fixture_a:getCategory() == cat.PLAYER or fixture_a:getCategory() == cat.DASHING_PLAYER)
       and fixture_b:getCategory() == cat.E_RANGE then
         fixture_b:getUserData():dontSeePlayer(fixture_a)
       end
