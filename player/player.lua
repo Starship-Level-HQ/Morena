@@ -92,7 +92,7 @@ Player = {
 
         function self:shoot(shotSound)
             --if #self.shots >= 5 then return end
-            local shot = shots.new(cat.P_SHOT, self.body:getWorld(), self.body:getX(), self.body:getY(), 6, 20, 200,
+            local shot = shots.new(cat.P_SHOT, self.body:getWorld(), self.body:getX(), self.body:getY(), 6, 20, 1.4,
                 self.direction, self.damage, 2, Arrow.new())
             table.insert(self.shots, shot)
             --love.audio.play(shotSound)
@@ -100,8 +100,9 @@ Player = {
 
         function self:slash(slashSound)
             if #self.slashes >= 1 then return end
-            local shot = shots.new(cat.P_SHOT, self.body:getWorld(), self.body:getX(), self.body:getY(), 30, 30, 14,
+            local shot = shots.new(cat.P_SHOT, self.body:getWorld(), self.body:getX(), self.body:getY(), 30, 30, 0.3,
                 self.direction, self.damage, 3, Slash.new())
+            shot.body:setMass(30)
             table.insert(self.slashes, shot)
             --love.audio.play(slashSound)
         end

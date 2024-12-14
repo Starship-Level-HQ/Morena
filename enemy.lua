@@ -39,7 +39,8 @@ Enemy = {
     self.anim = self.animations.left
     self.direction = "l"
     self.isAlive = true
-    self.tick = x + y % 150
+    self.tickWalk = math.random(0, 19) / 10
+    self.tickShot = math.random(0, 20) / 100
     self.canShoot = canShoot
 
     self.isMoving = false
@@ -63,7 +64,7 @@ Enemy = {
           local playerX = player:getBody():getX()
           local playerY = player:getBody():getY()
 
-          if self.tick < 100 then
+          if self.tickWalk < 1.5 then
             if self.body:getX() > playerX and math.abs(self.body:getX() - playerX) > 5 then
               speedX = -self.defaultSpeed
               self.anim = self.animations.left
@@ -101,16 +102,19 @@ Enemy = {
           self.direction = physics.calculateDirection(xv, yv, self.direction) -- 45'
 
           if self.canShoot then
-            if self.tick % 10 == 0 then
+            if self.tickShot > 0.2 then
               self:shoot()
+              self.tickShot = 0
             end
           end
 
-          self.tick = self.tick + 1
+          self.tickWalk = self.tickWalk + dt
+          self.tickShot = self.tickShot + dt
 
-          if self.tick > 150 then
-            self.tick = 0
+          if self.tickWalk > 1.9 then
+            self.tickWalk = 0
           end
+          
         end
 
         if self.isMoving == false then
@@ -175,7 +179,7 @@ Enemy = {
     end
 
     function self:shoot()
-      local shot = shots.new(cat.E_SHOT, self.body:getWorld(), self.body:getX(), self.body:getY(), 2, 5, 150,
+      local shot = shots.new(cat.E_SHOT, self.body:getWorld(), self.body:getX(), self.body:getY(), 2, 5, 1.6,
         self.direction, 5, 2, Arrow.new())
       table.insert(self.shots, shot)
     end
