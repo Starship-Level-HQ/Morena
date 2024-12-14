@@ -44,7 +44,12 @@ Multiplayer = {
         self.port = self.hub:subscribe({ channel = params.channel })
 
         self.checkRemotePlayerInterval = 5 -- Интервал проверки в секундах
-        self.timeSinceLastCheck = 0    -- Время с момента последней проверкиs
+        self.timeSinceLastCheck = 0        -- Время с момента последней проверкиs
+
+        self.mapStaff = MapStaff.new(self.world)
+        self.mapStaff:addItem(350, 400, 1)
+        self.mapStaff:addItem(370, 400, 2)
+        self.mapStaff:addItem(355, 330, 1)
 
         function self:update(dt)
             self.player:update(dt)
@@ -87,8 +92,15 @@ Multiplayer = {
                         self.enemies[enemyId] = nil
                     end
                 else
-                    self.enemies[enemyId] =
-                        Enemy.new(self.world, enemyData.x, enemyData.y, false, 250, enemyData.health, Kaban.new())
+                    if enemyData.type == 'kaban' then
+                        self.enemies[enemyId] =
+                            Enemy.new(self.world, enemyData.x, enemyData.y, enemyData.canShoot, 250, enemyData.health,
+                                Kaban.new())
+                    elseif enemyData.type == 'zombee' then
+                        self.enemies[enemyId] =
+                            Enemy.new(self.world, enemyData.x, enemyData.y, enemyData.canShoot, 250, enemyData.health,
+                                Zombee.new())
+                    end
                 end
             end
 
@@ -195,6 +207,8 @@ Multiplayer = {
                 remotePlayer:draw(d1, d2, d3, d4)
             end
 
+            self.mapStaff:draw(d1, d2, d3, d4)
+
             love.graphics.setColor(0, 1, 0, 1)
             local x, y = self.cam:position()
             love.graphics.print(tostring(self.hub.killedScore), x - love.graphics.getWidth() / 2,
@@ -225,6 +239,18 @@ Multiplayer = {
                 self.player.attackType = 'slash'
             elseif key == "2" then
                 self.player.attackType = 'shoot'
+            elseif key == "e" then
+                self.player.inventoryIsOpen = not self.player.inventoryIsOpen
+            elseif key == "f" then
+                self.player:pickupItem(self.mapStaff)
+            end
+        end
+
+        function self.mousepressed(x, y, b)
+            local dropedItem = self.player:mousepressed(x, y, b)
+            if dropedItem then
+                print(dropedItem)
+                self.mapStaff:dropItem(self.player.body:getX(), self.player.body:getY(), dropedItem)
             end
         end
 
@@ -253,12 +279,27 @@ Multiplayer = {
                 fixture_b:getBody():destroy()
                 fixture_b:destroy()
             end
+
+            if fixture_a:getCategory() == cat.PLAYER and fixture_b:getCategory() == cat.ITEM then
+                local item = fixture_b:getUserData()
+                item.collision = true
+                fixture_a:getUserData().nearestItem = item
+            end
         end
 
         function self.collisionOnEnd(_, fixture_a, fixture_b, contact)
             if (fixture_a:getCategory() == cat.PLAYER or fixture_a:getCategory() == cat.DASHING_PLAYER)
                 and fixture_b:getCategory() == cat.E_RANGE then
                 fixture_b:getUserData():dontSeePlayer(fixture_a)
+            end
+
+            if (fixture_a:getCategory() == cat.PLAYER or fixture_a:getCategory() == cat.DASHING_PLAYER) and fixture_b:getCategory() == cat.ITEM then
+                local item = fixture_b:getUserData()
+                item.collision = false
+                local player = fixture_a:getUserData()
+                if (player.nearestItem == item) then
+                    fixture_a:getUserData().nearestItem = nil
+                end
             end
         end
 
