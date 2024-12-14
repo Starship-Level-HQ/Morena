@@ -131,7 +131,7 @@ Client = {
                         local jsonData = string.sub(self.buffer, startJSON + 15, finishJSON - 1)
                         self.buffer = self.buffer:sub(1, startJSON - 1) .. self.buffer:sub(finishJSON + 13)
                         local data = json.decode(jsonData)
-                        _log('__JSON__START__: ', jsonData)
+                        -- _log('__JSON__START__: ', jsonData)
 
                         if data.host then self.killedScore = data.killedScore end
 
@@ -171,6 +171,8 @@ Client = {
                                 direction = enemy.direction,
                                 health = enemy.health,
                                 isMoving = enemy.isMoving,
+                                type = enemy.type,
+                                canShoot = enemy.canShoot,
                             }
                         end
                     elseif startAddEnemy and finishAddEnemy then
@@ -188,7 +190,9 @@ Client = {
                             yv = newEnemy.yv,
                             direction = newEnemy.direction,
                             health = newEnemy.health,
-                            isMoving = newEnemy.isMoving
+                            isMoving = newEnemy.isMoving,
+                            type = newEnemy.type,
+                            canShoot = newEnemy.canShoot,
                         }
                     elseif startShoot and finishShoot then
                         -- Обработка выстрелов
