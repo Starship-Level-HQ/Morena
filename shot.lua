@@ -45,7 +45,7 @@ function shotFabric.new(category, world, x, y, h, w, lifeTime, dir, damage, spee
   shot.body:setAngle(shot.rotate)
 
   function shot.update(remShot, i, dt)
-    shot.time = shot.time + 1
+    shot.time = shot.time + dt
     -- mark shots that are not visible for removal
     if shot.body:isDestroyed() or shot.time > shot.lifeTime then
       table.insert(remShot, i)
