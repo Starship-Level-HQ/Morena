@@ -15,6 +15,7 @@ Enemy = {
     self.body = love.physics.newBody(world, x, y, "dynamic")         --тело для движения и отрисовки
     self.body:setMass(49)
     self.shape = enemyType.shape
+    self.zoom = enemyType.zoom
     self.width = enemyType.width
     self.height = enemyType.height
     self.fixture = love.physics.newFixture(self.body, self.shape, 0) --коллайдер
@@ -199,10 +200,14 @@ Enemy = {
       end
       love.graphics.setColor(d1, d2, d3, d4)
       --love.graphics.polygon("fill", self.body:getWorldPoints(self.shape:getPoints()))
-      self.anim:draw(self.spriteSheet, self.body:getX()-self.width, self.body:getY()-self.height, nil, 4)
+      if self.zoom ~= nil then
+        self.anim:draw(self.spriteSheet, self.body:getX()-self.width, self.body:getY()-self.height, nil, self.zoom)
+      else
+        self.anim:draw(self.spriteSheet, self.body:getX()-self.width, self.body:getY()-self.height, nil, 4)
+      end
       if self.health > 0 then
         love.graphics.setColor(1, 0, 0, 1)
-        love.graphics.print(self.health, self.body:getX() - 23, self.body:getY() - 65, 0, 1.8, 1.8)
+        love.graphics.print(self.health, self.body:getX()-self.width/2, self.body:getY()-self.height-26, 0, 1.8, 1.8)
       end
       love.graphics.setColor(d1, d2, d3, d4)
     end
