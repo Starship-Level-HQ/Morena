@@ -24,7 +24,7 @@ local levels = {
     {
         map = "res/maps/testMap.lua",
         playerPosition = { 100, 200 },
-        enemyPositions = { { 400, 100, Zombee }, { 500, 200, Zombee }, { 600, 300, Zombee }, { 700, 400, Leshiy } },
+        enemyPositions = { { 700, 400, Leshiy } },
         lakePosition = { 300, 400 }
     }
     -- Добавляйте больше уровней с разными настройками
