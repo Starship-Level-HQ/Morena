@@ -2,12 +2,11 @@ require("shots/arrow")
 local shots = require("shot")
 
 Enemy = {
-  new = function(world, x, y, canShoot, range, health, enemyType)
+  new = function(world, x, y, range, health, enemyType)
     if not (world and x and y) then
       _log("Enemy requires parameters 'world', 'x', and 'y' to be specified")
       return false
     end
-    canShoot = canShoot or false
 
     local self = {}
 
@@ -42,7 +41,7 @@ Enemy = {
     self.isAlive = true
     self.tickWalk = math.random(0, 19) / 10
     self.tickShot = math.random(0, 20) / 100
-    self.canShoot = canShoot
+    self.canShoot = enemyType.canShoot
 
     self.isMoving = false
 

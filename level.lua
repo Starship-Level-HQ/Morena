@@ -49,11 +49,7 @@ function level.startLevel(levelNumber)
 
     for i, p in ipairs(levelData.enemyPositions) do
         local enemy
-        if i % 2 ~= 0 then
-            enemy = Enemy.new(world, p[1], p[2], i % 2 == 0, 250, 100, p[3].new())
-        else
-            enemy = Enemy.new(world, p[1], p[2], i % 2 == 0, 250, 100, p[3].new())
-        end
+        enemy = Enemy.new(world, p[1], p[2], 250, 100, p[3].new())
         table.insert(enemies, enemy)
     end
 
