@@ -1,3 +1,5 @@
+local Roots = require("shots/roots")
+
 Leshiy = {
   new = function(world, x, y, range, health) 
     local self = {}
@@ -67,7 +69,7 @@ Leshiy = {
     end
     
     function self:shoot()
-      local shot = Arrow.new(cat.E_SHOT, self.body:getWorld(), self.body:getX(), self.body:getY(), self.direction)
+      local shot = Roots.new(cat.E_SHOT, self.body:getWorld(), self.body:getX(), self.body:getY(), self.direction)
       table.insert(self.shots, shot)
     end
     
