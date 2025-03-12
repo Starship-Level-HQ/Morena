@@ -2,7 +2,7 @@ local shotFabric = {}
 physics = require("physics")
 anim8 = require 'libraries/anim8'
 
-function shotFabric.new(category, world, x, y, h, w, lifeTime, dir, damage, speed, shotType)
+function shotFabric.new(category, world, x, y, h, w, lifeTime, dir, damage, speed)
   if speed == nil then
     speed = 1
   end
@@ -14,8 +14,7 @@ function shotFabric.new(category, world, x, y, h, w, lifeTime, dir, damage, spee
   shot.fixture:setMask(cat.TEXTURE, cat.P_SHOT, cat.E_SHOT, cat.VOID)
   shot.lifeTime = lifeTime
   shot.time = 0
-  shot.anim = shotType.animations
-  shot.rotate = shotType.rotate
+  shot.rotate = 0
 
   if dir == "r" then
     shot.body:setLinearVelocity(100*speed, 0)
@@ -54,11 +53,11 @@ function shotFabric.new(category, world, x, y, h, w, lifeTime, dir, damage, spee
         shot.body:destroy()
       end
     end
-    shot.anim:update(dt)
+    shot.animations:update(dt)
   end
   
   function shot.draw()
-    shot.anim:draw(shotType.sprite, shot.body:getX(), shot.body:getY(), shot.rotate, 4, nil, 4, 4)
+    shot.animations:draw(shot.sprite, shot.body:getX(), shot.body:getY(), shot.rotate, 4, nil, 4, 4)
     --love.graphics.polygon("fill", shot.body:getWorldPoints(shot.shape:getPoints()))
   end
 

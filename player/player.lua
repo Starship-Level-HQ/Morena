@@ -1,4 +1,3 @@
-local shots = require("shot")
 local inventory = require("inventory.src.inventory")
 local ItemModule = require("inventory.src.item")
 local inventoryGuiSrc = require("inventory.src.inventoryGui")
@@ -48,10 +47,6 @@ Player = {
         self.inventory:addItem(ItemModule.create_item(1))
         self.inventory:addItem(ItemModule.create_item(2))
         self.inventory:addItem(ItemModule.create_item(1))
-        -- self.inventory:addItem(item.new("Another Thing", "inventory/assets/thing2.png",
-        --     "It's another thing. It has colors.", nil))
-        -- self.inventory:addItem(item.new("Gold Nugget", "inventory/assets/gold nugget.png",
-        --     "I found it lying on the ground. I must be lucky - you can sell one of these for 50 coins...", function() self.health = self.health + 30 end))
 
         self.inventoryGui = inventoryGuiSrc
         self.inventoryGui:setInventory(self.inventory, 50, 50)
@@ -92,18 +87,16 @@ Player = {
 
         function self:shoot(shotSound)
             --if #self.shots >= 5 then return end
-            local shot = shots.new(cat.P_SHOT, self.body:getWorld(), self.body:getX(), self.body:getY(), 6, 20, 1.4,
-                self.direction, self.damage, 2, Arrow.new())
+          local shot = Arrow.new(cat.P_SHOT, self.body:getWorld(), self.body:getX(), self.body:getY(), self.direction, 2)
             table.insert(self.shots, shot)
             --love.audio.play(shotSound)
         end
 
         function self:slash(slashSound)
-            if #self.slashes >= 1 then return end
-            local shot = shots.new(cat.P_SHOT, self.body:getWorld(), self.body:getX(), self.body:getY(), 30, 30, 0.3,
-                self.direction, self.damage, 3, Slash.new())
-            shot.body:setMass(30)
-            table.insert(self.slashes, shot)
+          if #self.slashes >= 1 then return end
+          local shot = Slash.new(cat.P_SHOT, self.body:getWorld(), self.body:getX(), self.body:getY(), self.direction, 2)
+          shot.body:setMass(90)
+          table.insert(self.slashes, shot)
             --love.audio.play(slashSound)
         end
 

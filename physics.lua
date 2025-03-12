@@ -32,9 +32,9 @@ end
 function physics.bloodDrops(world, x, y)
     drops = {}
     if userConfig.blood then
-        for i = 1, 8 do
-            local drop = physics.makeBody(world, x, y, 2, 5, "dynamic")
-            drop.body:setLinearVelocity(50 * (5 - i), -150 * (i % 3))
+        for i = 1, 10 do
+            local drop = physics.makeBody(world, x, y, 2, 2, "dynamic")
+            drop.body:setLinearVelocity(50 * (5 - i), -182 * (i % 3))
             drop.time = 0
             drop.fixture:setCategory(cat.VOID)
             drop.fixture:setMask(cat.VOID)

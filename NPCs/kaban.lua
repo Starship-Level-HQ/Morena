@@ -1,5 +1,5 @@
 Kaban = {
-  new = function() 
+  new = function(world, x, y, range, health) 
     local self = {}
     self.shape = love.physics.newRectangleShape(60, 58)              --размер коллайдера
     self.width = 50
@@ -18,7 +18,8 @@ Kaban = {
       self.deadAnimations = anim8.newAnimation(self.deadGrid('1-1', 1), 1)
     else
       self.deadAnimations = anim8.newAnimation(self.deadGrid('2-2', 1), 1)
-    end
-    return self
+    end 
+    
+    return Enemy.new(world, x, y, range, health, self)
   end
 }

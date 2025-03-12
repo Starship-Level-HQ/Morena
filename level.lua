@@ -5,6 +5,7 @@ require("inventory.src.objectsOnMap")
 require("NPCs/zombee")
 require("NPCs/kaban")
 require("NPCs/leshiy")
+require("shot")
 
 local level = {}
 local enemies
@@ -49,7 +50,7 @@ function level.startLevel(levelNumber)
 
     for i, p in ipairs(levelData.enemyPositions) do
         local enemy
-        enemy = Enemy.new(world, p[1], p[2], 250, 100, p[3].new())
+        enemy = p[3].new(world, p[1], p[2], 250, 100)
         table.insert(enemies, enemy)
     end
 

@@ -60,6 +60,7 @@ PlayerUpdate = {
                 else
                     self.anim = self.animations.sLeft
                 end
+              --player.anim:gotoFrame(2)
             end
 
             if love.keyboard.isDown("lshift") and not self.isDashing and self.dashCooldownLeft <= 0 then

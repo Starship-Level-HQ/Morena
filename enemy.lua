@@ -1,22 +1,16 @@
 require("shots/arrow")
-local shots = require("shot")
+shots = require("shot")
 
 Enemy = {
-  new = function(world, x, y, range, health, enemyType)
+  new = function(world, x, y, range, health, self)
     if not (world and x and y) then
       _log("Enemy requires parameters 'world', 'x', and 'y' to be specified")
       return false
     end
 
-    local self = {}
-
     self.defaultSpeed = 40
     self.body = love.physics.newBody(world, x, y, "dynamic")         --тело для движения и отрисовки
     self.body:setMass(49)
-    self.shape = enemyType.shape
-    self.zoom = enemyType.zoom
-    self.width = enemyType.width
-    self.height = enemyType.height
     self.fixture = love.physics.newFixture(self.body, self.shape, 0) --коллайдер
     self.fixture:setCategory(cat.ENEMY)
     self.fixture:setMask(cat.E_SHOT, cat.VOID, cat.DASHING_PLAYER)
@@ -33,15 +27,11 @@ Enemy = {
     self.bloodDrops = {}
     self.playerPos = {}
 
-    self.spriteSheet = enemyType.spriteSheet
-    self.animations = enemyType.animations
-
     self.anim = self.animations.left
     self.direction = "l"
     self.isAlive = true
     self.tickWalk = math.random(0, 19) / 10
     self.tickShot = math.random(0, 20) / 100
-    self.canShoot = enemyType.canShoot
 
     self.isMoving = false
 
@@ -59,50 +49,11 @@ Enemy = {
               player = p
             end
           end
-          local speedX = 0
-          local speedY = 0
-          local playerX = player:getBody():getX()
-          local playerY = player:getBody():getY()
-
-          if self.tickWalk < 1.5 then
-            if self.body:getX() > playerX and math.abs(self.body:getX() - playerX) > 5 then
-              speedX = -self.defaultSpeed
-              self.anim = self.animations.left
-              self.direction = "l"
-              self.isMoving = true
-            elseif self.body:getX() < playerX and math.abs(self.body:getX() - playerX) > 5 then
-              speedX = self.defaultSpeed
-              self.anim = self.animations.right
-              self.direction = "r"
-              self.isMoving = true
-            end
-
-            if self.body:getY() > playerY and math.abs(self.body:getY() - playerY) > 8 then
-              speedY = -self.defaultSpeed
-              self.anim = self.animations.up
-              self.direction = "u"
-
-              self.isMoving = true
-            elseif self.body:getY() < playerY and math.abs(self.body:getY() - playerY) > 5 then
-
-              speedY = self.defaultSpeed
-              self.anim = self.animations.down
-              self.direction = "d"
-              self.isMoving = true
-            end
-
-            self.body:setLinearVelocity(speedX, speedY)
-          else
-            self.body:setLinearVelocity(0, 0)
-            self.anim = self.animations.down
-            self.isMoving = false
-          end
-
-          xv, yv = self.body:getLinearVelocity()
-          self.direction = physics.calculateDirection(xv, yv, self.direction) -- 45'
-
+          
+          self:moving(player)
+            
           if self.canShoot then
-            if self.tickShot > 0.2 then
+            if self.tickShot > 0.4 then
               self:shoot()
               self.tickShot = 0
             end
@@ -132,11 +83,55 @@ Enemy = {
       self:updateShots(dt)
       self:updateBloodDrops(dt)
     end
+    
+    function self:moving(player)
+      local speedX = 0
+      local speedY = 0
+      local playerX = player:getBody():getX()
+      local playerY = player:getBody():getY()
+
+      if self.tickWalk < 1.5 then
+      
+      if self.body:getX() > playerX and math.abs(self.body:getX() - playerX) > 5 then
+              speedX = -self.defaultSpeed
+              self.anim = self.animations.left
+              self.direction = "l"
+              self.isMoving = true
+            elseif self.body:getX() < playerX and math.abs(self.body:getX() - playerX) > 5 then
+              speedX = self.defaultSpeed
+              self.anim = self.animations.right
+              self.direction = "r"
+              self.isMoving = true
+            end
+
+            if self.body:getY() > playerY and math.abs(self.body:getY() - playerY) > 8 then
+              speedY = -self.defaultSpeed
+              self.anim = self.animations.up
+              self.direction = "u"
+
+              self.isMoving = true
+            elseif self.body:getY() < playerY and math.abs(self.body:getY() - playerY) > 5 then
+
+              speedY = self.defaultSpeed
+              self.anim = self.animations.down
+              self.direction = "d"
+              self.isMoving = true
+            end
+
+            self.body:setLinearVelocity(speedX, speedY)
+          else
+            self.isMoving = false
+          end
+
+          xv, yv = self.body:getLinearVelocity()
+          self.direction = physics.calculateDirection(xv, yv, self.direction) -- 45'
+      
+    end
 
     function self:die(dt)
       self.body:setLinearVelocity(0, 0)
-      self.spriteSheet = enemyType.deadSpriteSheet
-      self.anim = enemyType.deadAnimations
+      self.spriteSheet = self.deadSpriteSheet
+      self.anim = self.deadAnimations
       self.anim:update(dt)
       self.fixture:destroy()
       self.isAlive = false
@@ -179,8 +174,7 @@ Enemy = {
     end
 
     function self:shoot()
-      local shot = shots.new(cat.E_SHOT, self.body:getWorld(), self.body:getX(), self.body:getY(), 2, 5, 1.6,
-        self.direction, 5, 2, Arrow.new())
+      local shot = Arrow.new(cat.E_SHOT, self.body:getWorld(), self.body:getX(), self.body:getY(), self.direction, 2)
       table.insert(self.shots, shot)
     end
 
@@ -191,10 +185,10 @@ Enemy = {
         end
       end
 
-      love.graphics.setColor(1, 0, 0, 1)
+      love.graphics.setColor(1, 0.2, 0.2, 1)
       for i, d in ipairs(self.bloodDrops) do
         if not d.body:isDestroyed() then
-          love.graphics.rectangle("fill", d.body:getX(), d.body:getY(), 4, 5)
+          love.graphics.rectangle("fill", d.body:getX(), d.body:getY(), 6, 6)
         end
       end
       love.graphics.setColor(d1, d2, d3, d4)
