@@ -229,8 +229,10 @@ function menu.mousepressed(x, y, button)
                 return
             end
         end
-        activeInputButton.text = activeInputButton.name
-        activeInputButton = nil
+        if activeInputButton ~= nil then
+          activeInputButton.text = activeInputButton.name
+          activeInputButton = nil
+        end
     end
 end
 

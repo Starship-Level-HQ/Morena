@@ -192,11 +192,13 @@ Enemy = {
         end
       end
       love.graphics.setColor(d1, d2, d3, d4)
-      --love.graphics.polygon("fill", self.body:getWorldPoints(self.shape:getPoints()))
+      love.graphics.polygon("fill", self.body:getWorldPoints(self.shape:getPoints())) --Ne udalat
+      local xx, yy = self.body:getWorldPoints(self.shape:getPoints())
       if self.zoom ~= nil then
-        self.anim:draw(self.spriteSheet, self.body:getX()-self.width, self.body:getY()-self.height, nil, self.zoom)
+        self.anim:draw(self.spriteSheet, xx, yy, nil, self.zoom)
       else
-        self.anim:draw(self.spriteSheet, self.body:getX()-self.width, self.body:getY()-self.height, nil, 4)
+        self.anim:draw(self.spriteSheet, xx, yy)--, nil, 4)
+        --self.anim:draw(self.spriteSheet, self.body:getX(), self.body:getY(), nil) --х у это центр тела надо сделать левый верхний угол как??
       end
       if self.health > 0 then
         love.graphics.setColor(1, 0, 0, 1)

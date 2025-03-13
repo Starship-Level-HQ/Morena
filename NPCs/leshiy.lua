@@ -13,7 +13,7 @@ Leshiy = {
     self.animations.up = anim8.newAnimation(self.grid('1-4', 2), 0.3)
     self.animations.right = anim8.newAnimation(self.grid('1-4', 1), 0.3)
     self.animations.left = anim8.newAnimation(self.grid('1-4', 1), 0.3)
-    self.zoom = 3
+    --self.zoom = 3
     
     self.deadSpriteSheet = love.graphics.newImage('res/sprites/leshiy-dead.png')
     self.deadGrid = anim8.newGrid(28, 30, self.deadSpriteSheet:getWidth(), self.deadSpriteSheet:getHeight())
