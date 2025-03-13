@@ -134,9 +134,10 @@ Player = {
                     s:draw()
                 end
             end
-
-            --love.graphics.polygon("fill", self.player.body:getWorldPoints(player.shape:getPoints()))
-            self.anim:draw(self.spriteSheet, self.body:getX(), self.body:getY(), nil, 2.1, nil, 12, 19)
+            local xx, yy = self.body:getWorldPoints(self.shape:getPoints()) 
+             
+            --love.graphics.polygon("fill", self.body:getWorldPoints(self.shape:getPoints()))
+            self.anim:draw(self.spriteSheet, xx-10, yy-10, nil, 2.1)
 
             --След
             love.graphics.setColor(0.7, 0.7, 0.9, 0.2)
@@ -146,7 +147,7 @@ Player = {
             end
 
             love.graphics.setColor(0, 1, 0, 1)
-            love.graphics.print(math.ceil(self.health), self.body:getX() - 24, self.body:getY() - 67, 0, 1.8, 1.8)
+            love.graphics.print(math.ceil(self.health), xx - 8, yy - 44, 0, 1.8, 1.8)
 
             love.graphics.setColor(d1, d2, d3, d4)
 
