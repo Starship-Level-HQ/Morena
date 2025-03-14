@@ -3,6 +3,7 @@ require("player/player")
 require("dialog")
 require("inventory.src.objectsOnMap")
 require("NPCs/zombee")
+require("NPCs/smartZombee")
 require("NPCs/kaban")
 require("NPCs/leshiy")
 require("shot")
@@ -25,7 +26,7 @@ local levels = {
     {
         map = "res/maps/testMap.lua",
         playerPosition = { 100, 200 },
-        enemyPositions = { { 700, 400, Leshiy } },
+        enemyPositions = { { 700, 400, SmartZombee } },
         lakePosition = { 300, 400 }
     }
     -- Добавляйте больше уровней с разными настройками
@@ -197,6 +198,12 @@ function level.collisionOnEnter(fixture_a, fixture_b, contact)
     if (fixture_a:getCategory() == cat.PLAYER or fixture_a:getCategory() == cat.DASHING_PLAYER)
         and fixture_b:getCategory() == cat.E_RANGE then
         fixture_b:getUserData():seePlayer(fixture_a)
+    end
+    
+    if fixture_a:getCategory() == cat.P_SHOT and fixture_b:getCategory() == cat.E_RANGE then
+      if fixture_b:getUserData().dodge ~= nil then
+        fixture_b:getUserData().dodge(fixture_a:getUserData())
+      end
     end
 
     if fixture_a:getCategory() == cat.PLAYER and fixture_b:getCategory() == cat.E_SHOT then

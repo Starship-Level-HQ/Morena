@@ -3,7 +3,7 @@ Roots = {
     if damageModifier == nil then
       damageModifier = 1
     end
-    local self = shots.new(category, world, x, y, 60, 80, 3, dir, 0, 1.4)
+    local self = shots.new(category, world, x, y, 60, 80, 3, dir, 10, 1.4)
     self.body:setMass(400)
     
     
@@ -13,7 +13,7 @@ Roots = {
       player.stun = 0.5 
       player.stunTime = 0.5
     end
-    self.fixture:setUserData({10*damageModifier, effect})
+    self.effect = effect
     self.sprite = love.graphics.newImage('res/sprites/roots.png')
     self.grid = anim8.newGrid(27, 36, self.sprite:getWidth(), self.sprite:getHeight())
     self.animations = anim8.newAnimation(self.grid('1-4', 1), 0.1)
