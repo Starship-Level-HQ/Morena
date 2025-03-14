@@ -1,10 +1,10 @@
 PlayerCollisions = {
   new = function(self)
 
-    function self:collisionWithShot(damageAndEffect)
-      self.health = self.health - damageAndEffect[1]
-      if damageAndEffect[2] ~= nil then
-        damageAndEffect[2](self)
+    function self:collisionWithShot(shot)
+      self.health = self.health - shot.damage
+      if shot.effect ~= nil then
+        shot.effect(self)
       end
     end
 
