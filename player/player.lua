@@ -1,4 +1,3 @@
-local shots = require("shot")
 local inventory = require("inventory.src.inventory")
 local ItemModule = require("inventory.src.item")
 local inventoryGuiSrc = require("inventory.src.inventoryGui")
@@ -34,6 +33,9 @@ Player = {
         self.health = 100
         self.damage = 10
         self.attackType = 'slash'
+        self.stun = 0
+        self.stunTime = 0
+        self.zoom = 1
 
         PlayerAnim.new(self)
 
@@ -48,10 +50,6 @@ Player = {
         self.inventory:addItem(ItemModule.create_item(1))
         self.inventory:addItem(ItemModule.create_item(2))
         self.inventory:addItem(ItemModule.create_item(1))
-        -- self.inventory:addItem(item.new("Another Thing", "inventory/assets/thing2.png",
-        --     "It's another thing. It has colors.", nil))
-        -- self.inventory:addItem(item.new("Gold Nugget", "inventory/assets/gold nugget.png",
-        --     "I found it lying on the ground. I must be lucky - you can sell one of these for 50 coins...", function() self.health = self.health + 30 end))
 
         self.inventoryGui = inventoryGuiSrc
         self.inventoryGui:setInventory(self.inventory, 50, 50)
@@ -77,7 +75,7 @@ Player = {
 
         function self:mousepressed(xMousepressed, yMousepressed, b)
             if self.inventoryIsOpen then -- проверяем, открыт ли инвентарь
-                callback = self.inventoryGui:mousepressed(xMousepressed, yMousepressed, b)
+                local callback = self.inventoryGui:mousepressed(xMousepressed, yMousepressed, b)
                 if not callback then 
                     return false
                 elseif callback.target == "world" then
@@ -92,31 +90,29 @@ Player = {
 
         function self:shoot(shotSound)
             --if #self.shots >= 5 then return end
-            local shot = shots.new(cat.P_SHOT, self.body:getWorld(), self.body:getX(), self.body:getY(), 6, 20, 1.4,
-                self.direction, self.damage, 2, Arrow.new())
+          local shot = Arrow.new(cat.P_SHOT, self.body:getWorld(), self.body:getX(), self.body:getY(), self.direction, 2)
             table.insert(self.shots, shot)
             --love.audio.play(shotSound)
         end
 
         function self:slash(slashSound)
-            if #self.slashes >= 1 then return end
-            local shot = shots.new(cat.P_SHOT, self.body:getWorld(), self.body:getX(), self.body:getY(), 30, 30, 0.3,
-                self.direction, self.damage, 3, Slash.new())
-            shot.body:setMass(30)
-            table.insert(self.slashes, shot)
+          if #self.slashes >= 1 then return end
+          local shot = Slash.new(cat.P_SHOT, self.body:getWorld(), self.body:getX(), self.body:getY(), self.direction, 2)
+          shot.body:setMass(90)
+          table.insert(self.slashes, shot)
             --love.audio.play(slashSound)
         end
 
         function self:pickupItem(from, itemBody)
             itemBody = itemBody or self.nearestItem
             if itemBody then
-                item = from:takeItemByID(itemBody.id)
+                local item = from:takeItemByID(itemBody.id)
                 if item then
                     self.inventory:addItem(itemBody.item)
-                else 
+                else
                     print("nil item Big Fail")
                 end
-            else 
+            else
                 print("no near item")
             end
         end
@@ -141,9 +137,10 @@ Player = {
                     s:draw()
                 end
             end
-
-            --love.graphics.polygon("fill", self.player.body:getWorldPoints(player.shape:getPoints()))
-            self.anim:draw(self.spriteSheet, self.body:getX(), self.body:getY(), nil, 2.1, nil, 12, 19)
+            local xx, yy = self.body:getWorldPoints(self.shape:getPoints()) 
+             
+            --love.graphics.polygon("fill", self.body:getWorldPoints(self.shape:getPoints()))
+            self.anim:draw(self.spriteSheet, xx-10, yy-10, nil, 2.1*self.zoom)
 
             --След
             love.graphics.setColor(0.7, 0.7, 0.9, 0.2)
@@ -153,7 +150,7 @@ Player = {
             end
 
             love.graphics.setColor(0, 1, 0, 1)
-            love.graphics.print(math.ceil(self.health), self.body:getX() - 24, self.body:getY() - 67, 0, 1.8, 1.8)
+            love.graphics.print(math.ceil(self.health), xx - 8, yy - 44, 0, 1.8, 1.8)
 
             love.graphics.setColor(d1, d2, d3, d4)
 

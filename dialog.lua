@@ -27,7 +27,7 @@ Dialog = {
           phrases[self.current].dur = 1
         end
         
-      else 
+      else
         self.dt = self.dt + dt
         if phrases[self.current].dur == nil then
           phrases[self.current].dur = 1
