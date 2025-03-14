@@ -8,7 +8,7 @@ function shotFabric.new(category, world, x, y, h, w, lifeTime, dir, damage, spee
   end
   local shot = physics.makeBody(world, x, y, h, w, "dynamic")
   shot.fixture:setCategory(category)
-  shot.fixture:setUserData(damage)
+  shot.fixture:setUserData({damage})
   shot.h = h
   shot.w = w
   shot.fixture:setMask(cat.TEXTURE, cat.P_SHOT, cat.E_SHOT, cat.VOID)
@@ -58,7 +58,7 @@ function shotFabric.new(category, world, x, y, h, w, lifeTime, dir, damage, spee
   
   function shot.draw()
     shot.animations:draw(shot.sprite, shot.body:getX(), shot.body:getY(), shot.rotate, 4, nil, 4, 4)
-    love.graphics.polygon("fill", shot.body:getWorldPoints(shot.shape:getPoints()))
+    --love.graphics.polygon("fill", shot.body:getWorldPoints(shot.shape:getPoints()))
   end
 
   return shot

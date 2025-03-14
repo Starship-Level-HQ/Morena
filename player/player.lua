@@ -33,6 +33,9 @@ Player = {
         self.health = 100
         self.damage = 10
         self.attackType = 'slash'
+        self.stun = 0
+        self.stunTime = 0
+        self.zoom = 1
 
         PlayerAnim.new(self)
 
@@ -72,7 +75,7 @@ Player = {
 
         function self:mousepressed(xMousepressed, yMousepressed, b)
             if self.inventoryIsOpen then -- проверяем, открыт ли инвентарь
-                callback = self.inventoryGui:mousepressed(xMousepressed, yMousepressed, b)
+                local callback = self.inventoryGui:mousepressed(xMousepressed, yMousepressed, b)
                 if not callback then 
                     return false
                 elseif callback.target == "world" then
@@ -103,13 +106,13 @@ Player = {
         function self:pickupItem(from, itemBody)
             itemBody = itemBody or self.nearestItem
             if itemBody then
-                item = from:takeItemByID(itemBody.id)
+                local item = from:takeItemByID(itemBody.id)
                 if item then
                     self.inventory:addItem(itemBody.item)
-                else 
+                else
                     print("nil item Big Fail")
                 end
-            else 
+            else
                 print("no near item")
             end
         end
@@ -137,7 +140,7 @@ Player = {
             local xx, yy = self.body:getWorldPoints(self.shape:getPoints()) 
              
             --love.graphics.polygon("fill", self.body:getWorldPoints(self.shape:getPoints()))
-            self.anim:draw(self.spriteSheet, xx-10, yy-10, nil, 2.1)
+            self.anim:draw(self.spriteSheet, xx-10, yy-10, nil, 2.1*self.zoom)
 
             --След
             love.graphics.setColor(0.7, 0.7, 0.9, 0.2)

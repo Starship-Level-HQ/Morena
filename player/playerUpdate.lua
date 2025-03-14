@@ -6,7 +6,7 @@ PlayerUpdate = {
             if self.isDashing then
                 speed = speed + self.dashSpeed
             end
-
+        if self.stun <= 0 then
             if love.keyboard.isDown(userConfig.leftButton) then
                 xv, yv = self.body:getLinearVelocity()
                 self.body:setLinearVelocity(-speed, yv)
@@ -48,6 +48,17 @@ PlayerUpdate = {
             end
 
             xv, yv = self.body:getLinearVelocity()
+            self.zoom = 1
+            
+          else
+            self.stun = self.stun - dt
+            if self.stun > self.stunTime/2 then
+              self.zoom = self.zoom + 0.005
+            else
+              self.zoom = self.zoom - 0.005
+            end
+          end
+            
             self.direction = physics.calculateDirection(xv, yv, self.direction) -- 45'
 
             if isMoving == false then
