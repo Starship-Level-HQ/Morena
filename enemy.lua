@@ -210,7 +210,7 @@ Enemy = {
     end
 
     function self:colisionWithShot(damage)
-      self.health = self.health - damage
+      self.health = self.health - damage[1]
     end
 
     function self:seePlayer(playerBody)
