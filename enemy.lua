@@ -8,12 +8,12 @@ Enemy = {
       return false
     end
 
-    self.defaultSpeed = 40
+    self.defaultSpeed = 42
     self.body = love.physics.newBody(world, x, y, "dynamic")         --тело для движения и отрисовки
     self.body:setMass(49)
     self.fixture = love.physics.newFixture(self.body, self.shape, 0) --коллайдер
     self.fixture:setCategory(cat.ENEMY)
-    self.fixture:setMask(cat.E_SHOT, cat.VOID, cat.DASHING_PLAYER)
+    self.fixture:setMask(cat.E_SHOT, cat.VOID, cat.DASHING_PLAYER, cat.TEXTURE)
     self.fixture:setUserData(self)
     self.rangeFixture = love.physics.newFixture(self.body, love.physics.newCircleShape(range), 0) --коллайдер
     self.rangeFixture:setCategory(cat.E_RANGE)
@@ -28,7 +28,7 @@ Enemy = {
     self.playerPos = {}
 
     self.anim = self.animations.left
-    self.direction = "l"
+    self.direction = "d"
     self.isAlive = true
     self.tickWalk = math.random(0, 19) / 10
     self.tickShot = math.random(0, 20) / 100
@@ -141,6 +141,10 @@ Enemy = {
       self.anim = self.deadAnimations
       self.anim:update(dt)
       self.fixture:destroy()
+      self.rangeFixture:destroy()
+      if self.dodgeFixture ~= nil then
+        self.dodgeFixture:destroy()
+      end
       self.isAlive = false
       self.bloodDrops = physics.bloodDrops(self.body:getWorld(), self.body:getX(), self.body:getY())
     end
@@ -233,6 +237,7 @@ Enemy = {
         end
       end
       table.remove(self.playerPos, remP)
+      self.path = nil
     end
 
     return self

@@ -11,8 +11,6 @@ function physics.collisionOnEnter(fixture_a, fixture_b, contact) --выводи�
     for i = 1, #point, 2 do
         local x, y = point[i], point[i + 1]
         -- _log("x: ", x, "y: ", y)
-        -- Cache the values inside the contacts because they're not guaranteed
-        -- to be valid later in the frame.
         table.insert(physics.normals, { x, y, x + dx, y + dy })
     end
 
