@@ -73,6 +73,18 @@ Leshiy = {
       table.insert(self.shots, shot)
     end
     
+    function self:die(dt)
+      self.body:setLinearVelocity(0, 0)
+      self.spriteSheet = self.deadSpriteSheet
+      self.anim = self.deadAnimations
+      self.zoom = 4
+      self.anim:update(dt)
+      self.fixture:destroy()
+      self.rangeFixture:destroy()
+      self.isAlive = false
+      self.bloodDrops = physics.bloodDrops(self.body:getWorld(), self.body:getX(), self.body:getY())
+    end
+    
     return self
   end
 }

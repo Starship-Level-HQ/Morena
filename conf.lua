@@ -1,4 +1,5 @@
-DEBUG = false
+DEBUG = true
+GRID_SIZE = 25
 
 function love.conf(t)
     t.console = DEBUG

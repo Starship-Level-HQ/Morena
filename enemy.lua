@@ -8,16 +8,16 @@ Enemy = {
       return false
     end
 
-    self.defaultSpeed = 40
+    self.defaultSpeed = 42
     self.body = love.physics.newBody(world, x, y, "dynamic")         --тело для движения и отрисовки
     self.body:setMass(49)
     self.fixture = love.physics.newFixture(self.body, self.shape, 0) --коллайдер
     self.fixture:setCategory(cat.ENEMY)
-    self.fixture:setMask(cat.E_SHOT, cat.VOID, cat.DASHING_PLAYER)
+    self.fixture:setMask(cat.E_SHOT, cat.VOID, cat.DASHING_PLAYER, cat.TEXTURE)
     self.fixture:setUserData(self)
     self.rangeFixture = love.physics.newFixture(self.body, love.physics.newCircleShape(range), 0) --коллайдер
     self.rangeFixture:setCategory(cat.E_RANGE)
-    self.rangeFixture:setMask(cat.E_SHOT, cat.VOID, cat.DASHING_PLAYER, cat.ENEMY, cat.P_SHOT, cat.TEXTURE)
+    self.rangeFixture:setMask(cat.E_SHOT, cat.VOID, cat.DASHING_PLAYER, cat.P_SHOT, cat.ENEMY, cat.TEXTURE)
     self.rangeFixture:setSensor(true)
     self.rangeFixture:setUserData(self)
     self.body:setGravityScale(0)
@@ -28,12 +28,14 @@ Enemy = {
     self.playerPos = {}
 
     self.anim = self.animations.left
-    self.direction = "l"
+    self.direction = "d"
     self.isAlive = true
     self.tickWalk = math.random(0, 19) / 10
     self.tickShot = math.random(0, 20) / 100
 
     self.isMoving = false
+    
+    self.jumpTime = 0
 
     function self:update(dt)
 
@@ -50,7 +52,9 @@ Enemy = {
             end
           end
           
-          self:moving(player)
+          if self.jumpTime <= 0 then
+            self:moving(player)
+          end
             
           if self.canShoot then
             if self.tickShot > 0.4 then
@@ -68,11 +72,14 @@ Enemy = {
           
         end
 
+      if self.jumpTime <= 0 then
         if self.isMoving == false then
           self.anim:gotoFrame(2)
           self.body:setLinearVelocity(0, 0)
         end
-
+      else
+        self.jumpTime = self.jumpTime - dt
+      end
         self.anim:update(dt)
 
         if self.health <= 0 then
@@ -134,6 +141,10 @@ Enemy = {
       self.anim = self.deadAnimations
       self.anim:update(dt)
       self.fixture:destroy()
+      self.rangeFixture:destroy()
+      if self.dodgeFixture ~= nil then
+        self.dodgeFixture:destroy()
+      end
       self.isAlive = false
       self.bloodDrops = physics.bloodDrops(self.body:getWorld(), self.body:getX(), self.body:getY())
     end
@@ -209,8 +220,8 @@ Enemy = {
       love.graphics.setColor(d1, d2, d3, d4)
     end
 
-    function self:colisionWithShot(damage)
-      self.health = self.health - damage[1]
+    function self:colisionWithShot(shot)
+      self.health = self.health - shot.damage
     end
 
     function self:seePlayer(playerBody)
@@ -226,6 +237,7 @@ Enemy = {
         end
       end
       table.remove(self.playerPos, remP)
+      self.path = nil
     end
 
     return self

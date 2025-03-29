@@ -8,13 +8,15 @@ function shotFabric.new(category, world, x, y, h, w, lifeTime, dir, damage, spee
   end
   local shot = physics.makeBody(world, x, y, h, w, "dynamic")
   shot.fixture:setCategory(category)
-  shot.fixture:setUserData({damage})
+  shot.fixture:setUserData(shot)
+  shot.damage = damage
   shot.h = h
   shot.w = w
   shot.fixture:setMask(cat.TEXTURE, cat.P_SHOT, cat.E_SHOT, cat.VOID)
   shot.lifeTime = lifeTime
   shot.time = 0
   shot.rotate = 0
+  shot.dir = dir
 
   if dir == "r" then
     shot.body:setLinearVelocity(100*speed, 0)
