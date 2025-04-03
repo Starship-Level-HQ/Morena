@@ -69,7 +69,7 @@ Leshiy = {
     end
     
     function self:shoot()
-      local shot = Roots.new(cat.E_SHOT, self.body:getWorld(), self.body:getX(), self.body:getY(), self.direction)
+      local shot = Roots.new(cat.E_SHOT, self.body:getWorld(), self.body:getX(), self.body:getY(), angles.calculateAngle(self.body:getX(), self.body:getY(), self.playerPos[1]:getBody():getX(), self.playerPos[1]:getBody():getY()))
       table.insert(self.shots, shot)
     end
     

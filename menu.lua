@@ -158,6 +158,8 @@ function menu.load()
 
     background = love.graphics.newImage('res/menu/backGround.png')
     character = love.graphics.newImage("res/menu/MC.png")
+    
+    love.mouse.setCursor(love.mouse.getSystemCursor("arrow"))
 
     -- Генерация фонов и размещение кнопок
     local buttonWidth, buttonHeight = 200, 50
