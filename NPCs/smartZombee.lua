@@ -171,8 +171,6 @@ SmartZombee = {
 
           self.body:setLinearVelocity(speedX, speedY)
 
-          xv, yv = self.body:getLinearVelocity()
-          self.direction = physics.calculateDirection(xv, yv, self.direction) -- 45'
           local dist = astar.dist(selfX, selfY, nextMove.x, nextMove.y)
           if dist < 8 then
             table.remove(self.path, 1)

@@ -129,9 +129,6 @@ Enemy = {
           else
             self.isMoving = false
           end
-
-          xv, yv = self.body:getLinearVelocity()
-          self.direction = physics.calculateDirection(xv, yv, self.direction) -- 45'
       
     end
 

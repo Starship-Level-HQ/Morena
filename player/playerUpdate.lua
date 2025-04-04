@@ -58,8 +58,6 @@ PlayerUpdate = {
               self.zoom = self.zoom - 0.005
             end
           end
-            
-            self.direction = physics.calculateDirection(xv, yv, self.direction) -- 45'
 
             if isMoving == false then
                 if self.direction == "d" then
@@ -71,14 +69,14 @@ PlayerUpdate = {
                 else
                     self.anim = self.animations.sLeft
                 end
-              --player.anim:gotoFrame(2)
+              
             end
 
             if love.keyboard.isDown("lshift") and not self.isDashing and self.dashCooldownLeft <= 0 then
                 self.isDashing = true
                 self.dashTimeLeft = self.dashDuration
                 self.fixture:setCategory(cat.DASHING_PLAYER)
-                --print(self.nearestItem)
+                
             end
 
             if self.health == 0 then
@@ -236,8 +234,6 @@ PlayerUpdate = {
             if (remotePlayerData.directionX == "" and remotePlayerData.directionY == "") then
                 self.anim:gotoFrame(2) -- не движется
             end
-
-            self.direction = physics.calculateDirection(remotePlayerData.xv, remotePlayerData.yv, self.direction)
 
             -- Обновляем dash-статус и анимацию
             if self.isDashing then
