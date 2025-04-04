@@ -1,4 +1,5 @@
 require("enemy")
+require "angles"
 require("player/player")
 require("dialog")
 require("inventory.src.objectsOnMap")
@@ -51,6 +52,7 @@ function level.startLevel(levelNumber)
   world = love.physics.newWorld(0, 0, true)
   world:setGravity(0, 40)
   world:setCallbacks(level.collisionOnEnter, level.collisionOnEnd)
+  love.mouse.setCursor(love.mouse.newCursor('res/sprites/curs.png', 272 , 272))
 
   level.obstacles = {}
 
@@ -164,6 +166,12 @@ function level.draw()
   if level.isDialog then
     level.dialog.draw(d1, d2, d3, d4)
   end
+  
+  local cx, cy = love.mouse.getPosition()
+  --love.graphics.draw(level.cursorImg, player.body:getX() + cx, player.body:getY() + cy, 0, 0.1)
+  --love.graphics.draw(level.cursorImg, cx, cy, 0, 0.1)
+  -----------------------------------------------
+  
   cam:detach()
 end
 
@@ -173,11 +181,7 @@ end
 
 function level.keypressed(key)
   if key == " " or key == "space" then
-    if player.attackType == 'slash' then
-      player:slash(shotSound)
-    elseif player.attackType == 'shoot' then
-      player:shoot(shotSound)
-    end
+    --fek
   elseif key == "q" then
     day = not day
   elseif key == "1" then

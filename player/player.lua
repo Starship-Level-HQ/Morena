@@ -85,19 +85,30 @@ Player = {
                         table.insert(self.effects, x)
                     end
                 end
+            else
+              width, height, _ = love.window.getMode( )
+              self:attack(angles.calculateAngle(width/2, height/2, xMousepressed, yMousepressed))
             end
         end
+        
+        function self:attack(angle)
+          if self.attackType == "slash" then
+            self:slash(angle)
+          end
+          if self.attackType == "shoot" then
+            self:shoot(angle)
+          end
+        end
 
-        function self:shoot(shotSound)
-            --if #self.shots >= 5 then return end
-          local shot = Arrow.new(cat.P_SHOT, self.body:getWorld(), self.body:getX(), self.body:getY(), self.direction, 2)
+        function self:shoot(angle)
+          local shot = Arrow.new(cat.P_SHOT, self.body:getWorld(), self.body:getX(), self.body:getY(), angle, 2)
             table.insert(self.shots, shot)
             --love.audio.play(shotSound)
         end
 
-        function self:slash(slashSound)
+        function self:slash(angle)
           if #self.slashes >= 1 then return end
-          local shot = Slash.new(cat.P_SHOT, self.body:getWorld(), self.body:getX(), self.body:getY(), self.direction, 2)
+          local shot = Slash.new(cat.P_SHOT, self.body:getWorld(), self.body:getX(), self.body:getY(), angle, 2)
           shot.body:setMass(90)
           table.insert(self.slashes, shot)
             --love.audio.play(slashSound)

@@ -14,10 +14,10 @@ cam = camera()
 gameState = "menu" -- Начальное состояние — меню
 
 function love.load()
-  menu.load()
+  --menu.load()
     --Чтобы стартовать не с меню а с лвла
-    --gameState = "level"
-    --level.startLevel(3)
+    gameState = "level"
+    level.startLevel(3)
 end
 
 function love.update(dt)
