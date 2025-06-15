@@ -62,8 +62,9 @@ MapStaff = {
             end
             for _, item in ipairs(self.nonActiveItems) do
                 love.graphics.setColor(d1, d2, d3, d4)
-                love.graphics.draw(item.img, item.body:getX(), item.body:getY(), nil, 1, 1, 32, 25)
-                --love.graphics.polygon("fill", item.body:getWorldPoints(item.shape:getPoints()))
+                local xx, yy = item.body:getWorldPoints(item.shape:getPoints())
+                love.graphics.draw(item.img, xx-10, yy-10)
+                love.graphics.polygon("fill", item.body:getWorldPoints(item.shape:getPoints()))
             end
         end
         

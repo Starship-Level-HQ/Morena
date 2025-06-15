@@ -28,20 +28,20 @@ SmartZombee = {
 
     self.dodgeFixture = love.physics.newFixture(self.body, love.physics.newCircleShape(80), 0) --коллайдер
     self.dodgeFixture:setCategory(cat.E_RANGE)
-    self.dodgeFixture:setMask(cat.E_SHOT, cat.VOID, cat.DASHING_PLAYER, cat.ENEMY, cat.TEXTURE)
+    self.dodgeFixture:setMask(cat.E_SHOT, cat.VOID, cat.PLAYER, cat.DASHING_PLAYER, cat.ENEMY, cat.TEXTURE)
     self.dodgeFixture:setSensor(true)
     self.dodgeFixture:setUserData(self)
 
     self.path = nil
+    
+    self.coroutine = coroutine.create(function(px, py, isFull) while true do self:getPath(px, py, isFull) coroutine.yield() end end)
 
     self.dodge = function(shot)
-      local dir = shot["dir"]
-      if dir == "r" or dir == "l" then
+      local xv, yv = shot.body:getLinearVelocity()
+      if math.abs(x) > math.abs(y) then
         self.jump(0, 140*math.random(-1, 1))
-      elseif dir == "u" or dir == "d" then
+      else 
         self.jump(140*math.random(-1, 1), 0)
-      elseif dir == "ld" or dir == "rd" or dir == "lu" or dir == "ru" then
-        self.jump(80*math.random(-1, 1), 80*math.random(-1, 1))
       end
     end
 
@@ -61,9 +61,9 @@ SmartZombee = {
         if self.path ~= nil then
           self.path = {unpack(astar.path(selfNode, playerNode, nodes, false), 2, 3)}
         else
-          print("____")
+          --print("____")
           print(pX, pY)
-          print("____")
+          --print("____")
         end
       end
     end
@@ -132,7 +132,8 @@ SmartZombee = {
       if self:checkPath(pX, pY) then
         self.path = {{x=pX, y=pY}}
       else
-        self:getPath(pX, pY, false)
+        coroutine.resume(self.coroutine, pX, pY, false)
+        --self:getPath(pX, pY, false)
       end
 
       if self.path ~= nil then

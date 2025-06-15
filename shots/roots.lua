@@ -18,7 +18,7 @@ Roots = {
     function self.draw()
       local xx, yy = self.body:getWorldPoints(self.shape:getPoints())
       self.animations:draw(self.sprite, xx, yy, self.rotate, 4, nil, 4, 4)
-      love.graphics.polygon("fill", self.body:getWorldPoints(self.shape:getPoints()))
+      --love.graphics.polygon("fill", self.body:getWorldPoints(self.shape:getPoints()))
     end
     
     return self

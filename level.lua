@@ -8,6 +8,8 @@ require("NPCs/smartZombee")
 require("NPCs/kaban")
 require("NPCs/leshiy")
 require("shot")
+require("objects/rock")
+require("objects/teleport")
 
 level = {}
 local enemies
@@ -22,20 +24,26 @@ local levels = {
     playerPosition = { 300, 450 },
     enemyPositions = { { 600, 100, Kaban}, { 600, 200, Zombee}, { 600, 300, Kaban} },
     obstacles = {{ 400, 550, 80, 80}},
+    objects = { {Rock, 555, 550, 37, 25, "dynamic"} },
+    teleports = { {800, 800, 80, 80, 2} },
     loot = { { 350, 400, 1 } } -- x y id
   },
   {
     map = "res/maps/testMap.lua",
     playerPosition = { 100, 200 },
     enemyPositions = { { 550, 200, SmartZombee } }, 
-    obstacles = {{ 400, 200, 100, 100}}
+    obstacles = {{ 400, 200, 100, 100}},
+    objects = {{Rock, 500, 500, 37, 25, "dynamic"}},
+    teleports = { {800, 800, 80, 80, 3} }
     --obstacles = {{ 400, 200, 100, 150}, { 375, 150, 150, 100}}
   },
   {
     map = "res/maps/testMap.lua",
     playerPosition = { 100, 200 },
     enemyPositions = { { 700, 400, Leshiy } },
-    obstacles = {{ 0, 0 , 10, 10}}
+    obstacles = {{ 0, 0 , 10, 10}},
+    objects = {{Rock, 300, 299, 37, 25, "dynamic"}},
+    teleports = { {800, 800, 80, 80, 1} }
   }
   -- Добавляйте больше уровней с разными настройками
 }
@@ -53,6 +61,11 @@ function level.startLevel(levelNumber)
   world:setGravity(0, 40)
   world:setCallbacks(level.collisionOnEnter, level.collisionOnEnd)
   love.mouse.setCursor(love.mouse.newCursor('res/sprites/curs.png', 272 , 272))
+  
+  level.defaultColor1 = 0
+  level.defaultColor2 = 0
+  level.defaultColor3 = 0
+  level.defaultColor4 = 0
 
   level.obstacles = {}
 
@@ -75,19 +88,33 @@ function level.startLevel(levelNumber)
     table.insert(enemies, enemy)
   end
 
-  shotSound = love.audio.newSource("res/sounds/shot.wav", "static")
+  --shotSound = love.audio.newSource("res/sounds/shot.wav", "static")
 
   mapStaff = MapStaff.new(world)
   mapStaff:addItem(350, 400, 1)
   mapStaff:addItem(370, 400, 2)
-  mapStaff:addItem(355, 330, 1)
-  rock = physics.makeBody(world, 555, 550, 37, 25, "dynamic")
-  rock.body:setMass(55)
-  rock.body:setLinearDamping(9)
-  rock.fixture:setCategory(cat.BARRIER)
-  rock.fixture:setMask(cat.VOID)
-  rock.img = love.graphics.newImage("res/sprites/rock.png")
-  mapStaff:addNonActiveItem(rock)
+  mapStaff:addItem(800, 800, 1)
+  
+  for i, o in ipairs(levelData.objects) do
+    mapStaff:addNonActiveItem(o[1].new(world, o[2], o[3], o[4], o[5], o[6]))
+  end
+  
+  for i, t in ipairs(levelData.teleports) do
+    mapStaff:addNonActiveItem(Teleport.new(world, t[1], t[2], t[3], t[4], t[5]))
+  end
+  
+  local code = [[
+    local min, max, levelNum = ...
+    local timer = require 'love.timer'
+    for i = min, max do
+      love.thread.getChannel('color'):push(-0.01)
+      timer.sleep(0.01)
+    end
+  ]]
+  
+  local thread = love.thread.newThread(code)
+  thread:start(1, 100, levelNumber)
+  
 end
 
 function level.endLevel()
@@ -139,6 +166,10 @@ function level.update(dt)
   elseif player.inventoryIsOpen then
     player:update(dt)
   end
+  local newLevelNumber = love.thread.getChannel('trans'):pop()
+  if newLevelNumber then
+    level.startLevel(newLevelNumber)
+  end
 end
 
 function level.draw()
@@ -147,7 +178,15 @@ function level.draw()
   gameMap:drawLayer(gameMap.layers["road"])
   gameMap:drawLayer(gameMap.layers["trees"])
 
-  local d1, d2, d3, d4 = day and 255 or 0.23, day and 255 or 0.25, day and 255 or 0.59, 1
+  local newColor = love.thread.getChannel('color'):pop()
+  if newColor then
+    level.defaultColor1 = level.defaultColor1 - newColor
+    level.defaultColor2 = level.defaultColor2 - newColor
+    level.defaultColor3 = level.defaultColor3 - newColor
+    level.defaultColor4 = level.defaultColor4 - newColor
+  end
+  local d1, d2, d3, d4 = level.defaultColor1, level.defaultColor2, level.defaultColor3, level.defaultColor4
+  
   love.graphics.setColor(0.23, 0.25, 0.59, 1)
   for i, ob in ipairs(level.obstacles) do
     love.graphics.setColor(0.23, 0.25, 0.59, 1)
@@ -166,11 +205,6 @@ function level.draw()
   if level.isDialog then
     level.dialog.draw(d1, d2, d3, d4)
   end
-  
-  local cx, cy = love.mouse.getPosition()
-  --love.graphics.draw(level.cursorImg, player.body:getX() + cx, player.body:getY() + cy, 0, 0.1)
-  --love.graphics.draw(level.cursorImg, cx, cy, 0, 0.1)
-  -----------------------------------------------
   
   cam:detach()
 end
@@ -248,6 +282,10 @@ function level.collisionOnEnter(fixture_a, fixture_b, contact)
     item.collision = true
     fixture_a:getUserData().nearestItem = item
   end
+  
+  if fixture_a:getCategory() == cat.PLAYER and fixture_b:getCategory() == cat.TRIGGER then
+    level.transition(fixture_b:getUserData())
+  end
 end
 
 function level.collisionOnEnd(fixture_a, fixture_b, contact)
@@ -264,6 +302,24 @@ function level.collisionOnEnd(fixture_a, fixture_b, contact)
       fixture_a:getUserData().nearestItem = nil
     end
   end
+end
+
+function level.transition(levelNumber)
+  level.pause = true
+
+  local code = [[
+    local min, max, levelNum = ...
+    local timer = require 'love.timer'
+    for i = min, max do
+      love.thread.getChannel('color'):push(0.01)
+      timer.sleep(0.01)
+    end
+    love.thread.getChannel('trans'):push(levelNum)
+  ]]
+  
+  local thread = love.thread.newThread(code)
+  thread:start(1, 100, levelNumber)
+  
 end
 
 return level
