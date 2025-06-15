@@ -87,7 +87,7 @@ Player = {
                 end
             else
               width, height, _ = love.window.getMode( )
-              self:attack(angles.calculateAngle(width/2, height/2, xMousepressed, yMousepressed))
+              self:attack(angles.calculateAngle(self.body:getX(), self.body:getY(), cam.x+xMousepressed-width/2, cam.y+yMousepressed-height/2))
             end
         end
         
