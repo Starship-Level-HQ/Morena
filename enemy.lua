@@ -13,7 +13,7 @@ Enemy = {
     self.body:setMass(49)
     self.fixture = love.physics.newFixture(self.body, self.shape, 0) --коллайдер
     self.fixture:setCategory(cat.ENEMY)
-    self.fixture:setMask(cat.E_SHOT, cat.VOID, cat.DASHING_PLAYER, cat.TEXTURE)
+    self.fixture:setMask(cat.E_SHOT, cat.VOID, cat.DASHING_PLAYER, cat.TEXTURE, cat.ENEMY)
     self.fixture:setUserData(self)
     self.rangeFixture = love.physics.newFixture(self.body, love.physics.newCircleShape(range), 0) --коллайдер
     self.rangeFixture:setCategory(cat.E_RANGE)
@@ -129,9 +129,6 @@ Enemy = {
           else
             self.isMoving = false
           end
-
-          xv, yv = self.body:getLinearVelocity()
-          self.direction = physics.calculateDirection(xv, yv, self.direction) -- 45'
       
     end
 

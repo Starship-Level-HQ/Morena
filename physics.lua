@@ -42,36 +42,4 @@ function physics.bloodDrops(world, x, y)
     return drops
 end
 
-function physics.calculateDirection(xv, yv, d)
-    if xv == 0 and yv == 0 then
-        return d
-    end
-    if d == "l" then
-        if yv > 0 then
-            return "ld"
-        elseif yv < 0 then
-            return "lu"
-        end
-    elseif d == "r" then
-        if yv > 0 then
-            return "rd"
-        elseif yv < 0 then
-            return "ru"
-        end
-    elseif d == "u" then
-        if xv > 0 then
-            return "ru"
-        elseif xv < 0 then
-            return "lu"
-        end
-    elseif d == "d" then
-        if xv > 0 then
-            return "rd"
-        elseif xv < 0 then
-            return "ld"
-        end
-    end
-    return d
-end
-
 return physics
