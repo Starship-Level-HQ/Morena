@@ -31,11 +31,11 @@ local levels = {
   {
     map = "res/maps/testMap.lua",
     playerPosition = { 100, 200 },
-    enemyPositions = { { 550, 200, SmartZombee } }, 
-    obstacles = {{ 400, 200, 100, 100}},
+    enemyPositions = { { 550, 200, SmartZombee }, { 525, 225, SmartZombee }, { 575, 225, SmartZombee }, { 575, 200, SmartZombee } }, 
+    --obstacles = {{ 400, 200, 100, 100}},
     objects = {{Rock, 500, 500, 37, 25, "dynamic"}},
-    teleports = { {800, 800, 80, 80, 3} }
-    --obstacles = {{ 400, 200, 100, 150}, { 375, 150, 150, 100}}
+    teleports = { {800, 800, 80, 80, 3} },
+    obstacles = {{ 400, 200, 100, 150}, { 375, 150, 150, 100}}
   },
   {
     map = "res/maps/testMap.lua",

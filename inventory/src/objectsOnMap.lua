@@ -64,7 +64,7 @@ MapStaff = {
                 love.graphics.setColor(d1, d2, d3, d4)
                 local xx, yy = item.body:getWorldPoints(item.shape:getPoints())
                 love.graphics.draw(item.img, xx-10, yy-10)
-                love.graphics.polygon("fill", item.body:getWorldPoints(item.shape:getPoints()))
+                --love.graphics.polygon("fill", item.body:getWorldPoints(item.shape:getPoints()))
             end
         end
         

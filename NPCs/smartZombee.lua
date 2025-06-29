@@ -25,6 +25,7 @@ SmartZombee = {
     end
 
     self = Enemy.new(world, x, y, range, health, self)
+    self.defaultSpeed = 70
 
     self.dodgeFixture = love.physics.newFixture(self.body, love.physics.newCircleShape(80), 0) --коллайдер
     self.dodgeFixture:setCategory(cat.E_RANGE)
@@ -38,10 +39,10 @@ SmartZombee = {
 
     self.dodge = function(shot)
       local xv, yv = shot.body:getLinearVelocity()
-      if math.abs(x) > math.abs(y) then
-        self.jump(0, 140*math.random(-1, 1))
+      if math.abs(xv) > math.abs(yv) then 
+        self.jump(0, 150*math.random(-1, 1))
       else 
-        self.jump(140*math.random(-1, 1), 0)
+        self.jump(150*math.random(-1, 1), 0)
       end
     end
 
@@ -59,34 +60,30 @@ SmartZombee = {
         table.insert(nodes, playerNode)
         self.path = astar.path(selfNode, playerNode, nodes, false)
         if self.path ~= nil then
-          self.path = {unpack(astar.path(selfNode, playerNode, nodes, false), 2, 3)}
-        else
-          --print("____")
-          print(pX, pY)
-          --print("____")
+          self.path = {unpack(astar.path(selfNode, playerNode, nodes, false), 2, 4)}
         end
       end
     end
 
     function self:getNodes(pX, pY)
-      local x1 = math.floor(pX/GRID_SIZE)*GRID_SIZE
-      local y1 = math.floor(pY/GRID_SIZE)*GRID_SIZE
-      local x2 = math.floor(self.body:getX()/GRID_SIZE)*GRID_SIZE
-      local y2 = math.floor(self.body:getY()/GRID_SIZE)*GRID_SIZE
-      local xx = math.min(x1, x2)-250 
-      local yy = math.min(y1, y2)-250
+      local x1 = pX
+      local y1 = pY
+      local x2 = self.body:getX()
+      local y2 = self.body:getY()
+      local doDep = GRID_SIZE * 25
+      local xx = math.min(x1, x2)-doDep 
+      local yy = math.min(y1, y2)-doDep
       local nodes = {}
-      local GRID_SIZ = GRID_SIZE
-      while yy < math.max(y1, y2)+250 do
-        while xx < math.max(x1, x2)+250 do
+      while yy < math.max(y1, y2)+doDep do
+        while xx < math.max(x1, x2)+doDep do
           for i, ob in ipairs(level.obstacles) do
-            if not ( xx+GRID_SIZ >= ob.x and xx-GRID_SIZ <= ob.x + ob.w and yy+GRID_SIZ >= ob.y and yy-GRID_SIZ <= ob.x + ob.h ) then
+            if not ( xx >= ob.x - GRID_SIZE and xx <= ob.x + ob.w + GRID_SIZE and yy >= ob.y - GRID_SIZE and yy <= ob.x + ob.h + GRID_SIZE ) then
               table.insert(nodes, {x = xx, y = yy})
             end
           end
           xx = xx + GRID_SIZE
         end
-        xx = math.min(x1, x2)
+        xx = math.min(x1, x2)-doDep
         yy = yy + GRID_SIZE
       end
       return nodes
@@ -133,7 +130,6 @@ SmartZombee = {
         self.path = {{x=pX, y=pY}}
       else
         coroutine.resume(self.coroutine, pX, pY, false)
-        --self:getPath(pX, pY, false)
       end
 
       if self.path ~= nil then
@@ -141,28 +137,28 @@ SmartZombee = {
         if nextMove ~= nil then
           local playerX = nextMove.x
           local playerY = nextMove.y
-          local selfX = math.floor(self.body:getX())
-          local selfY = math.floor(self.body:getY())
+          local selfX = self.body:getX()
+          local selfY = self.body:getY()
 
-          if selfX > playerX and math.abs(selfX - playerX) > 4 then
+          if selfX > playerX and math.abs(selfX - playerX) > 2 then
             speedX = -self.defaultSpeed
             self.anim = self.animations.left
             self.direction = "l"
             self.isMoving = true
-          elseif selfX < playerX and math.abs(selfX - playerX) > 4 then
+          elseif selfX < playerX and math.abs(selfX - playerX) > 2 then
             speedX = self.defaultSpeed
             self.anim = self.animations.right
             self.direction = "r"
             self.isMoving = true
           end
 
-          if selfY > playerY and math.abs(selfY - playerY) > 4 then
+          if selfY > playerY and math.abs(selfY - playerY) > 2 then
             speedY = -self.defaultSpeed
             self.anim = self.animations.up
             self.direction = "u"
 
             self.isMoving = true
-          elseif selfY < playerY and math.abs(selfY - playerY) > 4 then
+          elseif selfY < playerY and math.abs(selfY - playerY) > 2 then
 
             speedY = self.defaultSpeed
             self.anim = self.animations.down
@@ -173,12 +169,11 @@ SmartZombee = {
           self.body:setLinearVelocity(speedX, speedY)
 
           local dist = astar.dist(selfX, selfY, nextMove.x, nextMove.y)
-          if dist < 8 then
+          if dist < 4 then
             table.remove(self.path, 1)
           end
         else
           self.path = nil
-          print("No way")
         end
       end
     end
