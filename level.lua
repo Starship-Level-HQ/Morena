@@ -147,7 +147,7 @@ function level.update(dt)
         level.cameraFocus()
       end
     else
-      player:update(dt)
+      player:update(dt, false)
 
       for _, enemy in ipairs(enemies) do
         enemy:update(dt)
@@ -164,7 +164,7 @@ function level.update(dt)
       end
     end
   elseif player.inventoryIsOpen then
-    player:update(dt)
+    player:update(dt, true)
   end
   local newLevelNumber = love.thread.getChannel('trans'):pop()
   if newLevelNumber then

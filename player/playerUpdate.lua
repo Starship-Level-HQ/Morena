@@ -1,6 +1,6 @@
 PlayerUpdate = {
     new = function(self)
-        function self:update(dt)
+        function self:update(dt, pause)
             local isMoving = false
             local speed = self.defaultSpeed
             if self.isDashing then
@@ -82,12 +82,14 @@ PlayerUpdate = {
             if self.health == 0 then
                 self.health = 1
             end
-            self.updateEffects(dt)
-            self:updateDash(dt)
-            self.anim:update(dt)
-            self:updateShots(dt)
-            self:updateSlash(dt)
-            self:updateInventary()
+            if not pause then
+              self.updateEffects(dt)
+              self:updateDash(dt)
+              self.anim:update(dt)
+              self:updateShots(dt)
+              self:updateSlash(dt)
+            end
+            self:updateInventory()
         end
 
         function self.updateEffects(dt) -- {name, ..param}
@@ -127,7 +129,7 @@ PlayerUpdate = {
             end
         end
 
-        function self:updateInventary()
+        function self:updateInventory()
             if (self.inventoryIsOpen) then self.inventoryGui:update() end
         end
 
@@ -242,12 +244,11 @@ PlayerUpdate = {
             else
                 self.fixture:setCategory(cat.PLAYER)
             end
-
             self:updateDash(dt)
             self.anim:update(dt)
             self:updateShots(dt)
             self:updateSlash(dt)
-            self:updateInventary()
+            self:updateInventory()
         end
     end
 }
