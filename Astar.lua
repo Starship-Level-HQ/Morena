@@ -87,7 +87,7 @@ function a_star ( start, goal, nodes)
   
   local valid_node_func = function ( node, neighbor ) 
 
-    local MAX_DIST = 38
+    local MAX_DIST = 45
 		
     -- helper function in the a-star module, returns distance between points
     if dist( node.x, node.y, neighbor.x, neighbor.y ) < MAX_DIST then

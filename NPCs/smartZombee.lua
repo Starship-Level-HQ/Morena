@@ -1,7 +1,7 @@
 require "astar"
 
 SmartZombee = {
-  new = function(world, x, y, range, health) 
+  new = function(world, x, y, health) 
     local self = {}
     self.shape = love.physics.newRectangleShape(24, 60)              --размер коллайдера
     self.width = 12
@@ -15,6 +15,7 @@ SmartZombee = {
     self.animations.left = anim8.newAnimation(self.grid('1-4', 2), 0.2)
     self.canShoot = false
     self.zoom = 4
+    self.range = 400
 
     self.deadSpriteSheet = love.graphics.newImage('res/sprites/enemy-dead.png')
     self.deadGrid = anim8.newGrid(12, 18, self.deadSpriteSheet:getWidth(), self.deadSpriteSheet:getHeight())
@@ -24,7 +25,7 @@ SmartZombee = {
       self.deadAnimations = anim8.newAnimation(self.deadGrid('2-2', 1), 1)
     end
 
-    self = Enemy.new(world, x, y, range, health, self)
+    self = Enemy.new(world, x, y, self.range, health, self)
     self.defaultSpeed = 70
 
     self.dodgeFixture = love.physics.newFixture(self.body, love.physics.newCircleShape(80), 0) --коллайдер
@@ -34,8 +35,6 @@ SmartZombee = {
     self.dodgeFixture:setUserData(self)
 
     self.path = nil
-    
-    self.coroutine = coroutine.create(function(px, py, isFull) while true do self:getPath(px, py, isFull) coroutine.yield() end end)
 
     self.dodge = function(shot)
       local xv, yv = shot.body:getLinearVelocity()
@@ -55,12 +54,12 @@ SmartZombee = {
       if self.path == nil or self.path == {} then
         local nodes = self:getNodes(pX, pY)
         local playerNode = {x = pX, y = pY}
-        local selfNode = {x = math.floor(self.body:getX()), y = math.floor(self.body:getY())}
+        local selfNode = {x = self.body:getX(), y = self.body:getY()}
         table.insert(nodes, selfNode)
         table.insert(nodes, playerNode)
         self.path = astar.path(selfNode, playerNode, nodes, false)
         if self.path ~= nil then
-          self.path = {unpack(astar.path(selfNode, playerNode, nodes, false), 2, 4)}
+          self.path = {unpack(self.path, 2, 5)}
         end
       end
     end
@@ -70,20 +69,35 @@ SmartZombee = {
       local y1 = pY
       local x2 = self.body:getX()
       local y2 = self.body:getY()
-      local doDep = GRID_SIZE * 25
+      local doDep = self.range
       local xx = math.min(x1, x2)-doDep 
       local yy = math.min(y1, y2)-doDep
+      
+      if xx < 0 then
+        xx = 0
+      end
+      if yy < 0 then
+        yy = 0
+      end
       local nodes = {}
+      local dGrid = GRID_SIZE * 2
       while yy < math.max(y1, y2)+doDep do
         while xx < math.max(x1, x2)+doDep do
+          local flag = true
           for i, ob in ipairs(level.obstacles) do
-            if not ( xx >= ob.x - GRID_SIZE and xx <= ob.x + ob.w + GRID_SIZE and yy >= ob.y - GRID_SIZE and yy <= ob.x + ob.h + GRID_SIZE ) then
-              table.insert(nodes, {x = xx, y = yy})
+            if xx >= ob.x - dGrid and xx <= ob.x + ob.w + dGrid and yy >= ob.y - dGrid and yy <= ob.y + ob.h + dGrid then
+              flag = false
             end
+          end
+          if flag then
+            table.insert(nodes, {x = xx, y = yy})
           end
           xx = xx + GRID_SIZE
         end
         xx = math.min(x1, x2)-doDep
+        if xx < 0 then
+          xx = 0
+        end
         yy = yy + GRID_SIZE
       end
       return nodes
@@ -129,6 +143,7 @@ SmartZombee = {
       if self:checkPath(pX, pY) then
         self.path = {{x=pX, y=pY}}
       else
+        self.coroutine = coroutine.create(function(px, py, isFull)  self:getPath(px, py, isFull) end)
         coroutine.resume(self.coroutine, pX, pY, false)
       end
 

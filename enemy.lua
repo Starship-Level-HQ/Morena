@@ -17,7 +17,7 @@ Enemy = {
     self.fixture:setUserData(self)
     self.rangeFixture = love.physics.newFixture(self.body, love.physics.newCircleShape(range), 0) --коллайдер
     self.rangeFixture:setCategory(cat.E_RANGE)
-    self.rangeFixture:setMask(cat.E_SHOT, cat.VOID, cat.DASHING_PLAYER, cat.P_SHOT, cat.ENEMY, cat.TEXTURE)
+    self.rangeFixture:setMask(cat.E_SHOT, cat.VOID, cat.P_SHOT, cat.ENEMY, cat.TEXTURE)
     self.rangeFixture:setSensor(true)
     self.rangeFixture:setUserData(self)
     self.body:setGravityScale(0)
@@ -214,7 +214,14 @@ Enemy = {
         love.graphics.setColor(1, 0, 0, 1)
         love.graphics.print(self.health, xx, yy+self.height-36, 0, 1.8, 1.8)
       end
+      --love.graphics.setColor(1, 0.2, 0.2, 1)
+--      if self.path ~= nil then
+--        for i, p in ipairs(self.path) do
+--          love.graphics.rectangle("fill", p.x, p.y, 7, 7)
+--        end
+--      end
       love.graphics.setColor(d1, d2, d3, d4)
+      
     end
 
     function self:colisionWithShot(shot)
