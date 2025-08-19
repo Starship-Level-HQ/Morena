@@ -31,7 +31,7 @@ local levels = {
   {
     map = "res/maps/testMap.lua",
     playerPosition = { 100, 200 },
-    enemyPositions = { { 550, 200, SmartZombee }, { 525, 225, SmartZombee }, { 575, 225, SmartZombee }, { 575, 200, SmartZombee } }, 
+    enemyPositions = { { 550, 200, SmartZombee } , { 525, 225, SmartZombee }, { 575, 225, SmartZombee }, { 575, 200, SmartZombee } }, 
     --obstacles = {{ 400, 200, 100, 100}},
     objects = {{Rock, 500, 500, 37, 25, "dynamic"}},
     teleports = { {800, 800, 80, 80, 3} },
@@ -84,7 +84,7 @@ function level.startLevel(levelNumber)
 
   for i, p in ipairs(levelData.enemyPositions) do
     local enemy
-    enemy = p[3].new(world, p[1], p[2], 250, 100)
+    enemy = p[3].new(world, p[1], p[2], 100)
     table.insert(enemies, enemy)
   end
 
@@ -147,7 +147,7 @@ function level.update(dt)
         level.cameraFocus()
       end
     else
-      player:update(dt)
+      player:update(dt, false)
 
       for _, enemy in ipairs(enemies) do
         enemy:update(dt)
@@ -164,7 +164,7 @@ function level.update(dt)
       end
     end
   elseif player.inventoryIsOpen then
-    player:update(dt)
+    player:update(dt, true)
   end
   local newLevelNumber = love.thread.getChannel('trans'):pop()
   if newLevelNumber then

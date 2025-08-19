@@ -1,12 +1,12 @@
 local Roots = require("shots/roots")
 
 Leshiy = {
-  new = function(world, x, y, range, health) 
-    range = 300
+  new = function(world, x, y, health) 
     local self = {}
     self.shape = love.physics.newRectangleShape(66, 190)              --размер коллайдера
     self.width = 30
     self.height = 34
+    self.range = 350
     self.spriteSheet = love.graphics.newImage('res/sprites/leshiy-full.png')
     self.grid = anim8.newGrid(121, 236, self.spriteSheet:getWidth(), self.spriteSheet:getHeight())
     self.animations = {}
@@ -23,7 +23,7 @@ Leshiy = {
       self.deadAnimations = anim8.newAnimation(self.deadGrid('1-1', 1), 1)
     end
     
-    self = Enemy.new(world, x, y, range, health, self)
+    self = Enemy.new(world, x, y, self.range, health, self)
     
     
     function self:update(dt)

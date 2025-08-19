@@ -1,5 +1,5 @@
 Zombee = {
-  new = function(world, x, y, range, health) 
+  new = function(world, x, y, health) 
     local self = {}
     self.shape = love.physics.newRectangleShape(24, 60)              --размер коллайдера
     self.width = 12
@@ -13,6 +13,7 @@ Zombee = {
     self.animations.left = anim8.newAnimation(self.grid('1-4', 2), 0.2)
     self.canShoot = true
     self.zoom = 4
+    self.range = 350
     
     self.deadSpriteSheet = love.graphics.newImage('res/sprites/enemy-dead.png')
     self.deadGrid = anim8.newGrid(12, 18, self.deadSpriteSheet:getWidth(), self.deadSpriteSheet:getHeight())
@@ -21,6 +22,6 @@ Zombee = {
     else
       self.deadAnimations = anim8.newAnimation(self.deadGrid('2-2', 1), 1)
     end
-    return Enemy.new(world, x, y, range, health, self)
+    return Enemy.new(world, x, y, self.range, health, self)
   end
 }
