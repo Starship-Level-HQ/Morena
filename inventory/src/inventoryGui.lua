@@ -130,8 +130,7 @@ function inventoryGui:draw()
                 love.graphics.setColor(255, 255, 255) -- Белый цвет для фона
                 love.graphics.rectangle("fill", itemDrawW * invW + 10 + offsetX, offsetY, infoBox.w, infoBox.h)
                 love.graphics.setColor(0, 0, 0)       -- Черный цвет для текста
-                love.graphics.printf(item.name .. "\n" .. item.desc, itemDrawW * invW + 15 + offsetX, offsetY,
-                    infoBox.w - 5)
+                love.graphics.printf(item.name .. "\n" .. item.desc .. "\n" .. string.gsub(json.encode(item.effects), "\"", " "), itemDrawW * invW + 15 + offsetX, offsetY, infoBox.w - 5)
                 love.graphics.setColor(255, 255, 255) -- Сбрасываем цвет для остальных элементов
             end
             

@@ -18,6 +18,7 @@ function love.load()
     --Чтобы стартовать не с меню а с лвла
     gameState = "level"
     level.startLevel(3)
+    _log(table.concat({["Урон"] = 20}))
 end
 
 function love.update(dt)

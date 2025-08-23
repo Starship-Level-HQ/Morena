@@ -27,7 +27,7 @@ local available_items = {
       cost = 10,
       target = "Герой",
       img = "inventory/assets/sword.png",
-      desc = "is govna i palok"
+      desc = "Is govna i palok."
   },
   [2.2] = {
       name = "Нагрудник",
