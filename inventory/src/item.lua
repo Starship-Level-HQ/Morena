@@ -23,19 +23,19 @@ local available_items = {
   [2.1] = {
       name = "Меч",
       type = "Оружие",
-      effects = {{"Урон", 20}},
+      effects = {["Урон"] = 20},
       cost = 10,
       target = "Герой",
-      img = "equipment/assets/sword.png",
+      img = "inventory/assets/sword.png",
       desc = "is govna i palok"
   },
   [2.2] = {
       name = "Нагрудник",
       type = "Броня",
-      effects = {{"Защита", 3}},
+      effects = {["Защита"] = 3},
       cost = 15,
       target = "Герой",
-      img = "equipment/assets/chest.png",
+      img = "inventory/assets/chest.png",
       desc = "Броня типо"
   }
 }

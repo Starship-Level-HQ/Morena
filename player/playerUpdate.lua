@@ -87,7 +87,6 @@ PlayerUpdate = {
               self:updateDash(dt)
               self.anim:update(dt)
               self:updateShots(dt)
-              self:updateSlash(dt)
             end
             self:updateInventory()
         end
@@ -143,19 +142,6 @@ PlayerUpdate = {
 
             for i, _ in ipairs(remShot) do
                 table.remove(self.shots, i)
-            end
-        end
-
-        function self:updateSlash(dt)
-            local remShot = {}
-
-            -- update the shots
-            for i, s in ipairs(self.slashes) do
-                s.update(remShot, i, dt)
-            end
-
-            for i, _ in ipairs(remShot) do
-                table.remove(self.slashes, i)
             end
         end
 
@@ -247,7 +233,6 @@ PlayerUpdate = {
             self:updateDash(dt)
             self.anim:update(dt)
             self:updateShots(dt)
-            self:updateSlash(dt)
             self:updateInventory()
         end
     end

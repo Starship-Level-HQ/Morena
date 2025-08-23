@@ -81,9 +81,21 @@ function inventoryGui:mousepressed(x, y, b)
             if inv.arr[mouseOn.y][mouseOn.x] ~= 0 then
                 local item = inv.arr[mouseOn.y][mouseOn.x]
                 if item.type == "Зелье" then
-                    inv:removeItem(mouseOn.x, mouseOn.y)
-                    return {target = item.target, signature = item.effects}
+                  inv:removeItem(mouseOn.x, mouseOn.y)
+                  return {target = item.target, signature = item.effects}
                 end
+                if item.type == "Оружие" or item.type == "Броня" then
+                  if item.isActive then
+                    item.isActive = false
+                    inv.activeEquip[item.type] = nil
+                  else
+                    if inv.activeEquip[item.type] ~= nil then
+                      inv.activeEquip[item.type].isActive = false
+                    end
+                    item.isActive = true
+                    inv.activeEquip[item.type] = item
+                  end
+                end 
             end
         end
       end
@@ -125,6 +137,11 @@ function inventoryGui:draw()
             
             if not selected.id and item ~= 0 then
                 love.graphics.setColor(255, 255, 255)
+                if item.isActive then
+                  love.graphics.setColor(0.99, 0.92, 0.5)
+                  love.graphics.rectangle("line", drawX, drawY, itemDrawW, itemDrawH, 30, 30)
+                  love.graphics.setColor(255, 255, 255)
+                end
                 love.graphics.draw(item.img, drawX, drawY)
             end
         end

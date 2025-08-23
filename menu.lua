@@ -19,6 +19,7 @@ local buttons = {
     solo = {
         { text = "Start Level 1", action = function() startLevel(1) end },
         { text = "Start Level 2", action = function() startLevel(2) end },
+        { text = "Start Level 3", action = function() startLevel(3) end },
         --{ text = "Load", action = function()  end },
         { text = "Back",          action = function() table.remove(menuRouter) end }
     },

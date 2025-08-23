@@ -17,7 +17,7 @@ function love.load()
   --menu.load()
     --Чтобы стартовать не с меню а с лвла
     gameState = "level"
-    level.startLevel(2)
+    level.startLevel(3)
 end
 
 function love.update(dt)
