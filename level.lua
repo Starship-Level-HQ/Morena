@@ -91,9 +91,9 @@ function level.startLevel(levelNumber)
   --shotSound = love.audio.newSource("res/sounds/shot.wav", "static")
 
   mapStaff = MapStaff.new(world)
-  mapStaff:addItem(350, 400, 1)
-  mapStaff:addItem(370, 400, 2)
-  mapStaff:addItem(800, 800, 1)
+  mapStaff:addItem(350, 400, 2.1)
+  mapStaff:addItem(370, 400, 2.2)
+  mapStaff:addItem(500, 500, 1.1)
   
   for i, o in ipairs(levelData.objects) do
     mapStaff:addNonActiveItem(o[1].new(world, o[2], o[3], o[4], o[5], o[6]))
@@ -216,23 +216,28 @@ end
 function level.keypressed(key)
   if key == " " or key == "space" then
     --fek
+  elseif key == "escape" then
+    level.pause = not level.pause
+    if player.inventoryIsOpen then
+      player.inventoryIsOpen = false
+    end
   elseif key == "q" then
     day = not day
   elseif key == "1" then
     player.attackType = 'slash'
   elseif key == "2" then
     player.attackType = 'shoot'
-  elseif key == "i" then
+  elseif key == "u" then
     level.dialog = Dialog.new(
-      { { text = "Rrrrrr...\nrrrrrr...", body = enemies[3].body }, { text = "Ah shit", body = player.body }, { text = "Here we go again", body = player.body, dur = 1.2 } },
+      { { text = "Rrrrrr...\nrrrrrr...", body = enemies[1].body }, { text = "Ah shit", body = player.body }, { text = "Here we go again", body = player.body, dur = 1.2 } },
       level.callback)
     level.isDialog = true
   elseif key == "p" then
     level.pause = not level.pause
-  elseif key == "e" then
+  elseif key == "i" then
     level.pause = not level.pause
     player.inventoryIsOpen = not player.inventoryIsOpen
-  elseif key == "f" then
+  elseif key == "e" then
     player:pickupItem(mapStaff)
   end
 end

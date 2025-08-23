@@ -2,7 +2,7 @@ local Item = {}
 Item.__index = Item
 
 local available_items = {
-  [1] = {
+  [1.1] = {
       name = "Зелье здоровья",
       type = "Зелье",
       effects = {{"Здоровье", 20}},
@@ -11,7 +11,7 @@ local available_items = {
       img = "inventory/assets/mem.png",
       desc = "Сварено из моркови"
   },
-  [2] = {
+  [1.2] = {
       name = "Зелье регенерации",
       type = "Зелье",
       effects = {{"Регенерация", 3, 20}},
@@ -19,6 +19,24 @@ local available_items = {
       target = "Герой",
       img = "inventory/assets/thing2.png",
       desc = "Восстонавливает мнОго здоровья"
+  },
+  [2.1] = {
+      name = "Меч",
+      type = "Оружие",
+      effects = {["Урон"] = 20},
+      cost = 10,
+      target = "Герой",
+      img = "inventory/assets/sword.png",
+      desc = "Is govna i palok."
+  },
+  [2.2] = {
+      name = "Нагрудник",
+      type = "Броня",
+      effects = {["Защита"] = 3},
+      cost = 15,
+      target = "Герой",
+      img = "inventory/assets/chest.png",
+      desc = "Броня типо"
   }
 }
 

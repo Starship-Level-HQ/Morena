@@ -17,7 +17,8 @@ function love.load()
   --menu.load()
     --Чтобы стартовать не с меню а с лвла
     gameState = "level"
-    level.startLevel(2)
+    level.startLevel(3)
+    _log(table.concat({["Урон"] = 20}))
 end
 
 function love.update(dt)
@@ -52,8 +53,12 @@ end
 
 function love.keypressed(key)
     if gameState == "level" and key == "escape" then
+      if level.pause then
+        level.keypressed(key)
+      else
         gameState = "menu"
         menu.load()
+      end
     elseif gameState == "multiplayer" and key == "escape" then
         multiplayer.hub:unsubscribe()
         gameState = "menu"

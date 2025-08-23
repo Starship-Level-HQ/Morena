@@ -7,7 +7,7 @@ Roots = {
     self.body:setMass(400)
     
     self.effect = function(player)
-      --table.insert(player.effects, {"Регенерация", -3, 20}) -- Эффект яда, другому врагу добавим
+      --table.insert(player.effects, {"Регенерация", -3, 10}) -- Эффект яда, другому врагу добавим
       player.stun = 0.5 
       player.stunTime = 0.5
     end

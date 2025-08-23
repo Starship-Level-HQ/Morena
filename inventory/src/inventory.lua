@@ -9,6 +9,7 @@ function inventory.new(w, h)
     inv.w = w
     inv.h = h
     inv.arr = utils.newEmptyArr(w, h, 0)
+    inv.activeEquip = {["Оружие"] = nil, ["Броня"] = nil}
     return inv
 end
 

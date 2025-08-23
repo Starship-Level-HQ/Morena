@@ -29,7 +29,6 @@ Player = {
         self.fixture:setUserData(self)
         self.body:setGravityScale(0)
         self.shots = {}                                                  -- holds our fired shots
-        self.slashes = {}
         self.health = 100
         self.damage = 10
         self.attackType = 'slash'
@@ -47,9 +46,8 @@ Player = {
 
         self.nearestItem = nil
         self.inventory = inventory.new(6, 4)
-        self.inventory:addItem(ItemModule.create_item(1))
-        self.inventory:addItem(ItemModule.create_item(2))
-        self.inventory:addItem(ItemModule.create_item(1))
+        self.inventory:addItem(ItemModule.create_item(2.1))
+        self.inventory:addItem(ItemModule.create_item(2.2))
 
         self.inventoryGui = inventoryGuiSrc
         self.inventoryGui:setInventory(self.inventory, 50, 50)
@@ -93,25 +91,18 @@ Player = {
         
         function self:attack(angle)
           if self.attackType == "slash" then
-            self:slash(angle)
+            if #self.shots >= 1 then return end
+            local shot = Slash.new(cat.P_SHOT, self.body:getWorld(), self.body:getX(), self.body:getY(), angle, 2)
+            shot.body:setMass(90)
+            if self.inventory.activeEquip["Оружие"] ~= nil then
+              shot.damage = shot.damage + self.inventory.activeEquip["Оружие"].effects["Урон"]
+            end
+            table.insert(self.shots, shot)
           end
           if self.attackType == "shoot" then
-            self:shoot(angle)
-          end
-        end
-
-        function self:shoot(angle)
-          local shot = Arrow.new(cat.P_SHOT, self.body:getWorld(), self.body:getX(), self.body:getY(), angle, 2)
+            local shot = Arrow.new(cat.P_SHOT, self.body:getWorld(), self.body:getX(), self.body:getY(), angle, 2)
             table.insert(self.shots, shot)
-            --love.audio.play(shotSound)
-        end
-
-        function self:slash(angle)
-          if #self.slashes >= 1 then return end
-          local shot = Slash.new(cat.P_SHOT, self.body:getWorld(), self.body:getX(), self.body:getY(), angle, 2)
-          shot.body:setMass(90)
-          table.insert(self.slashes, shot)
-            --love.audio.play(slashSound)
+          end
         end
 
         function self:pickupItem(from, itemBody)
@@ -143,11 +134,6 @@ Player = {
                 end
             end
 
-            for i, s in ipairs(self.slashes) do
-                if not s.body:isDestroyed() then
-                    s:draw()
-                end
-            end
             local xx, yy = self.body:getWorldPoints(self.shape:getPoints()) 
              
             --love.graphics.polygon("fill", self.body:getWorldPoints(self.shape:getPoints()))
