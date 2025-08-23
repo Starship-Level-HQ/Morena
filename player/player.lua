@@ -47,9 +47,8 @@ Player = {
 
         self.nearestItem = nil
         self.inventory = inventory.new(6, 4)
-        self.inventory:addItem(ItemModule.create_item(1))
-        self.inventory:addItem(ItemModule.create_item(2))
-        self.inventory:addItem(ItemModule.create_item(1))
+        self.inventory:addItem(ItemModule.create_item(1.1))
+        self.inventory:addItem(ItemModule.create_item(1.2))
 
         self.inventoryGui = inventoryGuiSrc
         self.inventoryGui:setInventory(self.inventory, 50, 50)
