@@ -12,10 +12,8 @@ require("objects/rock")
 require("objects/teleport")
 
 level = {}
-local enemies
 local gameMap
 local world
-local lake
 local day
 
 local levels = {
@@ -25,8 +23,8 @@ local levels = {
     enemyPositions = { { 600, 100, Kaban}, { 600, 200, Zombee}, { 600, 300, Kaban} },
     obstacles = {{ 400, 550, 80, 80}},
     objects = { {Rock, 555, 550, 37, 25, "dynamic"} },
-    teleports = { {800, 800, 80, 80, 2} },
-    loot = { { 350, 400, 1 } } -- x y id
+    teleports = { {800, 800, 80, 80, 2, 100, 200} },
+    loot = { { 350, 400, 2.1 },  {370, 400, 2.2}, {500, 500, 1.1}} -- x y id
   },
   {
     map = "res/maps/testMap.lua",
@@ -34,8 +32,9 @@ local levels = {
     enemyPositions = { { 550, 200, SmartZombee } , { 525, 225, SmartZombee }, { 575, 225, SmartZombee }, { 575, 200, SmartZombee } }, 
     --obstacles = {{ 400, 200, 100, 100}},
     objects = {{Rock, 500, 500, 37, 25, "dynamic"}},
-    teleports = { {800, 800, 80, 80, 3} },
-    obstacles = {{ 400, 200, 100, 150}, { 375, 150, 150, 100}}
+    teleports = { {800, 800, 80, 80, 3, 100, 300} },
+    obstacles = {{ 400, 200, 100, 150}, { 375, 150, 150, 100}},
+    loot = { { 350, 400, 2.1 },  {370, 400, 2.2}, {500, 500, 1.1}}
   },
   {
     map = "res/maps/testMap.lua",
@@ -43,12 +42,19 @@ local levels = {
     enemyPositions = { { 700, 400, Leshiy } },
     obstacles = {{ 0, 0 , 10, 10}},
     objects = {{Rock, 300, 299, 37, 25, "dynamic"}},
-    teleports = { {800, 800, 80, 80, 1} }
+    teleports = { {800, 800, 80, 80, 1, 100, 400} },
+    loot = { { 350, 400, 2.1 },  {370, 400, 2.2}, {500, 500, 1.1}}
   }
   -- Добавляйте больше уровней с разными настройками
 }
 
-function level.startLevel(levelNumber)
+function level.continue()
+  local playerData = globalReadPlayerSave()
+  level.startLevel(playerData["world"], playerData)
+end
+
+function level.startLevel(levelNumber, playerData)
+  
   local levelData = levels[levelNumber]
   level.number = levelNumber
   level.pause = false
@@ -66,6 +72,10 @@ function level.startLevel(levelNumber)
   level.defaultColor2 = 0
   level.defaultColor3 = 0
   level.defaultColor4 = 0
+  
+  local savedData = globalReadSave(levelNumber)
+  
+  player = Player.new(world, playerData["x"], playerData["y"], playerData["health"])
 
   level.obstacles = {}
 
@@ -77,30 +87,29 @@ function level.startLevel(levelNumber)
     ob.h = o[4]
     table.insert(level.obstacles, ob)
   end
-
-  player = Player.new(world, levelData.playerPosition[1], levelData.playerPosition[2])
-  enemies = {}
+  
+  level.enemies = {}
   day = true
 
   for i, p in ipairs(levelData.enemyPositions) do
-    local enemy
-    enemy = p[3].new(world, p[1], p[2], 100)
-    table.insert(enemies, enemy)
+    local enemy = p[3].new(world, p[1], p[2], 100)
+    table.insert(level.enemies, enemy)
   end
 
   --shotSound = love.audio.newSource("res/sounds/shot.wav", "static")
 
   mapStaff = MapStaff.new(world)
-  mapStaff:addItem(350, 400, 2.1)
-  mapStaff:addItem(370, 400, 2.2)
-  mapStaff:addItem(500, 500, 1.1)
+  
+  for i, l in ipairs(levelData.loot) do
+    mapStaff:addItem(l[1], l[2], l[3])
+  end
   
   for i, o in ipairs(levelData.objects) do
     mapStaff:addNonActiveItem(o[1].new(world, o[2], o[3], o[4], o[5], o[6]))
   end
   
   for i, t in ipairs(levelData.teleports) do
-    mapStaff:addNonActiveItem(Teleport.new(world, t[1], t[2], t[3], t[4], t[5]))
+    mapStaff:addNonActiveItem(Teleport.new(world, t[1], t[2], t[3], t[4], t[5], t[6], t[7]))
   end
   
   local code = [[
@@ -118,7 +127,7 @@ function level.startLevel(levelNumber)
 end
 
 function level.endLevel()
-  enemies = {}
+  level.enemies = {}
   mapStaff:clearWorld()
   mapStaff = nil
 end
@@ -149,7 +158,7 @@ function level.update(dt)
     else
       player:update(dt, false)
 
-      for _, enemy in ipairs(enemies) do
+      for _, enemy in ipairs(level.enemies) do
         enemy:update(dt)
       end
 
@@ -166,9 +175,12 @@ function level.update(dt)
   elseif player.inventoryIsOpen then
     player:update(dt, true)
   end
-  local newLevelNumber = love.thread.getChannel('trans'):pop()
-  if newLevelNumber then
-    level.startLevel(newLevelNumber)
+  local nextLevel = love.thread.getChannel('trans'):pop()
+  if nextLevel then
+    globalSave(level, player)
+    level.endLevel()
+    local number, pX, pY = unpack(nextLevel)
+    level.startLevel(number, {["world"] = number, ["x"] = pX, ["y"] = pY, ["health"] = player.health})
   end
 end
 
@@ -196,7 +208,7 @@ function level.draw()
   mapStaff:draw(d1, d2, d3, d4)
 
   love.graphics.setColor(d1, d2, d3, d4)
-  for _, enemy in ipairs(enemies) do
+  for _, enemy in ipairs(level.enemies) do
     enemy:draw(d1, d2, d3, d4)
   end
 
@@ -217,6 +229,7 @@ function level.keypressed(key)
   if key == " " or key == "space" then
     --fek
   elseif key == "escape" then
+    globalSave(level, player)
     level.pause = not level.pause
     if player.inventoryIsOpen then
       player.inventoryIsOpen = false
@@ -229,7 +242,7 @@ function level.keypressed(key)
     player.attackType = 'shoot'
   elseif key == "u" then
     level.dialog = Dialog.new(
-      { { text = "Rrrrrr...\nrrrrrr...", body = enemies[1].body }, { text = "Ah shit", body = player.body }, { text = "Here we go again", body = player.body, dur = 1.2 } },
+      { { text = "Rrrrrr...\nrrrrrr...", body = level.enemies[1].body }, { text = "Ah shit", body = player.body }, { text = "Here we go again", body = player.body, dur = 1.2 } },
       level.callback)
     level.isDialog = true
   elseif key == "p" then
@@ -309,21 +322,22 @@ function level.collisionOnEnd(fixture_a, fixture_b, contact)
   end
 end
 
-function level.transition(levelNumber)
+function level.transition(levelNumber_pX_pY)
   level.pause = true
 
   local code = [[
-    local min, max, levelNum = ...
+    local min, max, levelNum, pX, pY = ...
     local timer = require 'love.timer'
     for i = min, max do
       love.thread.getChannel('color'):push(0.01)
       timer.sleep(0.01)
     end
-    love.thread.getChannel('trans'):push(levelNum)
+    love.thread.getChannel('trans'):push({levelNum, pX, pY})
   ]]
   
   local thread = love.thread.newThread(code)
-  thread:start(1, 100, levelNumber)
+  local levelNumber, pX, pY = unpack(levelNumber_pX_pY)
+  thread:start(1, 100, levelNumber, pX, pY)
   
 end
 

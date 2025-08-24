@@ -1,10 +1,11 @@
 require("config/logger")
 require("physics")
 require("libraries/anim8")
-userConfig = require("userConfig")
+userConfig = require("config/userConfig")
 local menu = require("menu")
 local level = require("level")
 local multiplayer = require("multiplayer/multiplayer")
+require("saves/saver")
 sti = require("libraries/sti")
 cat = require("objectsCategories")
 camera = require("libraries/camera")
@@ -17,8 +18,8 @@ function love.load()
   --menu.load()
     --Чтобы стартовать не с меню а с лвла
     gameState = "level"
-    level.startLevel(3)
-    _log(table.concat({["Урон"] = 20}))
+    --level.startLevel(3)
+    level.continue()
 end
 
 function love.update(dt)
@@ -56,6 +57,7 @@ function love.keypressed(key)
       if level.pause then
         level.keypressed(key)
       else
+        level.endLevel()
         gameState = "menu"
         menu.load()
       end
