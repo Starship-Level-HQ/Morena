@@ -1,12 +1,13 @@
 local Roots = require("shots/roots")
 
-Leshiy = {
-  new = function(world, x, y, health) 
-    local self = {}
-    self.shape = love.physics.newRectangleShape(66, 190)              --размер коллайдера
+Leshiy = {}
+
+function Leshiy:new(world, x, y, health)
+
+    self = Enemy:new(world, x, y, 350, health, love.physics.newRectangleShape(66, 190))
+
     self.width = 30
     self.height = 34
-    self.range = 350
     self.spriteSheet = love.graphics.newImage('res/sprites/leshiy-full.png')
     self.grid = anim8.newGrid(121, 236, self.spriteSheet:getWidth(), self.spriteSheet:getHeight())
     self.animations = {}
@@ -14,18 +15,16 @@ Leshiy = {
     self.animations.up = anim8.newAnimation(self.grid('1-4', 1), 0.3)
     self.animations.right = anim8.newAnimation(self.grid('1-4', 1), 0.3)
     self.animations.left = anim8.newAnimation(self.grid('1-4', 1), 0.3)
-    
+    self.anim = self.animations.down
+
     self.deadSpriteSheet = love.graphics.newImage('res/sprites/leshiy-dead.png')
     self.deadGrid = anim8.newGrid(28, 30, self.deadSpriteSheet:getWidth(), self.deadSpriteSheet:getHeight())
     if not userConfig.blood then
       self.deadAnimations = anim8.newAnimation(self.deadGrid('1-1', 2), 1)
     else
       self.deadAnimations = anim8.newAnimation(self.deadGrid('1-1', 1), 1)
-    end
-    
-    self = Enemy.new(world, x, y, self.range, health, self)
-    
-    
+    end    
+
     function self:update(dt)
 
       if self.isAlive then
@@ -40,7 +39,7 @@ Leshiy = {
               player = p
             end
           end
-          
+
           self:moving(player)
 
           self.tickWalk = self.tickWalk + dt
@@ -49,7 +48,7 @@ Leshiy = {
             self.tickWalk = 0
             self:shoot()
           end
-          
+
         end
 
         if self.isMoving == false then
@@ -67,12 +66,12 @@ Leshiy = {
       self:updateShots(dt)
       self:updateBloodDrops(dt)
     end
-    
+
     function self:shoot()
       local shot = Roots.new(cat.E_SHOT, self.body:getWorld(), self.body:getX(), self.body:getY(), angles.calculateAngle(self.body:getX(), self.body:getY(), self.playerPos[1]:getBody():getX(), self.playerPos[1]:getBody():getY()))
       table.insert(self.shots, shot)
     end
-    
+
     function self:die(dt)
       self.body:setLinearVelocity(0, 0)
       self.spriteSheet = self.deadSpriteSheet
@@ -84,7 +83,6 @@ Leshiy = {
       self.isAlive = false
       self.bloodDrops = physics.bloodDrops(self.body:getWorld(), self.body:getX(), self.body:getY())
     end
-    
+
     return self
   end
-}

@@ -8,7 +8,7 @@ require("player/playerUpdate")
 require("player/playerAnim")
 
 Player = {
-    new = function(world, x, y, isRemote)
+    new = function(world, x, y, health, isRemote)
         if not (world and x and y) then
             _log("Player requires parameters 'world', 'x', and 'y' to be specified")
             return false
@@ -29,7 +29,7 @@ Player = {
         self.fixture:setUserData(self)
         self.body:setGravityScale(0)
         self.shots = {}                                                  -- holds our fired shots
-        self.health = 100
+        self.health = health
         self.damage = 10
         self.attackType = 'slash'
         self.stun = 0
