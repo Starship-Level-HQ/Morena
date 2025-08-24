@@ -20,7 +20,7 @@ local levels = {
   {
     map = "res/maps/testMap.lua",
     playerPosition = { 300, 450 },
-    enemyPositions = { { 600, 100, Kaban}, { 600, 200, Zombee}, { 600, 300, Kaban} },
+    enemyPositions = { { 600, 100, Kaban}, { 600, 300, Zombee} },
     obstacles = {{ 400, 550, 80, 80}},
     objects = { {Rock, 555, 550, 37, 25, "dynamic"} },
     teleports = { {800, 800, 80, 80, 2, 100, 200} },
@@ -92,7 +92,7 @@ function level.startLevel(levelNumber, playerData)
   day = true
 
   for i, p in ipairs(levelData.enemyPositions) do
-    local enemy = p[3].new(world, p[1], p[2], 100)
+    local enemy = p[3]:new(world, p[1], p[2], 100)
     table.insert(level.enemies, enemy)
   end
 
@@ -169,7 +169,7 @@ function level.update(dt)
       level.cameraFocus()
 
       if player.health < 0 then
-        level.startLevel(level.number)
+        level.continue()
       end
     end
   elseif player.inventoryIsOpen then
