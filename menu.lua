@@ -17,9 +17,9 @@ local buttons = {
         { text = "Exit",        action = function() love.event.quit() end }
     },
     solo = {
-        { text = "Start Level 1", action = function() startLevel(1) end },
-        { text = "Start Level 2", action = function() startLevel(2) end },
-        { text = "Start Level 3", action = function() startLevel(3) end },
+        { text = "Start Level 1", action = function() gameState = "level" ; level.continue() end },--startLevel(1) end },
+        { text = "Start Level 2", action = function() gameState = "level" ; level.continue() end },--startLevel(2) end },
+        { text = "Start Level 3", action = function() gameState = "level" ; level.continue() end },--startLevel(3) end },
         { text = "Restart", action = function() globalRemoveAllSaves() end },
         { text = "Back",          action = function() table.remove(menuRouter) end }
     },

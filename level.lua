@@ -75,7 +75,7 @@ function level.startLevel(levelNumber, playerData)
   
   local savedData = globalReadSave(levelNumber)
   
-  player = Player.new(world, playerData["x"], playerData["y"], playerData["health"])
+  player = Player.new(world, playerData.x, playerData.y, playerData.health)
 
   level.obstacles = {}
 
@@ -91,9 +91,17 @@ function level.startLevel(levelNumber, playerData)
   level.enemies = {}
   day = true
 
-  for i, p in ipairs(levelData.enemyPositions) do
-    local enemy = p[3]:new(world, p[1], p[2], 100)
-    table.insert(level.enemies, enemy)
+  if savedData ~= nil then
+    for i, p in ipairs(levelData.enemyPositions) do
+      local savedEnemy = savedData.enemies[i]
+      local enemy = p[3]:new(world, savedEnemy.x, savedEnemy.y, savedEnemy.health)
+      table.insert(level.enemies, enemy)
+    end
+  else
+    for i, p in ipairs(levelData.enemyPositions) do
+      local enemy = p[3]:new(world, p[1], p[2], 100)
+      table.insert(level.enemies, enemy)
+    end
   end
 
   --shotSound = love.audio.newSource("res/sounds/shot.wav", "static")
