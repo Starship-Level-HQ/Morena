@@ -2,7 +2,7 @@ require("enemy")
 require "angles"
 require("player/player")
 require("dialog")
-require("inventory.src.objectsOnMap")
+require("inventory.src.mapStaff")
 require("NPCs/zombee")
 require("NPCs/smartZombee")
 require("NPCs/kaban")
@@ -50,7 +50,11 @@ local levels = {
 
 function level.continue()
   local playerData = globalReadPlayerSave()
-  level.startLevel(playerData["world"], playerData)
+  if playerData == nil then
+    level.startLevel(1, {world = 1, x = 100, y = 100, health = 100, inventory={arr={}, activeEquip={}}})
+  else
+    level.startLevel(playerData["world"], playerData)
+  end
 end
 
 function level.startLevel(levelNumber, playerData)
@@ -75,7 +79,7 @@ function level.startLevel(levelNumber, playerData)
   
   local savedData = globalReadSave(levelNumber)
   
-  player = Player.new(world, playerData.x, playerData.y, playerData.health)
+  player = Player.new(world, playerData)
 
   level.obstacles = {}
 
@@ -93,31 +97,42 @@ function level.startLevel(levelNumber, playerData)
 
   if savedData ~= nil then
     for i, p in ipairs(levelData.enemyPositions) do
-      local savedEnemy = savedData.enemies[i]
-      local enemy = p[3]:new(world, savedEnemy.x, savedEnemy.y, savedEnemy.health)
+      local enemy = p[3]:new(world, savedData.enemies[i])
       table.insert(level.enemies, enemy)
     end
   else
     for i, p in ipairs(levelData.enemyPositions) do
-      local enemy = p[3]:new(world, p[1], p[2], 100)
+      local enemy = p[3]:new(world, {x=p[1], y=p[2], health=100, isAlive=true})
       table.insert(level.enemies, enemy)
     end
   end
 
   --shotSound = love.audio.newSource("res/sounds/shot.wav", "static")
 
-  mapStaff = MapStaff.new(world)
+  level.mapStaff = MapStaff.new(world)
   
-  for i, l in ipairs(levelData.loot) do
-    mapStaff:addItem(l[1], l[2], l[3])
+  if savedData ~= nil then
+    for _, item in ipairs(savedData.loot) do
+      level.mapStaff:addItem(item.x, item.y, item.id)
+    end
+  else
+    for _, l in ipairs(levelData.loot) do
+      level.mapStaff:addItem(l[1], l[2], l[3])
+    end
   end
   
-  for i, o in ipairs(levelData.objects) do
-    mapStaff:addNonActiveItem(o[1].new(world, o[2], o[3], o[4], o[5], o[6]))
+  if savedData ~= nil then
+    for i, o in ipairs(levelData.objects) do
+      level.mapStaff:addNonActiveItem(o[1].new(world, savedData.objects[i]))
+    end
+  else
+    for _, o in ipairs(levelData.objects) do
+      level.mapStaff:addNonActiveItem(o[1].new(world, {x=o[2], y=o[3], h=o[4], w=o[5], bodyType=o[6]}))
+    end
   end
   
   for i, t in ipairs(levelData.teleports) do
-    mapStaff:addNonActiveItem(Teleport.new(world, t[1], t[2], t[3], t[4], t[5], t[6], t[7]))
+    level.mapStaff:addNonActiveItem(Teleport.new(world, t[1], t[2], t[3], t[4], t[5], t[6], t[7]))
   end
   
   local code = [[
@@ -136,8 +151,8 @@ end
 
 function level.endLevel()
   level.enemies = {}
-  mapStaff:clearWorld()
-  mapStaff = nil
+  level.mapStaff:clearWorld()
+  level.mapStaff = nil
 end
 
 function level.cameraFocus()
@@ -213,7 +228,7 @@ function level.draw()
     love.graphics.polygon("fill", ob.body:getWorldPoints(ob.shape:getPoints()))
   end
 
-  mapStaff:draw(d1, d2, d3, d4)
+  level.mapStaff:draw(d1, d2, d3, d4)
 
   love.graphics.setColor(d1, d2, d3, d4)
   for _, enemy in ipairs(level.enemies) do
@@ -259,7 +274,7 @@ function level.keypressed(key)
     level.pause = not level.pause
     player.inventoryIsOpen = not player.inventoryIsOpen
   elseif key == "e" then
-    player:pickupItem(mapStaff)
+    player:pickupItem(level.mapStaff)
   end
 end
 
@@ -267,7 +282,7 @@ function level.mousepressed(x, y, b)
   dropedItem = player:mousepressed(x, y, b)
   if dropedItem then
     print(dropedItem)
-    mapStaff:dropItem(player.body:getX(), player.body:getY(), dropedItem)
+    level.mapStaff:dropItem(player.body:getX(), player.body:getY(), dropedItem)
   end
 end
 

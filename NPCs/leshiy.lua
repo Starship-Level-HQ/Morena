@@ -2,9 +2,9 @@ local Roots = require("shots/roots")
 
 Leshiy = {}
 
-function Leshiy:new(world, x, y, health)
+function Leshiy:new(world, eData)
 
-    self = Enemy:new(world, x, y, 350, health, love.physics.newRectangleShape(66, 190))
+    self = Enemy:new(world, eData, 350, love.physics.newRectangleShape(66, 190))
 
     self.width = 30
     self.height = 34

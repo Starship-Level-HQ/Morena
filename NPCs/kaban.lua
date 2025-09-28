@@ -1,7 +1,7 @@
 Kaban = {}
 
-function Kaban:new(world, x, y, health) 
-  self = Enemy:new(world, x, y, 300, health, love.physics.newRectangleShape(60, 54))
+function Kaban:new(world, eData) 
+  self = Enemy:new(world, eData, 300, love.physics.newRectangleShape(60, 54))
   
   self.width = 20
   self.height = 24

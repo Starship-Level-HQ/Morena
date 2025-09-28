@@ -3,11 +3,11 @@ shots = require("shot")
 
 Enemy = {}
 
-function Enemy:new(world, x, y, range, health, shape)
+function Enemy:new(world, eData, range, shape)
   self = {}
   self.defaultSpeed = 42
   self.shape = shape
-  self.body = love.physics.newBody(world, x, y, "dynamic")         --тело для движения и отрисовки
+  self.body = love.physics.newBody(world, eData.x, eData.y, "dynamic")         --тело для движения и отрисовки
   self.body:setMass(49)
   self.fixture = love.physics.newFixture(self.body, self.shape, 0) --коллайдер
   self.fixture:setCategory(cat.ENEMY)
@@ -19,13 +19,14 @@ function Enemy:new(world, x, y, range, health, shape)
   self.rangeFixture:setSensor(true)
   self.rangeFixture:setUserData(self)
   self.body:setGravityScale(0)
-  self.health = health
+  self.health = eData.health
   self.range = range
   self.shots = {} -- holds our fired shots
   self.bloodDrops = {}
   self.playerPos = {}
   self.direction = "d"
   self.isAlive = true
+  self.isAlive1 = eData.isAlive
   self.tickWalk = math.random(0, 19) / 10
   self.tickShot = math.random(0, 20) / 100
 
@@ -129,6 +130,7 @@ function Enemy:new(world, x, y, range, health, shape)
   end
 
   function self:die(dt)
+  
     self.body:setLinearVelocity(0, 0)
     self.spriteSheet = self.deadSpriteSheet
     self.anim = self.deadAnimations
@@ -139,7 +141,10 @@ function Enemy:new(world, x, y, range, health, shape)
       self.dodgeFixture:destroy()
     end
     self.isAlive = false
-    self.bloodDrops = physics.bloodDrops(self.body:getWorld(), self.body:getX(), self.body:getY())
+    if self.isAlive1 then
+      self.isAlive1 = false
+      self.bloodDrops = physics.bloodDrops(self.body:getWorld(), self.body:getX(), self.body:getY())
+    end
   end
 
   function self:updateShots(dt)

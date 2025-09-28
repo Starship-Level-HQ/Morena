@@ -8,8 +8,8 @@ require("player/playerUpdate")
 require("player/playerAnim")
 
 Player = {
-    new = function(world, x, y, health, isRemote)
-        if not (world and x and y) then
+    new = function(world, playerData, isRemote)
+        if not (world and playerData) then
             _log("Player requires parameters 'world', 'x', and 'y' to be specified")
             return false
         end
@@ -20,7 +20,7 @@ Player = {
         self.speed = 150
         self.defaultSpeed = 150
 
-        self.body = love.physics.newBody(world, x, y, "dynamic")         -- тело для движения и отрисовки
+        self.body = love.physics.newBody(world, playerData.x, playerData.y, "dynamic")         -- тело для движения и отрисовки
         self.body:setMass(50)
         self.shape = love.physics.newRectangleShape(33, 58)              -- размер коллайдера
         self.fixture = love.physics.newFixture(self.body, self.shape, 0) -- коллайдер
@@ -29,7 +29,7 @@ Player = {
         self.fixture:setUserData(self)
         self.body:setGravityScale(0)
         self.shots = {}                                                  -- holds our fired shots
-        self.health = health
+        self.health = playerData.health
         self.damage = 10
         self.attackType = 'slash'
         self.stun = 0
@@ -46,8 +46,30 @@ Player = {
 
         self.nearestItem = nil
         self.inventory = inventory.new(6, 4)
-        self.inventory:addItem(ItemModule.create_item(2.1))
-        self.inventory:addItem(ItemModule.create_item(2.2))
+        
+        for i, o in ipairs(playerData.inventory.arr) do
+          self.inventory:addItem(ItemModule.create_item(o))
+        end
+        
+        for k, v in pairs(playerData.inventory.activeEquip) do
+          local flag = false
+          for _, s in ipairs(self.inventory.arr) do
+            for _, item in ipairs(s) do
+              if item == 0 then
+                break
+              end
+              if item.id == v then
+                item.isActive = true
+                self.inventory.activeEquip[item.type] = item
+                flag = true
+                break
+              end
+            end
+            if flag then
+              break
+            end
+          end
+        end
 
         self.inventoryGui = inventoryGuiSrc
         self.inventoryGui:setInventory(self.inventory, 50, 50)

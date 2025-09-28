@@ -1,8 +1,8 @@
 Zombee = {}
 
-function Zombee:new(world, x, y, health) 
+function Zombee:new(world, eData) 
   
-  self = Enemy:new(world, x, y, 350, health, love.physics.newRectangleShape(24, 60))
+  self = Enemy:new(world, eData, 350, love.physics.newRectangleShape(24, 60))
 
   self.width = 12
   self.height = 4

@@ -2,9 +2,9 @@ require "astar"
 
 SmartZombee = {}
 
-function SmartZombee:new(world, x, y, health)
+function SmartZombee:new(world, eData)
 
-  self = Enemy:new(world, x, y, 400, health, love.physics.newRectangleShape(24, 60))
+  self = Enemy:new(world, eData, 400, love.physics.newRectangleShape(24, 60))
 
   self.width = 12
   self.height = 4
