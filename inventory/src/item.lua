@@ -54,6 +54,7 @@ function Item.new(id, name, type, effects, cost, target, img, desc)
 end
 
 function Item.create_item(item_id)
+  
     local item_data = available_items[item_id]
     if item_data then
         return Item.new(

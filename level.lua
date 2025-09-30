@@ -23,16 +23,15 @@ local levels = {
     enemyPositions = { { 600, 100, Kaban}, { 600, 300, Zombee} },
     obstacles = {{ 400, 550, 80, 80}},
     objects = { {Rock, 555, 550, 37, 25, "dynamic"} },
-    teleports = { {800, 800, 80, 80, 2, 100, 200} },
+    teleports = { {x=800, y=800, h=80, w=80, level=2, pX=100, pY=200} },
     loot = { { 350, 400, 2.1 },  {370, 400, 2.2}, {500, 500, 1.1}} -- x y id
   },
   {
     map = "res/maps/testMap.lua",
     playerPosition = { 100, 200 },
     enemyPositions = { { 550, 200, SmartZombee } , { 525, 225, SmartZombee }, { 575, 225, SmartZombee }, { 575, 200, SmartZombee } }, 
-    --obstacles = {{ 400, 200, 100, 100}},
     objects = {{Rock, 500, 500, 37, 25, "dynamic"}},
-    teleports = { {800, 800, 80, 80, 3, 100, 300} },
+    teleports = { {x=800, y=800, h=80, w=80, level=3, pX=100, pY=300} },
     obstacles = {{ 400, 200, 100, 150}, { 375, 150, 150, 100}},
     loot = { { 350, 400, 2.1 },  {370, 400, 2.2}, {500, 500, 1.1}}
   },
@@ -42,7 +41,7 @@ local levels = {
     enemyPositions = { { 700, 400, Leshiy } },
     obstacles = {{ 0, 0 , 10, 10}},
     objects = {{Rock, 300, 299, 37, 25, "dynamic"}},
-    teleports = { {800, 800, 80, 80, 1, 100, 400} },
+    teleports = { {x=800, y=800, h=80, w=80, level=1, pX=100, pY=400} },
     loot = { { 350, 400, 2.1 },  {370, 400, 2.2}, {500, 500, 1.1}}
   }
   -- Добавляйте больше уровней с разными настройками
@@ -67,9 +66,11 @@ function level.startLevel(levelNumber, playerData)
   cam = camera()
   love.graphics.setDefaultFilter('nearest', 'nearest')
   gameMap = sti(levelData.map)
+  
   world = love.physics.newWorld(0, 0, true)
   world:setGravity(0, 40)
   world:setCallbacks(level.collisionOnEnter, level.collisionOnEnd)
+  
   love.mouse.setCursor(love.mouse.newCursor('res/sprites/curs.png', 272 , 272))
   
   level.defaultColor1 = 0
@@ -115,24 +116,20 @@ function level.startLevel(levelNumber, playerData)
     for _, item in ipairs(savedData.loot) do
       level.mapStaff:addItem(item.x, item.y, item.id)
     end
-  else
-    for _, l in ipairs(levelData.loot) do
-      level.mapStaff:addItem(l[1], l[2], l[3])
-    end
-  end
-  
-  if savedData ~= nil then
     for i, o in ipairs(levelData.objects) do
       level.mapStaff:addNonActiveItem(o[1].new(world, savedData.objects[i]))
     end
   else
+    for _, l in ipairs(levelData.loot) do
+      level.mapStaff:addItem(l[1], l[2], l[3])
+    end
     for _, o in ipairs(levelData.objects) do
       level.mapStaff:addNonActiveItem(o[1].new(world, {x=o[2], y=o[3], h=o[4], w=o[5], bodyType=o[6]}))
     end
   end
   
   for i, t in ipairs(levelData.teleports) do
-    level.mapStaff:addNonActiveItem(Teleport.new(world, t[1], t[2], t[3], t[4], t[5], t[6], t[7]))
+    level.mapStaff:addNonActiveItem(Teleport.new(world, t.x, t.y, t.h, t.w, t.level, t.pX, t.pY))
   end
   
   local code = [[
@@ -153,6 +150,7 @@ function level.endLevel()
   level.enemies = {}
   level.mapStaff:clearWorld()
   level.mapStaff = nil
+  --world:destroy()
 end
 
 function level.cameraFocus()
@@ -200,10 +198,13 @@ function level.update(dt)
   end
   local nextLevel = love.thread.getChannel('trans'):pop()
   if nextLevel then
-    globalSave(level, player)
     level.endLevel()
     local number, pX, pY = unpack(nextLevel)
-    level.startLevel(number, {["world"] = number, ["x"] = pX, ["y"] = pY, ["health"] = player.health})
+    local pData = globalReadPlayerSave()
+    pData.x = pX
+    pData.y = pY
+    pData.world = number
+    level.startLevel(number, pData)
   end
 end
 
@@ -347,6 +348,7 @@ end
 
 function level.transition(levelNumber_pX_pY)
   level.pause = true
+  globalSave(level, player)
 
   local code = [[
     local min, max, levelNum, pX, pY = ...

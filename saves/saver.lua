@@ -13,7 +13,7 @@ local restartCode = [[
 ]]
 
 function globalSave(level, player)
-  local f = io.open("saves/level"..tostring(level.number)..".json", "w")
+  
   local levelSave = {enemies = {}, objects = {}, loot = {}}
   for _, e in ipairs(level.enemies) do
     table.insert(levelSave.enemies, {x = e.body:getX(), y = e.body:getY(), health = e.health, isAlive=e.isAlive})
@@ -24,11 +24,7 @@ function globalSave(level, player)
   for _, o in ipairs(level.mapStaff.items) do
     table.insert(levelSave.loot, {x = o.body:getX(), y = o.body:getY(), id = o.item.id})
   end
-  f:write(json.encode(levelSave))
-  f:close()
-  levelSave = nil
   
-  f = io.open("saves/player.json", "w")
   local pSave = {world = level.number, x = player.body:getX(), y = player.body:getY(), health = player.health, inventory={arr={}, activeEquip={}}}
   for _, s in ipairs(player.inventory.arr) do
     for _, o in ipairs(s) do
@@ -41,9 +37,22 @@ function globalSave(level, player)
   for k, v in pairs(player.inventory.activeEquip) do
     table.insert(pSave.inventory.activeEquip, v.id)
   end
-
-  f:write(json.encode(pSave))
-  f:close()
+  
+  local code = [[
+    local levelNumber, levelSave, playerSave = ...
+    package.path = "./libraries/?.lua;" .. package.path
+    local json = require("json")
+    local f = io.open("saves/level"..tostring(levelNumber)..".json", "w")
+    f:write(json.encode(levelSave))
+    f:close()
+    f = io.open("saves/player.json", "w")
+    f:write(json.encode(playerSave))
+    f:close()
+  ]]
+  
+  local thread = love.thread.newThread(code)
+  thread:start(level.number, levelSave, pSave)
+  levelSave = nil
   pSave = nil
 end
 
