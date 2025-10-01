@@ -1,88 +1,45 @@
 local Roots = require("shots/roots")
 
 Leshiy = {}
+setmetatable(Leshiy ,{__index = Enemy})
 
 function Leshiy:new(world, eData)
 
-    self = Enemy:new(world, eData, 350, love.physics.newRectangleShape(66, 190))
+  local this = Enemy.new(self, world, eData, 350, love.physics.newRectangleShape(66, 190))
 
-    self.width = 30
-    self.height = 34
-    self.spriteSheet = love.graphics.newImage('res/sprites/leshiy-full.png')
-    self.grid = anim8.newGrid(121, 236, self.spriteSheet:getWidth(), self.spriteSheet:getHeight())
-    self.animations = {}
-    self.animations.down = anim8.newAnimation(self.grid('1-4', 1), 0.3)
-    self.animations.up = anim8.newAnimation(self.grid('1-4', 1), 0.3)
-    self.animations.right = anim8.newAnimation(self.grid('1-4', 1), 0.3)
-    self.animations.left = anim8.newAnimation(self.grid('1-4', 1), 0.3)
-    self.anim = self.animations.down
+  this.width = 30
+  this.height = 34
+  this.spriteSheet = love.graphics.newImage('res/sprites/leshiy-full.png')
+  this.grid = anim8.newGrid(121, 236, this.spriteSheet:getWidth(), this.spriteSheet:getHeight())
+  this.animations = {}
+  this.animations.down = anim8.newAnimation(this.grid('1-4', 1), 0.3)
+  this.animations.up = anim8.newAnimation(this.grid('1-4', 1), 0.3)
+  this.animations.right = anim8.newAnimation(this.grid('1-4', 1), 0.3)
+  this.animations.left = anim8.newAnimation(this.grid('1-4', 1), 0.3)
+  this.anim = this.animations.down
+  
+  this.canShoot = true
+  this.reload = 1.8
 
-    self.deadSpriteSheet = love.graphics.newImage('res/sprites/leshiy-dead.png')
-    self.deadGrid = anim8.newGrid(28, 30, self.deadSpriteSheet:getWidth(), self.deadSpriteSheet:getHeight())
-    if not userConfig.blood then
-      self.deadAnimations = anim8.newAnimation(self.deadGrid('1-1', 2), 1)
-    else
-      self.deadAnimations = anim8.newAnimation(self.deadGrid('1-1', 1), 1)
-    end    
+  this.deadSpriteSheet = love.graphics.newImage('res/sprites/leshiy-dead.png')
+  this.deadGrid = anim8.newGrid(28, 30, this.deadSpriteSheet:getWidth(), this.deadSpriteSheet:getHeight())
+  if not userConfig.blood then
+    this.deadAnimations = anim8.newAnimation(this.deadGrid('1-1', 2), 1)
+  else
+    this.deadAnimations = anim8.newAnimation(this.deadGrid('1-1', 1), 1)
+  end    
 
-    function self:update(dt)
-
-      if self.isAlive then
-        self.isMoving = false
-        if #self.playerPos > 0 then
-          local player = self.playerPos[1]
-
-          for i, p in ipairs(self.playerPos) do
-            d1, _, _, _, _ = love.physics.getDistance(self.fixture, p)
-            d2, _, _, _, _ = love.physics.getDistance(self.fixture, player)
-            if d1 < d2 then
-              player = p
-            end
-          end
-
-          self:moving(player)
-
-          self.tickWalk = self.tickWalk + dt
-
-          if self.tickWalk > 1.9 then
-            self.tickWalk = 0
-            self:shoot()
-          end
-
-        end
-
-        if self.isMoving == false then
-          self.anim:gotoFrame(2)
-          self.body:setLinearVelocity(0, 0)
-        end
-
-        self.anim:update(dt)
-
-        if self.health <= 0 then
-          self:die(dt)
-        end
-      end
-
-      self:updateShots(dt)
-      self:updateBloodDrops(dt)
-    end
-
-    function self:shoot()
-      local shot = Roots.new(cat.E_SHOT, self.body:getWorld(), self.body:getX(), self.body:getY(), angles.calculateAngle(self.body:getX(), self.body:getY(), self.playerPos[1]:getBody():getX(), self.playerPos[1]:getBody():getY()))
-      table.insert(self.shots, shot)
-    end
-
-    function self:die(dt)
-      self.body:setLinearVelocity(0, 0)
-      self.spriteSheet = self.deadSpriteSheet
-      self.anim = self.deadAnimations
-      self.zoom = 4
-      self.anim:update(dt)
-      self.fixture:destroy()
-      self.rangeFixture:destroy()
-      self.isAlive = false
-      self.bloodDrops = physics.bloodDrops(self.body:getWorld(), self.body:getX(), self.body:getY())
-    end
-
-    return self
+  function self:shoot()
+    local shot = Roots.new(cat.E_SHOT, self.body:getWorld(), self.body:getX(), self.body:getY(), angles.calculateAngle(self.body:getX(), self.body:getY(), self.playerPos[1]:getBody():getX(), self.playerPos[1]:getBody():getY()))
+    table.insert(self.shots, shot)
   end
+
+  function self:die(dt)
+    self.zoom = 4
+    Enemy.die(self, dt)
+  end
+
+  setmetatable(this,self)
+  self.__index = self
+  return this
+end

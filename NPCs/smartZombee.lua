@@ -1,43 +1,42 @@
 require "astar"
 
 SmartZombee = {}
+setmetatable(SmartZombee ,{__index = Enemy})
 
 function SmartZombee:new(world, eData)
 
-  self = Enemy:new(world, eData, 400, love.physics.newRectangleShape(24, 60))
+  local this = Enemy.new(self, world, eData, 400, love.physics.newRectangleShape(24, 60))
+  this.width = 12
+  this.height = 4
+  this.spriteSheet = love.graphics.newImage('res/sprites/enemy-sheet.png')
+  this.grid = anim8.newGrid(12, 18, this.spriteSheet:getWidth(), this.spriteSheet:getHeight())
+  this.animations = {}
+  this.animations.down = anim8.newAnimation(this.grid('1-4', 1), 0.2)
+  this.animations.up = anim8.newAnimation(this.grid('1-4', 4), 0.2)
+  this.animations.right = anim8.newAnimation(this.grid('1-4', 3), 0.2)
+  this.animations.left = anim8.newAnimation(this.grid('1-4', 2), 0.2)
+  this.anim = this.animations.down
+  this.zoom = 4
 
-  self.width = 12
-  self.height = 4
-  self.spriteSheet = love.graphics.newImage('res/sprites/enemy-sheet.png')
-  self.grid = anim8.newGrid(12, 18, self.spriteSheet:getWidth(), self.spriteSheet:getHeight())
-  self.animations = {}
-  self.animations.down = anim8.newAnimation(self.grid('1-4', 1), 0.2)
-  self.animations.up = anim8.newAnimation(self.grid('1-4', 4), 0.2)
-  self.animations.right = anim8.newAnimation(self.grid('1-4', 3), 0.2)
-  self.animations.left = anim8.newAnimation(self.grid('1-4', 2), 0.2)
-  self.anim = self.animations.down
-  self.canShoot = false
-  self.zoom = 4
-
-  self.deadSpriteSheet = love.graphics.newImage('res/sprites/enemy-dead.png')
-  self.deadGrid = anim8.newGrid(12, 18, self.deadSpriteSheet:getWidth(), self.deadSpriteSheet:getHeight())
+  this.deadSpriteSheet = love.graphics.newImage('res/sprites/enemy-dead.png')
+  this.deadGrid = anim8.newGrid(12, 18, this.deadSpriteSheet:getWidth(), this.deadSpriteSheet:getHeight())
   if userConfig.blood then
-    self.deadAnimations = anim8.newAnimation(self.deadGrid('1-1', 1), 1)
+    this.deadAnimations = anim8.newAnimation(this.deadGrid('1-1', 1), 1)
   else
-    self.deadAnimations = anim8.newAnimation(self.deadGrid('2-2', 1), 1)
+    this.deadAnimations = anim8.newAnimation(this.deadGrid('2-2', 1), 1)
   end
 
-  self.defaultSpeed = 70
+  this.defaultSpeed = 70
 
-  self.dodgeFixture = love.physics.newFixture(self.body, love.physics.newCircleShape(80), 0) --коллайдер
-  self.dodgeFixture:setCategory(cat.E_RANGE)
-  self.dodgeFixture:setMask(cat.E_SHOT, cat.VOID, cat.PLAYER, cat.DASHING_PLAYER, cat.ENEMY, cat.TEXTURE)
-  self.dodgeFixture:setSensor(true)
-  self.dodgeFixture:setUserData(self)
+  this.dodgeFixture = love.physics.newFixture(this.body, love.physics.newCircleShape(80), 0) --коллайдер
+  this.dodgeFixture:setCategory(cat.E_RANGE)
+  this.dodgeFixture:setMask(cat.E_SHOT, cat.VOID, cat.PLAYER, cat.DASHING_PLAYER, cat.ENEMY, cat.TEXTURE)
+  this.dodgeFixture:setSensor(true)
+  this.dodgeFixture:setUserData(this)
 
-  self.path = nil
+  this.path = nil
 
-  self.dodge = function(shot)
+  function SmartZombee:dodge(shot)
     local xv, yv = shot.body:getLinearVelocity()
     if math.abs(xv) > math.abs(yv) then 
       self.jump(0, 150*math.random(-1, 1))
@@ -46,12 +45,12 @@ function SmartZombee:new(world, eData)
     end
   end
 
-  self.jump = function(xv, yv)
+  function SmartZombee:jump(xv, yv)
     self.jumpTime = 0.3
     self.body:setLinearVelocity(xv, yv)
   end
 
-  function self:getPath(pX, pY, isFull)
+  function SmartZombee:getPath(pX, pY, isFull)
     if self.path == nil or self.path == {} then
       local nodes = self:getNodes(pX, pY)
       local playerNode = {x = pX, y = pY}
@@ -65,7 +64,7 @@ function SmartZombee:new(world, eData)
     end
   end
 
-  function self:getNodes(pX, pY)
+  function SmartZombee:getNodes(pX, pY)
     local x1 = pX
     local y1 = pY
     local x2 = self.body:getX()
@@ -104,7 +103,7 @@ function SmartZombee:new(world, eData)
     return nodes
   end
 
-  function self:checkPath(pX, pY)
+  function SmartZombee:checkPath(pX, pY)
     local sX = math.floor(self.body:getX())
     local sY = math.floor(self.body:getY())
     local maxX = math.max(pX, sX)
@@ -135,7 +134,7 @@ function SmartZombee:new(world, eData)
     return true
   end
 
-  function self:moving(player)
+  function SmartZombee:moving(player)
     local speedX = 0
     local speedY = 0
     local pX = math.floor(player:getBody():getX())
@@ -194,5 +193,7 @@ function SmartZombee:new(world, eData)
     end
   end
 
-  return self
+  setmetatable(this,self)
+  self.__index = self
+  return this
 end

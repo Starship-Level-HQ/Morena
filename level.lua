@@ -96,23 +96,15 @@ function level.startLevel(levelNumber, playerData)
   level.enemies = {}
   day = true
 
-  if savedData ~= nil then
-    for i, p in ipairs(levelData.enemyPositions) do
-      local enemy = p[3]:new(world, savedData.enemies[i])
-      table.insert(level.enemies, enemy)
-    end
-  else
-    for i, p in ipairs(levelData.enemyPositions) do
-      local enemy = p[3]:new(world, {x=p[1], y=p[2], health=100, isAlive=true})
-      table.insert(level.enemies, enemy)
-    end
-  end
-
   --shotSound = love.audio.newSource("res/sounds/shot.wav", "static")
 
   level.mapStaff = MapStaff.new(world)
   
   if savedData ~= nil then
+    for i, p in ipairs(levelData.enemyPositions) do
+      local enemy = p[3]:new(world, savedData.enemies[i])
+      table.insert(level.enemies, enemy)
+    end
     for _, item in ipairs(savedData.loot) do
       level.mapStaff:addItem(item.x, item.y, item.id)
     end
@@ -120,6 +112,10 @@ function level.startLevel(levelNumber, playerData)
       level.mapStaff:addNonActiveItem(o[1].new(world, savedData.objects[i]))
     end
   else
+    for _, p in ipairs(levelData.enemyPositions) do
+      local enemy = p[3]:new(world, {x=p[1], y=p[2], health=100, isAlive=true})
+      table.insert(level.enemies, enemy)
+    end
     for _, l in ipairs(levelData.loot) do
       level.mapStaff:addItem(l[1], l[2], l[3])
     end

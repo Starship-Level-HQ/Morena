@@ -1,2 +1,1 @@
-/saves/level*
-/player*
+/saves/*.json

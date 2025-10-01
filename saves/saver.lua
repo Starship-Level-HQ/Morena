@@ -57,10 +57,19 @@ function globalSave(level, player)
 end
 
 function globalReadSave(levelNumber)
-  local f = io.open("saves/level"..tostring(levelNumber)..".json", "r")
-  local data = json.decode(f:read("*all"))
-  f:close()
-  return data
+  local status, data = pcall( function()
+    local f = io.open("saves/level"..tostring(levelNumber)..".json", "r")
+    local data = json.decode(f:read("*all"))
+    f:close()
+    
+    return data
+  end )
+
+  if status then
+    return data
+  else
+    return nil
+  end
 end
 
 function globalReadPlayerSave()

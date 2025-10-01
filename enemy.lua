@@ -4,37 +4,37 @@ shots = require("shot")
 Enemy = {}
 
 function Enemy:new(world, eData, range, shape)
-  self = {}
-  self.defaultSpeed = 42
-  self.shape = shape
-  self.body = love.physics.newBody(world, eData.x, eData.y, "dynamic")         --тело для движения и отрисовки
-  self.body:setMass(49)
-  self.fixture = love.physics.newFixture(self.body, self.shape, 0) --коллайдер
-  self.fixture:setCategory(cat.ENEMY)
-  self.fixture:setMask(cat.E_SHOT, cat.VOID, cat.DASHING_PLAYER, cat.TEXTURE, cat.ENEMY)
-  self.fixture:setUserData(self)
-  self.rangeFixture = love.physics.newFixture(self.body, love.physics.newCircleShape(range), 0) --коллайдер
-  self.rangeFixture:setCategory(cat.E_RANGE)
-  self.rangeFixture:setMask(cat.E_SHOT, cat.VOID, cat.P_SHOT, cat.ENEMY, cat.TEXTURE)
-  self.rangeFixture:setSensor(true)
-  self.rangeFixture:setUserData(self)
-  self.body:setGravityScale(0)
-  self.health = eData.health
-  self.range = range
-  self.shots = {} -- holds our fired shots
-  self.bloodDrops = {}
-  self.playerPos = {}
-  self.direction = "d"
-  self.isAlive = true
-  self.isAlive1 = eData.isAlive
-  self.tickWalk = math.random(0, 19) / 10
-  self.tickShot = math.random(0, 20) / 100
+  local this = {}
+  this.defaultSpeed = 42
+  this.shape = shape
+  this.body = love.physics.newBody(world, eData.x, eData.y, "dynamic")         --тело для движения и отрисовки
+  this.body:setMass(49)
+  this.fixture = love.physics.newFixture(this.body, this.shape, 0) --коллайдер
+  this.fixture:setCategory(cat.ENEMY)
+  this.fixture:setMask(cat.E_SHOT, cat.VOID, cat.DASHING_PLAYER, cat.TEXTURE, cat.ENEMY)
+  this.fixture:setUserData(this)
+  this.rangeFixture = love.physics.newFixture(this.body, love.physics.newCircleShape(range), 0) --коллайдер
+  this.rangeFixture:setCategory(cat.E_RANGE)
+  this.rangeFixture:setMask(cat.E_SHOT, cat.VOID, cat.P_SHOT, cat.ENEMY, cat.TEXTURE)
+  this.rangeFixture:setSensor(true)
+  this.rangeFixture:setUserData(this)
+  this.body:setGravityScale(0)
+  this.health = eData.health
+  this.range = range
+  this.shots = {} -- holds our fired shots
+  this.bloodDrops = {}
+  this.playerPos = {}
+  this.direction = "d"
+  this.isAlive = true
+  this.isAlive1 = eData.isAlive
+  this.tickWalk = math.random(0, 19) / 10
+  this.tickShot = math.random(0, 20) / 100
 
-  self.isMoving = false
+  this.isMoving = false
 
-  self.jumpTime = 0
+  this.jumpTime = 0
 
-  function self:update(dt)
+  function Enemy:update(dt)
 
     if self.isAlive then
       self.isMoving = false
@@ -54,7 +54,7 @@ function Enemy:new(world, eData, range, shape)
         end
 
         if self.canShoot then
-          if self.tickShot > 0.4 then
+          if self.tickShot > self.reload then
             self:shoot()
             self.tickShot = 0
           end
@@ -88,7 +88,7 @@ function Enemy:new(world, eData, range, shape)
     self:updateBloodDrops(dt)
   end
 
-  function self:moving(player)
+  function Enemy:moving(player)
     local speedX = 0
     local speedY = 0
     local playerX = player:getBody():getX()
@@ -129,7 +129,7 @@ function Enemy:new(world, eData, range, shape)
 
   end
 
-  function self:die(dt)
+  function Enemy:die(dt)
   
     self.body:setLinearVelocity(0, 0)
     self.spriteSheet = self.deadSpriteSheet
@@ -147,9 +147,9 @@ function Enemy:new(world, eData, range, shape)
     end
   end
 
-  function self:updateShots(dt)
+  function Enemy:updateShots(dt)
     local remShot = {}
-
+    
     -- update the shots
     for i, s in ipairs(self.shots) do
       s.update(remShot, i, dt)
@@ -160,7 +160,7 @@ function Enemy:new(world, eData, range, shape)
     end
   end
 
-  function self:updateBloodDrops(dt)
+  function Enemy:updateBloodDrops(dt)
     local remShot = {}
 
     for i, d in ipairs(self.bloodDrops) do
@@ -182,12 +182,12 @@ function Enemy:new(world, eData, range, shape)
     end
   end
 
-  function self:shoot()
+  function Enemy:shoot()
     local shot = Arrow.new(cat.E_SHOT, self.body:getWorld(), self.body:getX(), self.body:getY(), angles.calculateAngle(self.body:getX(), self.body:getY(), self.playerPos[1]:getBody():getX(), self.playerPos[1]:getBody():getY()), 2)
     table.insert(self.shots, shot)
   end
 
-  function self:draw(t, d1, d2, d3, d4)
+  function Enemy:draw(t, d1, d2, d3, d4)
     for i, s in ipairs(self.shots) do
       if not s.body:isDestroyed() then
         s.draw()
@@ -220,15 +220,15 @@ function Enemy:new(world, eData, range, shape)
 
   end
 
-  function self:colisionWithShot(shot)
+  function Enemy:colisionWithShot(shot)
     self.health = self.health - shot.damage
   end
 
-  function self:seePlayer(playerBody)
+  function Enemy:seePlayer(playerBody)
     table.insert(self.playerPos, playerBody)
   end
 
-  function self:dontSeePlayer(playerBody)
+  function Enemy:dontSeePlayer(playerBody)
     local remP = 0
     for i, p in ipairs(self.playerPos) do
       if p == playerBody then
@@ -240,5 +240,7 @@ function Enemy:new(world, eData, range, shape)
     self.path = nil
   end
 
-  return self
+  setmetatable(this,self)
+  self.__index = self
+  return this
 end
