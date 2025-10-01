@@ -50,7 +50,7 @@ function SmartZombee:new(world, eData)
     self.body:setLinearVelocity(xv, yv)
   end
 
-  function SmartZombee:getPath(pX, pY, isFull)
+  function SmartZombee:getPath(pX, pY)
     if self.path == nil or self.path == {} then
       local nodes = self:getNodes(pX, pY)
       local playerNode = {x = pX, y = pY}
@@ -80,7 +80,7 @@ function SmartZombee:new(world, eData)
       yy = 0
     end
     local nodes = {}
-    local dGrid = GRID_SIZE * 2
+    local dGrid = GRID_SIZE * 1.5
     while yy < math.max(y1, y2)+doDep do
       while xx < math.max(x1, x2)+doDep do
         local flag = true
