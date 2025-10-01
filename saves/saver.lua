@@ -82,4 +82,5 @@ end
 function globalRemoveAllSaves()
   local thread = love.thread.newThread(restartCode)
   thread:start()
+  thread:wait()
 end

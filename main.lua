@@ -57,6 +57,7 @@ function love.keypressed(key)
       if level.pause then
         level.keypressed(key)
       else
+        level.keypressed(key)
         level.endLevel()
         gameState = "menu"
         menu.load()

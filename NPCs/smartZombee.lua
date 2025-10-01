@@ -39,9 +39,9 @@ function SmartZombee:new(world, eData)
   function SmartZombee:dodge(shot)
     local xv, yv = shot.body:getLinearVelocity()
     if math.abs(xv) > math.abs(yv) then 
-      self.jump(0, 150*math.random(-1, 1))
+      self:jump(0, 150*math.random(-1, 1))
     else 
-      self.jump(150*math.random(-1, 1), 0)
+      self:jump(150*math.random(-1, 1), 0)
     end
   end
 

@@ -295,7 +295,7 @@ function level.collisionOnEnter(fixture_a, fixture_b, contact)
 
   if fixture_a:getCategory() == cat.P_SHOT and fixture_b:getCategory() == cat.E_RANGE then
     if fixture_b:getUserData().dodge ~= nil then
-      fixture_b:getUserData().dodge(fixture_a:getUserData())
+      fixture_b:getUserData():dodge(fixture_a:getUserData())
     end
   end
 
