@@ -2,7 +2,7 @@ require("enemy")
 require "angles"
 require("player/player")
 require("dialog")
-require("inventory.src.objectsOnMap")
+require("inventory.src.mapStaff")
 require("NPCs/zombee")
 require("NPCs/smartZombee")
 require("NPCs/kaban")
@@ -23,16 +23,15 @@ local levels = {
     enemyPositions = { { 600, 100, Kaban}, { 600, 300, Zombee} },
     obstacles = {{ 400, 550, 80, 80}},
     objects = { {Rock, 555, 550, 37, 25, "dynamic"} },
-    teleports = { {800, 800, 80, 80, 2, 100, 200} },
+    teleports = { {x=800, y=800, h=80, w=80, level=2, pX=100, pY=200} },
     loot = { { 350, 400, 2.1 },  {370, 400, 2.2}, {500, 500, 1.1}} -- x y id
   },
   {
     map = "res/maps/testMap.lua",
     playerPosition = { 100, 200 },
     enemyPositions = { { 550, 200, SmartZombee } , { 525, 225, SmartZombee }, { 575, 225, SmartZombee }, { 575, 200, SmartZombee } }, 
-    --obstacles = {{ 400, 200, 100, 100}},
     objects = {{Rock, 500, 500, 37, 25, "dynamic"}},
-    teleports = { {800, 800, 80, 80, 3, 100, 300} },
+    teleports = { {x=800, y=800, h=80, w=80, level=3, pX=100, pY=300} },
     obstacles = {{ 400, 200, 100, 150}, { 375, 150, 150, 100}},
     loot = { { 350, 400, 2.1 },  {370, 400, 2.2}, {500, 500, 1.1}}
   },
@@ -42,7 +41,7 @@ local levels = {
     enemyPositions = { { 700, 400, Leshiy } },
     obstacles = {{ 0, 0 , 10, 10}},
     objects = {{Rock, 300, 299, 37, 25, "dynamic"}},
-    teleports = { {800, 800, 80, 80, 1, 100, 400} },
+    teleports = { {x=800, y=800, h=80, w=80, level=1, pX=100, pY=400} },
     loot = { { 350, 400, 2.1 },  {370, 400, 2.2}, {500, 500, 1.1}}
   }
   -- Добавляйте больше уровней с разными настройками
@@ -50,7 +49,11 @@ local levels = {
 
 function level.continue()
   local playerData = globalReadPlayerSave()
-  level.startLevel(playerData["world"], playerData)
+  if playerData == nil then
+    level.startLevel(1, {world = 1, x = 100, y = 100, health = 100, inventory={arr={}, activeEquip={}}})
+  else
+    level.startLevel(playerData["world"], playerData)
+  end
 end
 
 function level.startLevel(levelNumber, playerData)
@@ -63,9 +66,11 @@ function level.startLevel(levelNumber, playerData)
   cam = camera()
   love.graphics.setDefaultFilter('nearest', 'nearest')
   gameMap = sti(levelData.map)
+  
   world = love.physics.newWorld(0, 0, true)
   world:setGravity(0, 40)
   world:setCallbacks(level.collisionOnEnter, level.collisionOnEnd)
+  
   love.mouse.setCursor(love.mouse.newCursor('res/sprites/curs.png', 272 , 272))
   
   level.defaultColor1 = 0
@@ -75,7 +80,7 @@ function level.startLevel(levelNumber, playerData)
   
   local savedData = globalReadSave(levelNumber)
   
-  player = Player.new(world, playerData["x"], playerData["y"], playerData["health"])
+  player = Player.new(world, playerData)
 
   level.obstacles = {}
 
@@ -91,25 +96,36 @@ function level.startLevel(levelNumber, playerData)
   level.enemies = {}
   day = true
 
-  for i, p in ipairs(levelData.enemyPositions) do
-    local enemy = p[3]:new(world, p[1], p[2], 100)
-    table.insert(level.enemies, enemy)
-  end
-
   --shotSound = love.audio.newSource("res/sounds/shot.wav", "static")
 
-  mapStaff = MapStaff.new(world)
+  level.mapStaff = MapStaff.new(world)
   
-  for i, l in ipairs(levelData.loot) do
-    mapStaff:addItem(l[1], l[2], l[3])
-  end
-  
-  for i, o in ipairs(levelData.objects) do
-    mapStaff:addNonActiveItem(o[1].new(world, o[2], o[3], o[4], o[5], o[6]))
+  if savedData ~= nil then
+    for i, p in ipairs(levelData.enemyPositions) do
+      local enemy = p[3]:new(world, savedData.enemies[i])
+      table.insert(level.enemies, enemy)
+    end
+    for _, item in ipairs(savedData.loot) do
+      level.mapStaff:addItem(item.x, item.y, item.id)
+    end
+    for i, o in ipairs(levelData.objects) do
+      level.mapStaff:addNonActiveItem(o[1].new(world, savedData.objects[i]))
+    end
+  else
+    for _, p in ipairs(levelData.enemyPositions) do
+      local enemy = p[3]:new(world, {x=p[1], y=p[2], health=100, isAlive=true})
+      table.insert(level.enemies, enemy)
+    end
+    for _, l in ipairs(levelData.loot) do
+      level.mapStaff:addItem(l[1], l[2], l[3])
+    end
+    for _, o in ipairs(levelData.objects) do
+      level.mapStaff:addNonActiveItem(o[1].new(world, {x=o[2], y=o[3], h=o[4], w=o[5], bodyType=o[6]}))
+    end
   end
   
   for i, t in ipairs(levelData.teleports) do
-    mapStaff:addNonActiveItem(Teleport.new(world, t[1], t[2], t[3], t[4], t[5], t[6], t[7]))
+    level.mapStaff:addNonActiveItem(Teleport.new(world, t.x, t.y, t.h, t.w, t.level, t.pX, t.pY))
   end
   
   local code = [[
@@ -128,8 +144,9 @@ end
 
 function level.endLevel()
   level.enemies = {}
-  mapStaff:clearWorld()
-  mapStaff = nil
+  level.mapStaff:clearWorld()
+  level.mapStaff = nil
+  --world:destroy()
 end
 
 function level.cameraFocus()
@@ -177,10 +194,13 @@ function level.update(dt)
   end
   local nextLevel = love.thread.getChannel('trans'):pop()
   if nextLevel then
-    globalSave(level, player)
     level.endLevel()
     local number, pX, pY = unpack(nextLevel)
-    level.startLevel(number, {["world"] = number, ["x"] = pX, ["y"] = pY, ["health"] = player.health})
+    local pData = globalReadPlayerSave()
+    pData.x = pX
+    pData.y = pY
+    pData.world = number
+    level.startLevel(number, pData)
   end
 end
 
@@ -205,7 +225,7 @@ function level.draw()
     love.graphics.polygon("fill", ob.body:getWorldPoints(ob.shape:getPoints()))
   end
 
-  mapStaff:draw(d1, d2, d3, d4)
+  level.mapStaff:draw(d1, d2, d3, d4)
 
   love.graphics.setColor(d1, d2, d3, d4)
   for _, enemy in ipairs(level.enemies) do
@@ -251,7 +271,7 @@ function level.keypressed(key)
     level.pause = not level.pause
     player.inventoryIsOpen = not player.inventoryIsOpen
   elseif key == "e" then
-    player:pickupItem(mapStaff)
+    player:pickupItem(level.mapStaff)
   end
 end
 
@@ -259,7 +279,7 @@ function level.mousepressed(x, y, b)
   dropedItem = player:mousepressed(x, y, b)
   if dropedItem then
     print(dropedItem)
-    mapStaff:dropItem(player.body:getX(), player.body:getY(), dropedItem)
+    level.mapStaff:dropItem(player.body:getX(), player.body:getY(), dropedItem)
   end
 end
 
@@ -275,7 +295,7 @@ function level.collisionOnEnter(fixture_a, fixture_b, contact)
 
   if fixture_a:getCategory() == cat.P_SHOT and fixture_b:getCategory() == cat.E_RANGE then
     if fixture_b:getUserData().dodge ~= nil then
-      fixture_b:getUserData().dodge(fixture_a:getUserData())
+      fixture_b:getUserData():dodge(fixture_a:getUserData())
     end
   end
 
@@ -324,6 +344,7 @@ end
 
 function level.transition(levelNumber_pX_pY)
   level.pause = true
+  globalSave(level, player)
 
   local code = [[
     local min, max, levelNum, pX, pY = ...

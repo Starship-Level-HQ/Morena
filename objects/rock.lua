@@ -1,7 +1,7 @@
 Rock = {
 
-new = function(world, x, y, h, w, t) 
-  local rock = physics.makeBody(world, x, y, h, w, t)
+new = function(world, oData) 
+  local rock = physics.makeBody(world, oData.x, oData.y, oData.h, oData.w, oData.bodyType)
   rock.body:setMass(55)
   rock.body:setLinearDamping(9)
   rock.fixture:setCategory(cat.BARRIER)

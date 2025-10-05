@@ -12,8 +12,7 @@ MapStaff = {
         self.nextId = 0
         
         function self:addItem(x, y, id)
-            local newItem = ItemModule.create_item(id)
-            self:newItem(x, y, newItem)
+            self:newItem(x, y, ItemModule.create_item(id))
         end
         
         function self:addNonActiveItem(item)

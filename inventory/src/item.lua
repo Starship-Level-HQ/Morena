@@ -40,8 +40,9 @@ local available_items = {
   }
 }
 
-function Item.new(name, type, effects, cost, target, img, desc)
+function Item.new(id, name, type, effects, cost, target, img, desc)
     local self = setmetatable({}, Item)
+    self.id = id
     self.name = name
     self.type = type
     self.effects = effects
@@ -53,9 +54,11 @@ function Item.new(name, type, effects, cost, target, img, desc)
 end
 
 function Item.create_item(item_id)
+  
     local item_data = available_items[item_id]
     if item_data then
         return Item.new(
+            item_id,
             item_data.name,
             item_data.type,
             item_data.effects,

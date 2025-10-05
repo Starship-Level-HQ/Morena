@@ -16,9 +16,9 @@ function shotFabric.new(category, world, x, y, h, w, lifeTime, angle, damage, sp
   shot.lifeTime = lifeTime
   shot.time = 0
   
-  shot.rotate = angle +  math.pi/2 ----------------------- развернуть спрйт и убрать вычисления лишние
+  shot.rotate = angle
   shot.body:setLinearVelocity(math.cos(angle) * speed, math.sin(angle) * speed)
-  shot.body:setAngle(angle +  math.pi/2) ------------ тоже самое
+  shot.body:setAngle(angle)
 
   function shot.update(remShot, i, dt)
     shot.time = shot.time + dt
