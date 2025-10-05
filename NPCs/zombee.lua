@@ -5,8 +5,8 @@ function Zombee:new(world, eData)
   
   local this = Enemy.new(self, world, eData, 350, love.physics.newRectangleShape(24, 60))
 
-  this.width = 12
-  this.height = 4
+  this.widthDivTwo = 6
+  this.heightDivTwo = 9
   this.spriteSheet = love.graphics.newImage('res/sprites/enemy-sheet.png')
   this.grid = anim8.newGrid(12, 18, this.spriteSheet:getWidth(), this.spriteSheet:getHeight())
   this.animations = {}

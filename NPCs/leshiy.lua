@@ -7,8 +7,8 @@ function Leshiy:new(world, eData)
 
   local this = Enemy.new(self, world, eData, 350, love.physics.newRectangleShape(66, 190))
 
-  this.width = 30
-  this.height = 34
+  this.widthDivTwo = 60
+  this.heightDivTwo = 118
   this.spriteSheet = love.graphics.newImage('res/sprites/leshiy-full.png')
   this.grid = anim8.newGrid(121, 236, this.spriteSheet:getWidth(), this.spriteSheet:getHeight())
   this.animations = {}
