@@ -1,1 +1,1 @@
-null
+{"objects":[{"y":550,"bodyType":"dynamic","w":25,"x":555,"h":37},{"y":800,"bodyType":"static","w":80,"x":800,"h":80}],"enemies":[{"y":100,"x":600,"isAlive":true,"health":100},{"y":300,"x":600,"isAlive":true,"health":100}],"loot":[{"id":2.1,"x":350,"y":400},{"id":2.2,"x":370,"y":400},{"id":1.1,"x":499.99996948242,"y":499.99996948242}]}

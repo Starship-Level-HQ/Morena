@@ -4,8 +4,6 @@ setmetatable(Kaban ,{__index = Enemy})
 function Kaban:new(world, eData)
   local this = Enemy.new(self, world, eData, 300, love.physics.newRectangleShape(60, 54))
   
-  this.width = 20
-  this.height = 24
   this.spriteSheet = love.graphics.newImage('res/sprites/kaban.png')
   this.grid = anim8.newGrid(24, 24, this.spriteSheet:getWidth(), this.spriteSheet:getHeight())
   this.animations = {}
@@ -15,6 +13,8 @@ function Kaban:new(world, eData)
   this.animations.left = anim8.newAnimation(this.grid('1-4', 2), 0.2)
   this.anim = this.animations.left
   this.zoom = 4
+  this.widthDivTwo = 12
+  this.heightDivTwo = 12
 
   this.deadSpriteSheet = love.graphics.newImage('res/sprites/kaban-dead.png')
   this.deadGrid = anim8.newGrid(21, 21, this.deadSpriteSheet:getWidth(), this.deadSpriteSheet:getHeight())

@@ -1,6 +1,6 @@
-Teleport = {
+Teleport = {}
 
-new = function(world, x, y, h, w, levelNum, pX, pY) 
+function Teleport:new(world, x, y, h, w, levelNum, pX, pY) 
   local te = physics.makeBody(world, x, y, h, w, "static")
   te.fixture:setCategory(cat.TRIGGER)
   te.fixture:setSensor(true)
@@ -8,7 +8,16 @@ new = function(world, x, y, h, w, levelNum, pX, pY)
   te.img = love.graphics.newImage("res/sprites/teleport.png")
   
   te.fixture:setUserData({levelNum, pX, pY})
+  te.widthDivTwo = te.img:getWidth()/2
+  te.heightDivTwo = te.img:getHeight()/2
+  
+  function Teleport:draw()
+    local xx = self.body:getX()-self.widthDivTwo
+    local yy = self.body:getY()-self.heightDivTwo
+    love.graphics.draw(self.img, xx, yy)
+  end
+  
+  setmetatable(te,self)
+  self.__index = self
   return te
 end
-
-}
