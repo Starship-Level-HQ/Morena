@@ -6,8 +6,8 @@ setmetatable(SmartZombee ,{__index = Enemy})
 function SmartZombee:new(world, eData)
 
   local this = Enemy.new(self, world, eData, 400, love.physics.newRectangleShape(24, 60))
-  this.width = 12
-  this.height = 4
+  this.widthDivTwo = 6
+  this.heightDivTwo = 9
   this.spriteSheet = love.graphics.newImage('res/sprites/enemy-sheet.png')
   this.grid = anim8.newGrid(12, 18, this.spriteSheet:getWidth(), this.spriteSheet:getHeight())
   this.animations = {}
@@ -51,7 +51,7 @@ function SmartZombee:new(world, eData)
   end
 
   function SmartZombee:getPath(pX, pY)
-    if self.path == nil or self.path == {} then
+    
       local nodes = self:getNodes(pX, pY)
       local playerNode = {x = pX, y = pY}
       local selfNode = {x = self.body:getX(), y = self.body:getY()}
@@ -61,7 +61,7 @@ function SmartZombee:new(world, eData)
       if self.path ~= nil then
         self.path = {unpack(self.path, 2, 5)}
       end
-    end
+    
   end
 
   function SmartZombee:getNodes(pX, pY)
@@ -87,6 +87,7 @@ function SmartZombee:new(world, eData)
         for i, ob in ipairs(level.obstacles) do
           if xx >= ob.x - dGrid and xx <= ob.x + ob.w + dGrid and yy >= ob.y - dGrid and yy <= ob.y + ob.h + dGrid then
             flag = false
+            break
           end
         end
         if flag then
@@ -143,8 +144,10 @@ function SmartZombee:new(world, eData)
     if self:checkPath(pX, pY) then
       self.path = {{x=pX, y=pY}}
     else
-      self.coroutine = coroutine.create(function(px, py, isFull)  self:getPath(px, py, isFull) end)
-      coroutine.resume(self.coroutine, pX, pY, false)
+      if self.path == {} or self.path == nil then
+        self.coroutine = coroutine.create(function(px, py, isFull)  self:getPath(px, py, isFull) end)
+        coroutine.resume(self.coroutine, pX, pY, false)
+      end
     end
 
     if self.path ~= nil then

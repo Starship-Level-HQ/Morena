@@ -1,4 +1,4 @@
-require("enemy")
+require("NPCs/enemy")
 require "angles"
 require("player/player")
 require("dialog")
@@ -7,9 +7,11 @@ require("NPCs/zombee")
 require("NPCs/smartZombee")
 require("NPCs/kaban")
 require("NPCs/leshiy")
-require("shot")
+require("shots/shot")
 require("objects/rock")
 require("objects/teleport")
+physics = require("physics")
+anim8 = require 'libraries/anim8'
 
 level = {}
 local gameMap
@@ -109,7 +111,7 @@ function level.startLevel(levelNumber, playerData)
       level.mapStaff:addItem(item.x, item.y, item.id)
     end
     for i, o in ipairs(levelData.objects) do
-      level.mapStaff:addNonActiveItem(o[1].new(world, savedData.objects[i]))
+      level.mapStaff:addNonActiveItem(o[1]:new(world, savedData.objects[i]))
     end
   else
     for _, p in ipairs(levelData.enemyPositions) do
@@ -120,12 +122,12 @@ function level.startLevel(levelNumber, playerData)
       level.mapStaff:addItem(l[1], l[2], l[3])
     end
     for _, o in ipairs(levelData.objects) do
-      level.mapStaff:addNonActiveItem(o[1].new(world, {x=o[2], y=o[3], h=o[4], w=o[5], bodyType=o[6]}))
+      level.mapStaff:addNonActiveItem(o[1]:new(world, {x=o[2], y=o[3], h=o[4], w=o[5], bodyType=o[6]}))
     end
   end
   
   for i, t in ipairs(levelData.teleports) do
-    level.mapStaff:addNonActiveItem(Teleport.new(world, t.x, t.y, t.h, t.w, t.level, t.pX, t.pY))
+    level.mapStaff:addNonActiveItem(Teleport:new(world, t.x, t.y, t.h, t.w, t.level, t.pX, t.pY))
   end
   
   local code = [[

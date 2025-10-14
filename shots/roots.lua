@@ -1,28 +1,24 @@
-Roots = {
-  new = function(category, world, x, y, angle, damageModifier) 
-    if damageModifier == nil then
-      damageModifier = 1
-    end
-    local self = shots.new(category, world, x, y, 60, 80, 3, angle, 10, 140)
-    self.body:setMass(400)
-    
-    self.effect = function(player)
-      --table.insert(player.effects, {"Регенерация", -3, 10}) -- Эффект яда, другому врагу добавим
-      player.stun = 0.5 
-      player.stunTime = 0.5
-    end
-    self.sprite = love.graphics.newImage('res/sprites/roots.png')
-    self.grid = anim8.newGrid(27, 36, self.sprite:getWidth(), self.sprite:getHeight())
-    self.animations = anim8.newAnimation(self.grid('1-4', 1), 0.1)
-    
-    function self.draw()
-      local xx, yy = self.body:getWorldPoints(self.shape:getPoints())
-      self.animations:draw(self.sprite, xx, yy, self.rotate, 4, nil, 4, 4)
-      --love.graphics.polygon("fill", self.body:getWorldPoints(self.shape:getPoints()))
-    end
-    
-    return self
-  end
-}
+Roots = {}
+setmetatable(Roots ,{__index = Shot})
 
-return Roots
+function Roots:new(category, world, x, y, angle, damageModifier) 
+
+  local this = Shot.new(self, category, world, x, y, 80, 60, 3, angle, 10, 140)
+  this.body:setMass(400)
+
+  this.effect = function(player)
+    --table.insert(player.effects, {"Регенерация", -3, 10}) -- Эффект яда, другому врагу добавим
+    player.stun = 0.5 
+    player.stunTime = 0.5
+  end
+  this.sprite = love.graphics.newImage('res/sprites/roots.png')
+  this.grid = anim8.newGrid(35, 27, this.sprite:getWidth(), this.sprite:getHeight())
+  this.animations = anim8.newAnimation(this.grid('1-4', 1), 0.1)
+  this.zoom = 4
+  this.heightDivTwo = 5
+  this.widthDivTwo = 5
+
+  setmetatable(this,self)
+  self.__index = self
+  return this
+end

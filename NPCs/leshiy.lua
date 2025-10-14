@@ -1,4 +1,4 @@
-local Roots = require("shots/roots")
+require("shots/roots")
 
 Leshiy = {}
 setmetatable(Leshiy ,{__index = Enemy})
@@ -7,8 +7,8 @@ function Leshiy:new(world, eData)
 
   local this = Enemy.new(self, world, eData, 350, love.physics.newRectangleShape(66, 190))
 
-  this.width = 30
-  this.height = 34
+  this.widthDivTwo = 60
+  this.heightDivTwo = 118
   this.spriteSheet = love.graphics.newImage('res/sprites/leshiy-full.png')
   this.grid = anim8.newGrid(121, 236, this.spriteSheet:getWidth(), this.spriteSheet:getHeight())
   this.animations = {}
@@ -22,7 +22,7 @@ function Leshiy:new(world, eData)
   this.reload = 1.8
 
   this.deadSpriteSheet = love.graphics.newImage('res/sprites/leshiy-dead.png')
-  this.deadGrid = anim8.newGrid(28, 30, this.deadSpriteSheet:getWidth(), this.deadSpriteSheet:getHeight())
+  this.deadGrid = anim8.newGrid(113, 100, this.deadSpriteSheet:getWidth(), this.deadSpriteSheet:getHeight())
   if not userConfig.blood then
     this.deadAnimations = anim8.newAnimation(this.deadGrid('1-1', 2), 1)
   else
@@ -30,13 +30,8 @@ function Leshiy:new(world, eData)
   end    
 
   function self:shoot()
-    local shot = Roots.new(cat.E_SHOT, self.body:getWorld(), self.body:getX(), self.body:getY(), angles.calculateAngle(self.body:getX(), self.body:getY(), self.playerPos[1]:getBody():getX(), self.playerPos[1]:getBody():getY()))
+    local shot = Roots:new(cat.E_SHOT, self.body:getWorld(), self.body:getX(), self.body:getY(), angles.calculateAngle(self.body:getX(), self.body:getY(), self.playerPos[1]:getBody():getX(), self.playerPos[1]:getBody():getY()))
     table.insert(self.shots, shot)
-  end
-
-  function self:die(dt)
-    self.zoom = 4
-    Enemy.die(self, dt)
   end
 
   setmetatable(this,self)
