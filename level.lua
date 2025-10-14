@@ -262,6 +262,8 @@ function level.keypressed(key)
     player.attackType = 'slash'
   elseif key == "2" then
     player.attackType = 'shoot'
+  elseif key == "=" then
+    player.fixture:setCategory(cat.VOID)
   elseif key == "u" then
     level.dialog = Dialog.new(
       { { text = "Rrrrrr...\nrrrrrr...", body = level.enemies[1].body }, { text = "Ah shit", body = player.body }, { text = "Here we go again", body = player.body, dur = 1.2 } },
@@ -290,8 +292,7 @@ function level.collisionOnEnter(fixture_a, fixture_b, contact)
     player:collisionWithEnemy(fixture_b, 10)
   end
 
-  if (fixture_a:getCategory() == cat.PLAYER or fixture_a:getCategory() == cat.DASHING_PLAYER)
-  and fixture_b:getCategory() == cat.E_RANGE then
+  if (fixture_a:getCategory() == cat.PLAYER or fixture_a:getCategory() == cat.DASHING_PLAYER) and fixture_b:getCategory() == cat.E_RANGE then
     fixture_b:getUserData():seePlayer(fixture_a)
   end
 
