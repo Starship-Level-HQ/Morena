@@ -177,13 +177,12 @@ PlayerUpdate = {
         if self.dashTimeLeft <= 0 then
           self.isDashing = false
           self.dashCooldownLeft = self.dashCooldown
+          self.fixture:setCategory(cat.PLAYER)
         end
       elseif self.dashCooldownLeft > 0 then
         self.dashCooldownLeft = self.dashCooldownLeft - dt
       end
-      if not self.isDashing then
-        self.fixture:setCategory(cat.PLAYER)
-      end
+      
     end
 
     function self:updateRemotePlayer(dt, remotePlayerData)
