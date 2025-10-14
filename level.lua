@@ -1,4 +1,4 @@
-require("enemy")
+require("NPCs/enemy")
 require "angles"
 require("player/player")
 require("dialog")
@@ -7,9 +7,11 @@ require("NPCs/zombee")
 require("NPCs/smartZombee")
 require("NPCs/kaban")
 require("NPCs/leshiy")
-require("shot")
+require("shots/shot")
 require("objects/rock")
 require("objects/teleport")
+physics = require("physics")
+anim8 = require 'libraries/anim8'
 
 level = {}
 local gameMap

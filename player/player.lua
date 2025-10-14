@@ -114,7 +114,7 @@ Player = {
         function self:attack(angle)
           if self.attackType == "slash" then
             if #self.shots >= 1 then return end
-            local shot = Slash.new(cat.P_SHOT, self.body:getWorld(), self.body:getX(), self.body:getY(), angle, 2)
+            local shot = Slash:new(cat.P_SHOT, self.body:getWorld(), self.body:getX(), self.body:getY(), angle, 2)
             shot.body:setMass(90)
             if self.inventory.activeEquip["Оружие"] ~= nil then
               shot.damage = shot.damage + self.inventory.activeEquip["Оружие"].effects["Урон"]
@@ -122,7 +122,7 @@ Player = {
             table.insert(self.shots, shot)
           end
           if self.attackType == "shoot" then
-            local shot = Arrow.new(cat.P_SHOT, self.body:getWorld(), self.body:getX(), self.body:getY(), angle, 2)
+            local shot = Arrow:new(cat.P_SHOT, self.body:getWorld(), self.body:getX(), self.body:getY(), angle, 2)
             table.insert(self.shots, shot)
           end
         end

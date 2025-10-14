@@ -1,6 +1,3 @@
-require("shots/arrow")
-shots = require("shot")
-
 Enemy = {}
 
 function Enemy:new(world, eData, range, shape)
@@ -152,7 +149,7 @@ function Enemy:new(world, eData, range, shape)
     
     -- update the shots
     for i, s in ipairs(self.shots) do
-      s.update(remShot, i, dt)
+      s:update(remShot, i, dt)
     end
 
     for i, s in ipairs(remShot) do
@@ -183,14 +180,14 @@ function Enemy:new(world, eData, range, shape)
   end
 
   function Enemy:shoot()
-    local shot = Arrow.new(cat.E_SHOT, self.body:getWorld(), self.body:getX(), self.body:getY(), angles.calculateAngle(self.body:getX(), self.body:getY(), self.playerPos[1]:getBody():getX(), self.playerPos[1]:getBody():getY()), 2)
+    local shot = Arrow:new(cat.E_SHOT, self.body:getWorld(), self.body:getX(), self.body:getY(), angles.calculateAngle(self.body:getX(), self.body:getY(), self.playerPos[1]:getBody():getX(), self.playerPos[1]:getBody():getY()), 2)
     table.insert(self.shots, shot)
   end
 
-  function Enemy:draw(t, d1, d2, d3, d4)
+  function Enemy:draw(d1, d2, d3, d4)
     for i, s in ipairs(self.shots) do
       if not s.body:isDestroyed() then
-        s.draw()
+        s:draw()
       end
     end
 
