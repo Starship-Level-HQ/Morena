@@ -130,6 +130,7 @@ PlayerUpdate = {
 
     function self:updateInventory()
       if (self.inventoryIsOpen) then self.inventoryGui:update() end
+      if (self.activeBox) then self.activeBox.inventoryGui:update() end
     end
 
     function self:updateShots(dt)
@@ -137,9 +138,6 @@ PlayerUpdate = {
 
       -- update the shots
       for i, s in ipairs(self.shots) do
---        for k, v in pairs(s) do
---          _log(k, v)
---        end
         s:update(remShot, i, dt)
       end
 

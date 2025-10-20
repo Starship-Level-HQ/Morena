@@ -2,14 +2,13 @@ require("NPCs/enemy")
 require "angles"
 require("player/player")
 require("dialog")
-require("inventory.src.mapStaff")
+require("items/mapStaff")
 require("NPCs/zombee")
 require("NPCs/smartZombee")
 require("NPCs/kaban")
 require("NPCs/leshiy")
 require("shots/shot")
-require("objects/rock")
-require("objects/teleport")
+local objectsProvider = require("objects/objectsProvider")
 physics = require("physics")
 anim8 = require 'libraries/anim8'
 
@@ -24,7 +23,7 @@ local levels = {
     playerPosition = { 300, 450 },
     enemyPositions = { { 600, 100, Kaban}, { 600, 300, Zombee} },
     obstacles = {{ 400, 550, 80, 80}},
-    objects = { {Rock, 555, 550, 37, 25, "dynamic"} },
+    objects = { {class=Rock, x=555, y=550, w=37, h=25, bodyType="dynamic"}, {class=Chest, x=200, y=200, w=30, h=30, bodyType="dynamic", loot={1.2, 1.1}} },
     teleports = { {x=800, y=800, h=80, w=80, level=2, pX=100, pY=200} },
     loot = { { 350, 400, 2.1 },  {370, 400, 2.2}, {500, 500, 1.1}} -- x y id
   },
@@ -32,7 +31,7 @@ local levels = {
     map = "res/maps/testMap.lua",
     playerPosition = { 100, 200 },
     enemyPositions = { { 550, 200, SmartZombee } , { 525, 225, SmartZombee }, { 575, 225, SmartZombee }, { 575, 200, SmartZombee } }, 
-    objects = {{Rock, 500, 500, 37, 25, "dynamic"}},
+    objects = {{class=Rock, x=500, y=500, w=37, h=25, bodyType="dynamic"}},
     teleports = { {x=800, y=800, h=80, w=80, level=3, pX=100, pY=300} },
     obstacles = {{ 400, 200, 100, 150}, { 375, 150, 150, 100}},
     loot = { { 350, 400, 2.1 },  {370, 400, 2.2}, {500, 500, 1.1}}
@@ -42,7 +41,7 @@ local levels = {
     playerPosition = { 100, 200 },
     enemyPositions = { { 700, 400, Leshiy } },
     obstacles = {{ 0, 0 , 10, 10}},
-    objects = {{Rock, 300, 299, 37, 25, "dynamic"}},
+    objects = {{class=Rock, x=555, y=550, w=37, h=25, bodyType="dynamic"}},
     teleports = { {x=800, y=800, h=80, w=80, level=1, pX=100, pY=400} },
     loot = { { 350, 400, 2.1 },  {370, 400, 2.2}, {500, 500, 1.1}}
   }
@@ -110,8 +109,10 @@ function level.startLevel(levelNumber, playerData)
     for _, item in ipairs(savedData.loot) do
       level.mapStaff:addItem(item.x, item.y, item.id)
     end
-    for i, o in ipairs(levelData.objects) do
-      level.mapStaff:addNonActiveItem(o[1]:new(world, savedData.objects[i]))
+    for i, o in ipairs(savedData.objects) do
+      if o.class ~= "Teleport" then
+        level.mapStaff:addObject(objectsProvider[o.class]:new(world, o))
+      end
     end
   else
     for _, p in ipairs(levelData.enemyPositions) do
@@ -122,12 +123,13 @@ function level.startLevel(levelNumber, playerData)
       level.mapStaff:addItem(l[1], l[2], l[3])
     end
     for _, o in ipairs(levelData.objects) do
-      level.mapStaff:addNonActiveItem(o[1]:new(world, {x=o[2], y=o[3], h=o[4], w=o[5], bodyType=o[6]}))
+      level.mapStaff:addObject(o.class:new(world, {x=o.x, y=o.y, h=o.h, w=o.w, bodyType=o.bodyType, loot=o.loot}))
     end
+    
   end
   
   for i, t in ipairs(levelData.teleports) do
-    level.mapStaff:addNonActiveItem(Teleport:new(world, t.x, t.y, t.h, t.w, t.level, t.pX, t.pY))
+    level.mapStaff:addObject(Teleport:new(world, t.x, t.y, t.h, t.w, t.level, t.pX, t.pY))
   end
   
   local code = [[
@@ -227,12 +229,12 @@ function level.draw()
     love.graphics.polygon("fill", ob.body:getWorldPoints(ob.shape:getPoints()))
   end
 
-  level.mapStaff:draw(d1, d2, d3, d4)
-
   love.graphics.setColor(d1, d2, d3, d4)
   for _, enemy in ipairs(level.enemies) do
     enemy:draw(d1, d2, d3, d4)
   end
+  
+  level.mapStaff:draw(d1, d2, d3, d4)
 
   player:draw(d1, d2, d3, d4)
 
@@ -251,10 +253,16 @@ function level.keypressed(key)
   if key == " " or key == "space" then
     --fek
   elseif key == "escape" then
-    globalSave(level, player)
-    level.pause = not level.pause
+    if not level.pause and not player.inventoryIsOpen then
+      globalSave(level, player)
+      return true
+    end
+    if level.pause then
+      level.pause = not level.pause
+    end
     if player.inventoryIsOpen then
       player.inventoryIsOpen = false
+      pcall(function() player.activeBox.inventoryIsOpen = false end)
     end
   elseif key == "q" then
     day = not day
@@ -341,6 +349,8 @@ function level.collisionOnEnd(fixture_a, fixture_b, contact)
     local player = fixture_a:getUserData()
     if (player.nearestItem == item) then
       fixture_a:getUserData().nearestItem = nil
+      pcall(function() player.activeBox.inventoryIsOpen = false; player.activeBox = nil end)
+      player.inventoryIsOpen = false
     end
   end
 end

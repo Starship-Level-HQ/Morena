@@ -1,21 +1,18 @@
-local ItemModule = require("inventory.src.item")
+local ItemModule = require("items.item")
 
 MapStaff = {
     new = function(world)
-        if not world then
-            _log("Enemy requires parameters 'world', 'x', and 'y' to be specified")
-            return false
-        end
+        
         local self = {}
         self.items = {}
         self.nonActiveItems = {}
         self.nextId = 0
         
         function self:addItem(x, y, id)
-            self:newItem(x, y, ItemModule.create_item(id))
+          self:newItem(x, y, ItemModule.create_item(id))
         end
         
-        function self:addNonActiveItem(item)
+        function self:addObject(item)
           table.insert(self.nonActiveItems, item)
         end
         

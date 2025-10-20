@@ -19,7 +19,19 @@ function globalSave(level, player)
     table.insert(levelSave.enemies, {x = e.body:getX(), y = e.body:getY(), health = e.health, isAlive=e.isAlive})
   end
   for _, o in ipairs(level.mapStaff.nonActiveItems) do
-    table.insert(levelSave.objects, {x = o.body:getX(), y = o.body:getY(), h = o.height, w = o.width, bodyType = o.body:getType()})
+    if o.inventory == nil then
+      table.insert(levelSave.objects, {class = o.class, x = o.body:getX(), y = o.body:getY(), h = o.height, w = o.width, bodyType = o.body:getType()})
+    else
+      local arr = {}
+      for _, s in ipairs(o.inventory.arr) do
+        for _, o in ipairs(s) do
+          if o ~= 0 then
+            table.insert(arr, o.id)
+          end
+        end
+      end
+      table.insert(levelSave.objects, {class = o.class, x = o.body:getX(), y = o.body:getY(), h = o.height, w = o.width, bodyType = o.body:getType(), loot = arr})
+    end
   end
   for _, o in ipairs(level.mapStaff.items) do
     table.insert(levelSave.loot, {x = o.body:getX(), y = o.body:getY(), id = o.item.id})

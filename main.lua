@@ -54,14 +54,13 @@ end
 
 function love.keypressed(key)
     if gameState == "level" and key == "escape" then
-      if level.pause then
-        level.keypressed(key)
-      else
-        level.keypressed(key)
+      
+      if level.keypressed(key) then
         level.endLevel()
         gameState = "menu"
         menu.load()
       end
+        
     elseif gameState == "multiplayer" and key == "escape" then
         multiplayer.hub:unsubscribe()
         gameState = "menu"

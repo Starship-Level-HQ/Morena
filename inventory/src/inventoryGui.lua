@@ -51,14 +51,18 @@ function inventoryGui:update()
     --_log("Mouse on cell: ", mouseOn.is, mouseOn.x, mouseOn.y)
 end
 
-function inventoryGui:mousepressed(x, y, b)
+function inventoryGui:mousepressed(x, y, b, box)
     if b == 1 then --левая кнопка мыши
         if mouseOn.is then
             if not selected.is then
                 if inv.arr[mouseOn.y][mouseOn.x] ~= 0 then
+                  if box then
+                    box.inventory:addItem(inv:removeItem(mouseOn.x, mouseOn.y))
+                  else
                     selected.is = true
                     selected.x = mouseOn.x
                     selected.y = mouseOn.y
+                  end
                 end
             else
                 inv:replace(selected.x, selected.y, mouseOn.x, mouseOn.y)
