@@ -10,6 +10,8 @@ function Rock:new(world, oData)
 
   rock.widthDivTwo = rock.img:getWidth()/2
   rock.heightDivTwo = rock.img:getHeight()/2
+  
+  rock.class = "Rock"
 
   function Rock:draw()
     local xx = self.body:getX()-self.widthDivTwo

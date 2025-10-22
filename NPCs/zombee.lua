@@ -2,7 +2,7 @@ Zombee = {}
 setmetatable(Zombee ,{__index = Enemy})
 
 function Zombee:new(world, eData) 
-  
+  eData.lootLvl = 2
   local this = Enemy.new(self, world, eData, 350, love.physics.newRectangleShape(24, 60))
 
   this.widthDivTwo = 6

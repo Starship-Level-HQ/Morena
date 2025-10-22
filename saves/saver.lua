@@ -13,18 +13,41 @@ local restartCode = [[
 ]]
 
 function globalSave(level, player)
-  
+
   local levelSave = {enemies = {}, objects = {}, loot = {}}
   for _, e in ipairs(level.enemies) do
-    table.insert(levelSave.enemies, {x = e.body:getX(), y = e.body:getY(), health = e.health, isAlive=e.isAlive})
+    local arr = {}
+    pcall(
+    function() 
+      for _, s in ipairs(e.inventory.arr) do
+        for _, o in ipairs(s) do
+          if o ~= 0 then
+            table.insert(arr, o.id)
+          end
+        end
+      end
+    end)
+    table.insert(levelSave.enemies, {x = e.body:getX(), y = e.body:getY(), health = e.health, isAlive=e.isAlive, loot=arr})
   end
   for _, o in ipairs(level.mapStaff.nonActiveItems) do
-    table.insert(levelSave.objects, {x = o.body:getX(), y = o.body:getY(), h = o.height, w = o.width, bodyType = o.body:getType()})
+    if o.inventory == nil then
+      table.insert(levelSave.objects, {class = o.class, x = o.body:getX(), y = o.body:getY(), h = o.height, w = o.width, bodyType = o.body:getType()})
+    else
+      local arr = {}
+      for _, s in ipairs(o.inventory.arr) do
+        for _, o1 in ipairs(s) do
+          if o1 ~= 0 then
+            table.insert(arr, o1.id)
+          end
+        end
+      end
+      table.insert(levelSave.objects, {class = o.class, x = o.body:getX(), y = o.body:getY(), h = o.height, w = o.width, bodyType = o.body:getType(), loot = arr})
+    end
   end
   for _, o in ipairs(level.mapStaff.items) do
     table.insert(levelSave.loot, {x = o.body:getX(), y = o.body:getY(), id = o.item.id})
   end
-  
+
   local pSave = {world = level.number, x = player.body:getX(), y = player.body:getY(), health = player.health, inventory={arr={}, activeEquip={}}}
   for _, s in ipairs(player.inventory.arr) do
     for _, o in ipairs(s) do
@@ -33,11 +56,11 @@ function globalSave(level, player)
       end
     end
   end
-  
+
   for k, v in pairs(player.inventory.activeEquip) do
     table.insert(pSave.inventory.activeEquip, v.id)
   end
-  
+
   local code = [[
     local levelNumber, levelSave, playerSave = ...
     package.path = "./libraries/?.lua;" .. package.path
@@ -49,7 +72,7 @@ function globalSave(level, player)
     f:write(json.encode(playerSave))
     f:close()
   ]]
-  
+
   local thread = love.thread.newThread(code)
   thread:start(level.number, levelSave, pSave)
   levelSave = nil
@@ -58,12 +81,12 @@ end
 
 function globalReadSave(levelNumber)
   local status, data = pcall( function()
-    local f = io.open("saves/level"..tostring(levelNumber)..".json", "r")
-    local data = json.decode(f:read("*all"))
-    f:close()
-    
-    return data
-  end )
+      local f = io.open("saves/level"..tostring(levelNumber)..".json", "r")
+      local data = json.decode(f:read("*all"))
+      f:close()
+
+      return data
+    end )
 
   if status then
     return data

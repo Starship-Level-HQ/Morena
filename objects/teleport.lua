@@ -11,6 +11,8 @@ function Teleport:new(world, x, y, h, w, levelNum, pX, pY)
   te.widthDivTwo = te.img:getWidth()/2
   te.heightDivTwo = te.img:getHeight()/2
   
+  te.class = "Teleport"
+  
   function Teleport:draw()
     local xx = self.body:getX()-self.widthDivTwo
     local yy = self.body:getY()-self.heightDivTwo

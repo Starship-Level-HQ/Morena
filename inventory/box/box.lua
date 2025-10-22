@@ -1,0 +1,56 @@
+local utils = require("inventory.src.utils")
+
+Box = {}
+
+function Box:new(w, h)
+  local inv = {}
+  inv.w = w
+  inv.h = h
+  inv.arr = utils.newEmptyArr(w, h, 0)
+
+  setmetatable(inv,self)
+  self.__index = self
+  return inv
+end
+
+function Box:addItem(item)
+  local stop = false
+  for y = 1, #self.arr do
+    for x = 1, #self.arr[1] do
+      if self.arr[y][x] == 0 then
+        self.arr[y][x] = item
+        stop = true
+        break
+      end
+    end
+    if stop then break end
+  end
+end
+
+function Box:removeItem(j, i)
+  item = self.arr[i][j]
+  self.arr[i][j] = 0
+  return item
+end
+
+function Box:replace(x1, y1, x2, y2)
+  local ph = self.arr[y1][x1]
+  self.arr[y1][x1] = self.arr[y2][x2]
+  self.arr[y2][x2] = ph
+end
+
+function Box:isEmpty()
+
+  local stop = false
+  for y = 1, #self.arr do
+    for x = 1, #self.arr[1] do
+      if self.arr[y][x] ~= 0 then
+        stop = true
+        break
+      end
+    end
+    if stop then break end
+  end
+  return not stop
+
+end
