@@ -1,3 +1,5 @@
+local RandomLootProvider = require("items/randomLootProvider")
+
 Enemy = {}
 
 function Enemy:new(world, eData, range, shape)
@@ -30,6 +32,19 @@ function Enemy:new(world, eData, range, shape)
   this.isMoving = false
 
   this.jumpTime = 0
+  
+  this.inventory = Box:new(3, 2)
+  
+  if eData.loot == "rnd" then
+    eData.loot = RandomLootProvider:newLoot(eData.lootLvl or 1)
+  end
+  
+  for i, id in ipairs(eData.loot) do
+    this.inventory:addItem(ItemModule.create_item(id))
+  end
+  
+  this.inventoryGui = BoxGui:new(this.inventory)
+  this.inventoryIsOpen = false
 
   function Enemy:update(dt)
 
@@ -78,6 +93,13 @@ function Enemy:new(world, eData, range, shape)
 
       if self.health <= 0 then
         self:die(dt)
+      end
+    else
+      if self.inventory then
+        if self.inventory:isEmpty() then
+          self.inventory = nil
+          self.fixture:destroy()
+        end
       end
     end
 
@@ -132,7 +154,9 @@ function Enemy:new(world, eData, range, shape)
     self.spriteSheet = self.deadSpriteSheet
     self.anim = self.deadAnimations
     self.anim:update(dt)
-    self.fixture:destroy()
+    --self.fixture:destroy()
+    self.fixture:setCategory(cat.ITEM)
+    self.fixture:setSensor(true)
     self.rangeFixture:destroy()
     if self.dodgeFixture ~= nil then
       self.dodgeFixture:destroy()
@@ -142,6 +166,7 @@ function Enemy:new(world, eData, range, shape)
       self.isAlive1 = false
       self.bloodDrops = physics.bloodDrops(self.body:getWorld(), self.body:getX(), self.body:getY())
     end
+    
   end
 
   function Enemy:updateShots(dt)
@@ -197,7 +222,12 @@ function Enemy:new(world, eData, range, shape)
         love.graphics.rectangle("fill", d.body:getX(), d.body:getY(), 6, 6)
       end
     end
-    love.graphics.setColor(d1, d2, d3, d4)
+    
+    if self.collision then
+      love.graphics.setColor(1, 1, 0, 1)  -- подсвечиваем предмет (жёлтый цвет)
+    else
+      love.graphics.setColor(d1, d2, d3, d4)
+    end
     
     local xx
     local yy

@@ -116,7 +116,7 @@ function level.startLevel(levelNumber, playerData)
     end
   else
     for _, p in ipairs(levelData.enemyPositions) do
-      local enemy = p[3]:new(world, {x=p[1], y=p[2], health=100, isAlive=true})
+      local enemy = p[3]:new(world, {x=p[1], y=p[2], health=100, isAlive=true, loot="rnd"})
       table.insert(level.enemies, enemy)
     end
     for _, l in ipairs(levelData.loot) do
@@ -280,8 +280,10 @@ function level.keypressed(key)
   elseif key == "p" then
     level.pause = not level.pause
   elseif key == "i" then
-    level.pause = not level.pause
-    player.inventoryIsOpen = not player.inventoryIsOpen
+    if level.pause == player.inventoryIsOpen then
+      level.pause = not level.pause
+      player.inventoryIsOpen = not player.inventoryIsOpen
+    end
   elseif key == "e" then
     player:pickupItem(level.mapStaff)
   end

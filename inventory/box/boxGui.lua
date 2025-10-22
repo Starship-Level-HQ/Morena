@@ -1,20 +1,18 @@
-local inventoryGui = {}
+BoxGui = {}
+local drawSize = 50
 
-local inv
-local invW
-local invH
-local itemDrawW
-local itemDrawH
-
-function inventoryGui:setInventory(inventory, iconW, iconH)
-  inv = inventory
-  invW = #inv.arr[1]
-  invH = #inv.arr
-  itemDrawW = iconW
-  itemDrawH = iconH
+function BoxGui:new(inventory)
+  local this = {}
+  this.inv = inventory
+  this.invW = #inventory.arr[1]
+  this.invH = #inventory.arr
+  
+  setmetatable(this,self)
+  self.__index = self
+  return this
 end
 
-local mx, my = love.mouse.getPosition()
+local mx, my = 0, 0
 
 local mouseOn = { is = false, x = 1, y = 1 }
 
@@ -22,7 +20,7 @@ local selected = { is = false, x = 1, y = 1 }
 
 local infoBox = { w = 200, h = 200 }
 
-function inventoryGui:update()
+function BoxGui:update()
   local offsetX, offsetY = cam:position()
 
   mx, my = love.mouse.getPosition()
@@ -33,12 +31,12 @@ function inventoryGui:update()
   offsetY = offsetY + 100
 
   mouseOn.is = false
-  for y = 1, invH do
-    for x = 1, invW do
-      local drawX = (x - 1) * itemDrawW + offsetX
-      local drawY = (y - 1) * itemDrawH + offsetY
+  for y = 1, self.invH do
+    for x = 1, self.invW do
+      local drawX = (x - 1) * drawSize + offsetX
+      local drawY = (y - 1) * drawSize + offsetY
 
-      local mouseIsOn = mx > drawX and mx <= drawX + itemDrawW and my > drawY and my <= drawY + itemDrawH
+      local mouseIsOn = mx > drawX and mx <= drawX + drawSize and my > drawY and my <= drawY + drawSize
       if mouseIsOn then
         mouseOn.is = true
         mouseOn.x, mouseOn.y = x, y
@@ -49,28 +47,28 @@ function inventoryGui:update()
 
 end
 
-function inventoryGui:mousepressed(x, y, b, secondInv)
+function BoxGui:mousepressed(x, y, b, secondInv)
   if b == 1 then --левая кнопка мыши
     if mouseOn.is then
 
-      if inv.arr[mouseOn.y][mouseOn.x] ~= 0 then
+      if self.inv.arr[mouseOn.y][mouseOn.x] ~= 0 then
         selected.is = true
         selected.x = mouseOn.x
         selected.y = mouseOn.y
       end
 
       if selected.is then
-        secondInv:addItem(inv:removeItem(selected.x, selected.y))
+        secondInv:addItem(self.inv:removeItem(selected.x, selected.y))
       end
 
     end
   end
   if b == 2 then --правая кнопка мыши
     if mouseOn.is then
-      if inv.arr[mouseOn.y][mouseOn.x] ~= 0 then
-        local item = inv.arr[mouseOn.y][mouseOn.x]
+      local item = self.inv.arr[mouseOn.y][mouseOn.x]
+      if item ~= 0 then
         if item.type == "Зелье" then
-          inv:removeItem(mouseOn.x, mouseOn.y)
+          self.inv:removeItem(mouseOn.x, mouseOn.y)
           return {target = item.target, signature = item.effects}
         end 
       end
@@ -78,9 +76,9 @@ function inventoryGui:mousepressed(x, y, b, secondInv)
   end
 end
 
-love.graphics.setLineWidth(2)
-love.graphics.setNewFont(15)
-function inventoryGui:draw()
+--love.graphics.setLineWidth(2)
+--love.graphics.setNewFont(15)
+function BoxGui:draw()
   local offsetX, offsetY = cam:position()
 
   offsetX = offsetX - 140
@@ -88,26 +86,26 @@ function inventoryGui:draw()
 
   love.graphics.setColor(255, 255, 255)
 
-  for y = 1, invH do
-    for x = 1, invW do
-      local drawX = (x - 1) * itemDrawW + offsetX
-      local drawY = (y - 1) * itemDrawH + offsetY
+  for y = 1, self.invH do
+    for x = 1, self.invW do
+      local drawX = (x - 1) * drawSize + offsetX
+      local drawY = (y - 1) * drawSize + offsetY
       local mouseOnThis = mouseOn.is and mouseOn.x == x and mouseOn.y == y
       if mouseOnThis then
         love.graphics.setColor(200, 200, 200)
       else
         love.graphics.setColor(170, 170, 170)
       end
-      love.graphics.rectangle("fill", drawX, drawY, itemDrawW, itemDrawH)
+      love.graphics.rectangle("fill", drawX, drawY, drawSize, drawSize)
       love.graphics.setColor(0, 0, 0)
-      love.graphics.rectangle("line", drawX, drawY, itemDrawW, itemDrawH)
+      love.graphics.rectangle("line", drawX, drawY, drawSize, drawSize)
       love.graphics.setColor(255, 255, 255)
-      local item = inv.arr[y][x]
+      local item = self.inv.arr[y][x]
       if mouseOn.is and item ~= 0 and mouseOn.x == x and mouseOn.y == y then
         love.graphics.setColor(255, 255, 255) -- Белый цвет для фона
-        love.graphics.rectangle("fill", itemDrawW * invW + 10 + offsetX, offsetY, infoBox.w, infoBox.h)
+        love.graphics.rectangle("fill", drawSize * self.invW + 10 + offsetX, offsetY, infoBox.w, infoBox.h)
         love.graphics.setColor(0, 0, 0)       -- Черный цвет для текста
-        love.graphics.printf(item.name .. "\n" .. item.desc .. "\n" .. string.gsub(json.encode(item.effects), "\"", " "), itemDrawW * invW + 15 + offsetX, offsetY, infoBox.w - 5)
+        love.graphics.printf(item.name .. "\n" .. item.desc .. "\n" .. string.gsub(json.encode(item.effects), "\"", " "), drawSize * self.invW + 15 + offsetX, offsetY, infoBox.w - 5)
         love.graphics.setColor(255, 255, 255) -- Сбрасываем цвет для остальных элементов
       end
 
@@ -122,5 +120,3 @@ function inventoryGui:draw()
     --Smooth animation
   end
 end
-
-return inventoryGui

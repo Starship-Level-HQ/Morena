@@ -1,7 +1,7 @@
 local Item = {}
 Item.__index = Item
 
-local available_items = {
+Item.available_items = {
   [1.1] = {
       name = "Зелье здоровья",
       type = "Зелье",
@@ -55,7 +55,7 @@ end
 
 function Item.create_item(item_id)
   
-    local item_data = available_items[item_id]
+    local item_data = Item.available_items[item_id]
     if item_data then
         return Item.new(
             item_id,

@@ -1,5 +1,5 @@
 local inventory = require("inventory.src.inventory")
-local ItemModule = require("items.item")
+ItemModule = require("items.item")
 local inventoryGuiSrc = require("inventory.src.inventoryGui")
 require("shots/slash")
 require("shots/arrow")
@@ -22,7 +22,7 @@ Player = {
 
     self.body = love.physics.newBody(world, playerData.x, playerData.y, "dynamic")         -- тело для движения и отрисовки
     self.body:setMass(50)
-    self.shape = love.physics.newRectangleShape(33, 58)              -- размер коллайдера
+    self.shape = love.physics.newRectangleShape(30, 58)              -- размер коллайдера
     self.fixture = love.physics.newFixture(self.body, self.shape, 0) -- коллайдер
     self.fixture:setCategory(cat.PLAYER)                             -- Категория объектов, к которой относится игрок
     self.fixture:setMask(cat.P_SHOT, cat.VOID, cat.PLAYER)           -- Категории, которые игрок игнорирует (свои выстрелы, других игроков и пустоту)
@@ -35,6 +35,8 @@ Player = {
     self.stun = 0
     self.stunTime = 0
     self.zoom = 1
+    self.widthDivTwo = 12
+    self.heightDivTwo = 18
 
     PlayerAnim.new(self)
 
@@ -173,7 +175,9 @@ Player = {
       local xx, yy = self.body:getWorldPoints(self.shape:getPoints()) 
 
       --love.graphics.polygon("fill", self.body:getWorldPoints(self.shape:getPoints()))
-      self.anim:draw(self.spriteSheet, xx-10, yy-10, nil, 2.1*self.zoom)
+      xx = self.body:getX()-self.widthDivTwo*2.1*self.zoom
+      yy = self.body:getY()-self.heightDivTwo*2.1*self.zoom
+      self.anim:draw(self.spriteSheet, xx, yy, nil, 2.1*self.zoom)
 
       --След
       love.graphics.setColor(0.7, 0.7, 0.9, 0.2)
@@ -190,6 +194,12 @@ Player = {
       --Инвентарь
       if (self.inventoryIsOpen) then
         self.inventoryGui:draw()
+        local box = self.activeBox
+        if box ~= nil then
+          if (box.inventoryIsOpen) then
+            box.inventoryGui:draw()
+          end
+        end
       end
     end
 
