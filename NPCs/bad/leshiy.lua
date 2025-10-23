@@ -17,7 +17,7 @@ function Leshiy:new(world, eData)
   this.animations.right = anim8.newAnimation(this.grid('1-4', 1), 0.3)
   this.animations.left = anim8.newAnimation(this.grid('1-4', 1), 0.3)
   this.anim = this.animations.down
-  
+
   this.canShoot = true
   this.reload = 1.8
 
@@ -29,12 +29,12 @@ function Leshiy:new(world, eData)
     this.deadAnimations = anim8.newAnimation(this.deadGrid('1-1', 1), 1)
   end    
 
-  function self:shoot()
-    local shot = Roots:new(cat.E_SHOT, self.body:getWorld(), self.body:getX(), self.body:getY(), angles.calculateAngle(self.body:getX(), self.body:getY(), self.playerPos[1]:getBody():getX(), self.playerPos[1]:getBody():getY()))
-    table.insert(self.shots, shot)
-  end
-
   setmetatable(this,self)
   self.__index = self
   return this
+end
+
+function Leshiy:shoot()
+  local shot = Roots:new(cat.E_SHOT, self.body:getWorld(), self.body:getX(), self.body:getY(), angles.calculateAngle(self.body:getX(), self.body:getY(), self.playerPos[1]:getBody():getX(), self.playerPos[1]:getBody():getY()))
+  table.insert(self.shots, shot)
 end

@@ -139,8 +139,8 @@ Player = {
       end
     end
 
-    function self:pickupItem(from, itemBody)
-      itemBody = itemBody or self.nearestItem
+    function self:pickupItem(from)
+      itemBody = self.nearestItem
       if itemBody then
         if itemBody.inventory ~= nil then
           self:openBox(itemBody)
@@ -152,8 +152,8 @@ Player = {
             print("nil item Big Fail")
           end
         end
-      else
-        print("no near item")
+      elseif self.nearestNpc then
+        pcall(function() self.nearestNpc:communicate(self) end)
       end
     end
 

@@ -1,5 +1,5 @@
 require("player/player")
-require("NPCs/enemy")
+require("NPCs.bad.enemy")
 require("multiplayer/client")
 
 Multiplayer = {

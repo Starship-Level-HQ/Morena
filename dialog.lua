@@ -1,7 +1,6 @@
 Dialog = {
   new = function(phrases, callback)
     local self = {}
-    self.bodies = bodies
     self.phrases = phrases
     self.callback = callback
     self.current = 0

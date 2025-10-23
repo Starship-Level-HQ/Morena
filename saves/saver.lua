@@ -7,7 +7,7 @@ local restartCode = [[
     f:close()
   end
   local f = io.open("saves/player.json", "w")
-  local pSave = {world = 1, x = 100, y = 100, health = 100, inventory={arr={}, activeEquip={}}}
+  local pSave = {world = 1, x = 100, y = 100, health = 100, inventory={arr={1.1, 2.1}, activeEquip={2.1}}}
   f:write(json.encode(pSave))
   f:close()
 ]]

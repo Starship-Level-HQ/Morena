@@ -1,16 +1,12 @@
-require("NPCs/enemy")
 require "angles"
-require("player/player")
+require("player.player")
 require("dialog")
-require("items/mapStaff")
-require("NPCs/zombee")
-require("NPCs/smartZombee")
-require("NPCs/kaban")
-require("NPCs/leshiy")
-require("shots/shot")
-local objectsProvider = require("objects/objectsProvider")
+require("items.mapStaff")
+require("NPCs.npcProvider")
+require("shots.shot")
+local objectsProvider = require("objects.objectsProvider")
 physics = require("physics")
-anim8 = require 'libraries/anim8'
+anim8 = require 'libraries.anim8'
 
 level = {}
 local gameMap
@@ -39,7 +35,7 @@ local levels = {
   {
     map = "res/maps/testMap.lua",
     playerPosition = { 100, 200 },
-    enemyPositions = { { 700, 400, Leshiy } },
+    enemyPositions = { { 400, 400, Dealer } },
     obstacles = {{ 0, 0 , 10, 10}},
     objects = {{class=Rock, x=555, y=550, w=37, h=25, bodyType="dynamic"}},
     teleports = { {x=800, y=800, h=80, w=80, level=1, pX=100, pY=400} },
@@ -299,7 +295,7 @@ end
 
 function level.collisionOnEnter(fixture_a, fixture_b, contact)
   if fixture_a:getCategory() == cat.PLAYER and fixture_b:getCategory() == cat.ENEMY then
-    player:collisionWithEnemy(fixture_b, 10)
+    fixture_b:getUserData():collisionAction(fixture_a:getUserData())
   end
 
   if (fixture_a:getCategory() == cat.PLAYER or fixture_a:getCategory() == cat.DASHING_PLAYER) and fixture_b:getCategory() == cat.E_RANGE then
@@ -344,14 +340,20 @@ function level.collisionOnEnd(fixture_a, fixture_b, contact)
   and fixture_b:getCategory() == cat.E_RANGE then
     fixture_b:getUserData():dontSeePlayer(fixture_a)
   end
+  
+  if (fixture_a:getCategory() == cat.PLAYER or fixture_a:getCategory() == cat.DASHING_PLAYER)
+  and fixture_b:getCategory() == cat.ENEMY then
+    fixture_a:getUserData().nearestNpc = nil
+    fixture_b:getUserData().collision = false
+  end
 
   if (fixture_a:getCategory() == cat.PLAYER or fixture_a:getCategory() == cat.DASHING_PLAYER) and fixture_b:getCategory() == cat.ITEM then
     local item = fixture_b:getUserData()
     item.collision = false
     local player = fixture_a:getUserData()
     if (player.nearestItem == item) then
-      fixture_a:getUserData().nearestItem = nil
-      pcall(function() player.activeBox.inventoryIsOpen = false; player.activeBox = nil end)
+      player.nearestItem = nil
+      pcall(function() item.inventoryIsOpen = false; player.activeBox = nil end)
       player.inventoryIsOpen = false
     end
   end
