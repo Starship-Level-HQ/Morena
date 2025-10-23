@@ -1,1 +1,1 @@
-{"health":100,"inventory":{"arr":[1.1,2.1],"activeEquip":[2.1]},"world":1,"x":100,"y":100}
+{"world":1,"x":100,"y":100,"health":100,"inventory":{"activeEquip":[2.1],"arr":[1.1,2.1]}}

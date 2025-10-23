@@ -28,6 +28,7 @@ function NPC:new(world, eData, range, shape)
   this.tickWalk = math.random(0, 19) / 10
 
   this.isMoving = false
+  this.dialog = {}
 
   this.inventory = Box:new(3, 2)
 
@@ -82,7 +83,12 @@ function NPC:update(dt)
       end
     end
   end
-
+  if #self.dialog > 0 then
+    self.dialog[1].time = self.dialog[1].time - dt
+    if self.dialog[1].time <= 0 then
+      table.remove(self.dialog, 1)
+    end
+  end
   self:updateBloodDrops(dt)
 end
 
@@ -176,7 +182,7 @@ function NPC:collisionAction(player)
 end
 
 function NPC:communicate(player)
-  _log("Hello")
+  table.insert(self.dialog, {time = 1.3, text = "Hello?"})
 end
 
 function NPC:draw(d1, d2, d3, d4)
@@ -207,9 +213,16 @@ function NPC:draw(d1, d2, d3, d4)
     self.anim:draw(self.spriteSheet, xx, yy)
   end
   --love.graphics.polygon("fill", self.body:getWorldPoints(self.shape:getPoints())) --Ne udalat
-  if self.health > 0 then
+  
+  if self.dialog[1] then
+    love.graphics.setColor(1, 1, 1, 0.5)
+    local text = self.dialog[1].text
+    love.graphics.rectangle("fill", self.body:getX() - 25, self.body:getY() - 65, 14*#text, 31)
+    love.graphics.setColor(0, 0, 0, 1)
+    love.graphics.print(text, self.body:getX() - 25, self.body:getY() - 65, 0, 1.6, 1.6)
+  elseif self.health > 0 then
     love.graphics.setColor(1, 0, 0, 1)
-    love.graphics.print(self.health, xx, yy-10, 0, 1.6, 1.6)
+    love.graphics.print(self.health, xx, yy-22, 0, 1.6, 1.6)
   end
 
   love.graphics.setColor(d1, d2, d3, d4)
