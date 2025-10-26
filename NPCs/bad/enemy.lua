@@ -3,38 +3,38 @@ local RandomLootProvider = require("items/randomLootProvider")
 Enemy = {}
 
 function Enemy:new(world, eData, range, shape)
-  local this = {}
-  this.defaultSpeed = 42
-  this.shape = shape
-  this.body = love.physics.newBody(world, eData.x, eData.y, "dynamic")         --тело для движения и отрисовки
-  this.body:setMass(49)
+  local this = {
+    defaultSpeed = 42,
+    shape = shape,
+    body = love.physics.newBody(world, eData.x, eData.y, "dynamic"), --тело для движения и отрисовки
+    health = eData.health,
+    range = range,
+    shots = {}, -- holds our fired shots
+    bloodDrops = {},
+    playerPos = {},
+    direction = "d",
+    isAlive = true,
+    isAlive1 = eData.isAlive,
+    tickWalk = math.random(0, 19) / 10,
+    tickShot = math.random(0, 20) / 100,
+    damage = 10,
+    isMoving = false,
+    jumpTime = 0,
+    inventory = Box:new(3, 2),
+    inventoryIsOpen = false,
+  }
+  
   this.fixture = love.physics.newFixture(this.body, this.shape, 0) --коллайдер
+  this.rangeFixture = love.physics.newFixture(this.body, love.physics.newCircleShape(range), 0) --коллайдер обнаружения
+  this.body:setMass(49)
   this.fixture:setCategory(cat.ENEMY)
   this.fixture:setMask(cat.E_SHOT, cat.VOID, cat.DASHING_PLAYER, cat.TEXTURE, cat.ENEMY)
   this.fixture:setUserData(this)
-  this.rangeFixture = love.physics.newFixture(this.body, love.physics.newCircleShape(range), 0) --коллайдер
   this.rangeFixture:setCategory(cat.E_RANGE)
   this.rangeFixture:setMask(cat.E_SHOT, cat.VOID, cat.P_SHOT, cat.ENEMY, cat.TEXTURE)
   this.rangeFixture:setSensor(true)
   this.rangeFixture:setUserData(this)
   this.body:setGravityScale(0)
-  this.health = eData.health
-  this.range = range
-  this.shots = {} -- holds our fired shots
-  this.bloodDrops = {}
-  this.playerPos = {}
-  this.direction = "d"
-  this.isAlive = true
-  this.isAlive1 = eData.isAlive
-  this.tickWalk = math.random(0, 19) / 10
-  this.tickShot = math.random(0, 20) / 100
-  this.damage = 10
-
-  this.isMoving = false
-
-  this.jumpTime = 0
-
-  this.inventory = Box:new(3, 2)
 
   if eData.loot == "rnd" then
     eData.loot = RandomLootProvider:newLoot(eData.lootLvl or 1)
@@ -45,7 +45,6 @@ function Enemy:new(world, eData, range, shape)
   end
 
   this.inventoryGui = BoxGui:new(this.inventory)
-  this.inventoryIsOpen = false
 
   setmetatable(this,self)
   self.__index = self
@@ -161,7 +160,6 @@ function Enemy:die(dt)
   self.spriteSheet = self.deadSpriteSheet
   self.anim = self.deadAnimations
   self.anim:update(dt)
-  --self.fixture:destroy()
   self.fixture:setCategory(cat.ITEM)
   self.fixture:setSensor(true)
   self.rangeFixture:destroy()
