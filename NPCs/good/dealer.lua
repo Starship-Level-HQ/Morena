@@ -9,6 +9,7 @@ function Dealer:new(world, eData)
   this.heightDivTwo = 34
   this.spriteSheet = love.graphics.newImage('res/sprites/man.png')
   this.grid = anim8.newGrid(33, 68, this.spriteSheet:getWidth(), this.spriteSheet:getHeight())
+  this.health = 50
   this.animations = {}
   this.animations.down = anim8.newAnimation(this.grid('1-1', 1), 0.3)
   this.animations.up = anim8.newAnimation(this.grid('1-1', 1), 0.3)
@@ -18,11 +19,8 @@ function Dealer:new(world, eData)
 
   this.deadSpriteSheet = love.graphics.newImage('res/sprites/enemy-dead.png')
   this.deadGrid = anim8.newGrid(12, 18, this.deadSpriteSheet:getWidth(), this.deadSpriteSheet:getHeight())
-  if not userConfig.blood then
-    this.deadAnimations = anim8.newAnimation(this.deadGrid('1-1', 2), 1)
-  else
-    this.deadAnimations = anim8.newAnimation(this.deadGrid('1-1', 1), 1)
-  end    
+  this.deadAnimations = anim8.newAnimation(this.deadGrid('1-2', 1), 0.7)
+    
 
   setmetatable(this,self)
   self.__index = self

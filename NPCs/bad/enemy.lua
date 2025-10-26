@@ -106,6 +106,7 @@ function Enemy:update(dt)
         self.inventory = nil
         self.fixture:destroy()
       end
+      self.anim:update(dt)
     end
   end
 

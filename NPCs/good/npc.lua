@@ -81,6 +81,7 @@ function NPC:update(dt)
         self.inventory = nil
         self.fixture:destroy()
       end
+      self.anim:update(dt)
     end
   end
   if #self.dialog > 0 then

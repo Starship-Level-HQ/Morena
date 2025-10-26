@@ -35,7 +35,7 @@ local levels = {
   {
     map = "res/maps/testMap.lua",
     playerPosition = { 100, 200 },
-    enemyPositions = { { 400, 400, Dealer } },
+    enemyPositions = { { 400, 400, Dealer }, { 300, 400, Dealer }, { 400, 300, Dealer }, { 300, 300, Dealer }, { 350, 400, Dealer }, { 400, 350, Dealer }, { 350, 350, Dealer } },
     obstacles = {{ 0, 0 , 10, 10}},
     objects = {{class=Rock, x=555, y=550, w=37, h=25, bodyType="dynamic"}},
     teleports = { {x=800, y=800, h=80, w=80, level=1, pX=100, pY=400} },
