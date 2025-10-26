@@ -1,0 +1,7 @@
+require("NPCs.bad.enemy")
+require("NPCs.bad.smartZombee")
+require("NPCs.bad.zombee")
+require("NPCs.bad.kaban")
+require("NPCs.bad.leshiy")
+require("NPCs.good.npc")
+require("NPCs.good.dealer")

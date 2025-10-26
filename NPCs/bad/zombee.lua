@@ -22,9 +22,9 @@ function Zombee:new(world, eData)
   this.deadSpriteSheet = love.graphics.newImage('res/sprites/enemy-dead.png')
   this.deadGrid = anim8.newGrid(12, 18, this.deadSpriteSheet:getWidth(), this.deadSpriteSheet:getHeight())
   if userConfig.blood then
-    this.deadAnimations = anim8.newAnimation(this.deadGrid('1-1', 1), 1)
+    this.deadAnimations = anim8.newAnimation(this.deadGrid('1-2', 1), 0.8)
   else
-    this.deadAnimations = anim8.newAnimation(this.deadGrid('2-2', 1), 1)
+    this.deadAnimations = anim8.newAnimation(this.deadGrid('1-2', 1), 0.8)
   end
   
   setmetatable(this,self)

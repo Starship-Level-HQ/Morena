@@ -15,39 +15,52 @@ Player = {
     end
     isRemote = isRemote or false
 
-    local self = {}
+    local self = {
+      speed = 150,
+      defaultSpeed = 150,
+      body = love.physics.newBody(world, playerData.x, playerData.y, "dynamic"),
+      shape = love.physics.newRectangleShape(30, 58),              -- размер коллайдера
+      shots = {},
+      health = playerData.health,
+      damage = 10,
+      attackType = 'slash',
+      stun = 0,
+      stunTime = 0,
+      zoom = 1,
+      widthDivTwo = 12,
+      heightDivTwo = 18,
+      direction = "l",
+      isRemote = isRemote,
+      nearestItem = nil,
+      inventory = inventory.new(6, 4),
+      effects = {},
+      --Рывок
+      isDashing = false,
+      dashSpeed = 300,
+      dashDuration = 0.2,
+      dashCooldown = 0.4,
+      dashTimeLeft = 0,
+      dashCooldownLeft = 0,
+      --След рывка
+      trail = {},            -- таблица для хранения следов
+      trailDuration = 0.05,  -- как долго следы остаются на экране (в секундах)
+      trailFrequency = 0.01, -- как часто добавляются следы (в секундах)
+      trailTimer = 0,        -- таймер для добавления следов
+      
+    }
 
-    self.speed = 150
-    self.defaultSpeed = 150
-
-    self.body = love.physics.newBody(world, playerData.x, playerData.y, "dynamic")         -- тело для движения и отрисовки
     self.body:setMass(50)
-    self.shape = love.physics.newRectangleShape(30, 58)              -- размер коллайдера
     self.fixture = love.physics.newFixture(self.body, self.shape, 0) -- коллайдер
     self.fixture:setCategory(cat.PLAYER)                             -- Категория объектов, к которой относится игрок
     self.fixture:setMask(cat.P_SHOT, cat.VOID, cat.PLAYER)           -- Категории, которые игрок игнорирует (свои выстрелы, других игроков и пустоту)
     self.fixture:setUserData(self)
     self.body:setGravityScale(0)
-    self.shots = {}                                                  -- holds our fired shots
-    self.health = playerData.health
-    self.damage = 10
-    self.attackType = 'slash'
-    self.stun = 0
-    self.stunTime = 0
-    self.zoom = 1
-    self.widthDivTwo = 12
-    self.heightDivTwo = 18
 
     PlayerAnim.new(self)
 
     self.anim = self.animations.left
-    self.direction = "l"
     self.serverDirectionX = ""
     self.serverDirectionY = ""
-    self.isRemote = isRemote
-
-    self.nearestItem = nil
-    self.inventory = inventory.new(6, 4)
 
     for i, id in ipairs(playerData.inventory.arr) do
       self.inventory:addItem(ItemModule.create_item(id))
@@ -76,22 +89,6 @@ Player = {
     self.inventoryGui = inventoryGuiSrc
     self.inventoryGui:setInventory(self.inventory, 50, 50)
     self.inventoryIsOpen = false
-
-    self.effects = {}
-
-    --Рывок
-    self.isDashing = false
-    self.dashSpeed = 300
-    self.dashDuration = 0.2
-    self.dashCooldown = 0.4
-    self.dashTimeLeft = 0
-    self.dashCooldownLeft = 0
-
-    --След рывка
-    self.trail = {}            -- таблица для хранения следов
-    self.trailDuration = 0.05  -- как долго следы остаются на экране (в секундах)
-    self.trailFrequency = 0.01 -- как часто добавляются следы (в секундах)
-    self.trailTimer = 0        -- таймер для добавления следов
 
     PlayerUpdate.new(self)
 
@@ -139,8 +136,8 @@ Player = {
       end
     end
 
-    function self:pickupItem(from, itemBody)
-      itemBody = itemBody or self.nearestItem
+    function self:pickupItem(from)
+      itemBody = self.nearestItem
       if itemBody then
         if itemBody.inventory ~= nil then
           self:openBox(itemBody)
@@ -152,8 +149,8 @@ Player = {
             print("nil item Big Fail")
           end
         end
-      else
-        print("no near item")
+      elseif self.nearestNpc then
+        pcall(function() self.nearestNpc:communicate(self) end)
       end
     end
 
