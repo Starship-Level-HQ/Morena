@@ -20,7 +20,6 @@ function Dealer:new(world, eData)
   this.deadSpriteSheet = love.graphics.newImage('res/sprites/enemy-dead.png')
   this.deadGrid = anim8.newGrid(12, 18, this.deadSpriteSheet:getWidth(), this.deadSpriteSheet:getHeight())
   this.deadAnimations = anim8.newAnimation(this.deadGrid('1-2', 1), 0.7)
-    
 
   setmetatable(this,self)
   self.__index = self
@@ -30,4 +29,8 @@ end
 function Dealer:die(dt)
   NPC.die(self, dt)
   self.zoom=4
+end
+
+function Dealer:communicate(player)
+  self.dialog:add("Darova!", 1.3)
 end

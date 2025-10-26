@@ -1,6 +1,6 @@
 require "angles"
 require("player.player")
-require("dialog")
+require("communication.multilog")
 require("items.mapStaff")
 require("NPCs.npcProvider")
 require("shots.shot")
@@ -167,7 +167,7 @@ end
 function level.update(dt)
   if not level.pause then
     if level.isDialog then
-      local b = level.dialog.update(dt)
+      local b = level.dialog:update(dt)
       if b ~= nil then
         cam:lookAt(b:getX(), b:getY())
         level.cameraFocus()
@@ -235,7 +235,7 @@ function level.draw()
   player:draw(d1, d2, d3, d4)
 
   if level.isDialog then
-    level.dialog.draw(d1, d2, d3, d4)
+    level.dialog:draw(d1, d2, d3, d4)
   end
   
   cam:detach()
@@ -269,7 +269,7 @@ function level.keypressed(key)
   elseif key == "=" then
     player.fixture:setCategory(cat.VOID)
   elseif key == "u" then
-    level.dialog = Dialog.new(
+    level.dialog = Multilog:new(
       { { text = "Rrrrrr...\nrrrrrr...", body = level.enemies[1].body }, { text = "Ah shit", body = player.body }, { text = "Here we go again", body = player.body, dur = 1.2 } },
       level.callback)
     level.isDialog = true

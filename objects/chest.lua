@@ -10,7 +10,7 @@ function Chest:new(world, oData)
   chest.fixture:setCategory(cat.ITEM)
   chest.fixture:setMask(cat.VOID)
   chest.fixture:setUserData(chest)
-  
+
   chest.img = love.graphics.newImage("res/sprites/chest.png")
   chest.zoom = 1.2
 
@@ -26,14 +26,13 @@ function Chest:new(world, oData)
   chest.inventoryGui = BoxGui:new(chest.inventory)
   chest.inventoryIsOpen = false
 
-  function Chest:draw()
-    local xx = self.body:getX()-self.widthDivTwo*self.zoom
-    local yy = self.body:getY()-self.heightDivTwo*self.zoom
-    love.graphics.draw(self.img, xx, yy, nil, self.zoom)    
-  end
-
   setmetatable(chest,self)
   self.__index = self
-
   return chest
+end
+
+function Chest:draw()
+  local xx = self.body:getX()-self.widthDivTwo*self.zoom
+  local yy = self.body:getY()-self.heightDivTwo*self.zoom
+  love.graphics.draw(self.img, xx, yy, nil, self.zoom)    
 end
